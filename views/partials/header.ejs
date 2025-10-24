@@ -1,0 +1,34 @@
+<header>
+    <div class="navbar">
+        <div class="logo">
+            <a href="/">🏠 Hostel Management</a>
+        </div>
+
+        <nav>
+            <% if (session && session.role) { %>
+                <% if (session.role === 'student') { %>
+                    <a href="/student/dashboard">Dashboard</a>
+                    <a href="/student/profile">Profile</a>
+                    <a href="/student/applyoutpass">Apply Outpass</a>
+                    <a href="/student/viewfees">View Fees</a>
+                    <a href="/student/uploadReceipt">Upload Receipt</a>
+                <% } else if (session.role === 'warden') { %>
+                    <a href="/warden/dashboard">Dashboard</a>
+                    <a href="/warden/markAttendance">Mark Attendance</a>
+                    <a href="/warden/approveOutpass">Approve Outpasses</a>
+                <% } else if (session.role === 'admin') { %>
+                    <a href="/admin/dashboard">Dashboard</a>
+                    <a href="/admin/uploadSBI">Upload SBI PDF</a>
+                    <a href="/admin/pendingReceipts">Pending Receipts</a>
+                    <a href="/admin/manageWardens">Manage Wardens</a>
+                <% } else if (session.role === 'security') { %>
+                    <a href="/security/dashboard">Dashboard</a>
+                    <a href="/security/viewOutpasses">View Outpasses</a>
+                <% } %>
+                <a href="/logout">Logout</a>
+            <% } else { %>
+                <a href="/choose_login">Login</a>
+            <% } %>
+        </nav>
+    </div>
+</header>

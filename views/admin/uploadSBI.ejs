@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Upload SBI PDF</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <%- include('../partials/header') %>
+
+    <div class="container">
+        <h2>Upload SBI Collect PDF</h2>
+        <form action="/admin/uploadSBI" method="POST" enctype="multipart/form-data">
+            <label>Select PDF:</label>
+            <input type="file" name="sbi_pdf" accept="application/pdf" required>
+            <button type="submit">Upload and Process</button>
+        </form>
+
+        <a href="/admin/dashboard" class="back-link">Back to Dashboard</a>
+    </div>
+    <a href="/student/dashboard" class="back-btn">⬅ Back to Dashboard</a>
+
+
+    <%- include('../partials/footer') %>
+</body>
+</html>

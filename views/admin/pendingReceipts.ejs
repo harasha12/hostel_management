@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Pending Receipts</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <%- include('../partials/header') %>
+
+    <div class="container">
+        <h2>Pending Fee Receipts</h2>
+        <table border="1">
+            <tr>
+                <th>Student</th>
+                <th>Ref ID</th>
+                <th>Amount</th>
+                <th>PDF</th>
+                <th>Action</th>
+            </tr>
+            <% pending.forEach(r => { %>
+            <tr>
+                <td><%= r.name %></td>
+                <td><%= r.ref_id %></td>
+                <td><%= r.amount_paid %></td>
+                <td>
+                    <% if (r.pdf_path) { %>
+                        <a href="/<%= r.pdf_path %>" target="_blank">View PDF</a>
+                    <% } else { %>
+                        N/A
+                    <% } %>
+                </td>
+                <td>
+                    <form action="/admin/verifyReceipt" method="POST">
+                        <input type="hidden" name="receipt_id" value="<%= r.receipt_id %>">
+                        <button type="submit" name="action" value="Verify">Verify</button>
+                        <button type="submit" name="action" value="Reject">Reject</button>
+                    </form>
+                </td>
+            </tr>
+            <% }) %>
+        </table>
+
+        <a href="/admin/dashboard" class="back-link">Back to Dashboard</a>
+    </div>
+    <a href="/student/dashboard" class="back-btn">⬅ Back to Dashboard</a>
+
+
+    <%- include('../partials/footer') %>
+</body>
+</html>

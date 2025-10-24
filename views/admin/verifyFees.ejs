@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Verify Student Fees</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .btn-approve, .btn-reject {
+            padding: 6px 14px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: bold;
+            color: #fff;
+            transition: 0.3s;
+        }
+        .btn-approve {
+            background: #28a745;
+        }
+        .btn-approve:hover {
+            background: #218838;
+        }
+        .btn-reject {
+            background: #dc3545;
+        }
+        .btn-reject:hover {
+            background: #c82333;
+        }
+        .back-link {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 10px 18px;
+            background: #6a11cb;
+            background: linear-gradient(135deg, #6a11cb, #2575fc);
+            color: #fff;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+        .back-link:hover {
+            opacity: 0.85;
+        }
+    </style>
+</head>
+<body>
+    <%- include('../partials/header') %>
+
+    <div class="container">
+        <h2>Verify Student Fee Receipts</h2>
+
+        <table border="1">
+            <tr>
+                <th>Student ID</th>
+                <th>Name</th>
+                <th>Course</th>
+                <th>Year</th>
+                <th>Receipt</th>
+                <th>Status</th>
+                <th>Action</th>
+            </tr>
+            <% receipts.forEach(r => { %>
+                <tr>
+                    <td><%= r.student_id %></td>
+                    <td><%= r.name %></td>
+                    <td><%= r.course %></td>
+                    <td><%= r.year %></td>
+                    <td><a href="/uploads/receipts/<%= r.receipt_file %>" target="_blank">View</a></td>
+                    <td><%= r.status %></td>
+                    <td>
+                        <% if (r.status === 'Pending') { %>
+                            <form action="/admin/verifyFees/<%= r.id %>" method="POST" style="display:inline;">
+                                <input type="hidden" name="status" value="Approved">
+                                <button type="submit" class="btn-approve">Approve</button>
+                            </form>
+                            <form action="/admin/verifyFees/<%= r.id %>" method="POST" style="display:inline;">
+                                <input type="hidden" name="status" value="Rejected">
+                                <button type="submit" class="btn-reject">Reject</button>
+                            </form>
+                        <% } else { %>
+                            <span><%= r.status %></span>
+                        <% } %>
+                    </td>
+                </tr>
+            <% }) %>
+        </table>
+
+        <a href="/admin/dashboard" class="back-link">⬅ Back to Dashboard</a>
+    </div>
+
+    <%- include('../partials/footer') %>
+</body>
+</html>

@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Apply Outpass</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <h2>Apply for Outpass</h2>
+    <form action="/student/applyoutpass" method="POST">
+        <label>Period:</label><br>
+        <input type="text" name="period" required><br>
+        <label>From Date:</label>
+<input type="date" name="from_date" required>
+
+<label>To Date:</label>
+<input type="date" name="to_date" required>
+
+<label>Reason:</label>
+<textarea name="reason" required></textarea>
+
+        <button type="submit">Submit Outpass</button>
+        <a href="/student/dashboard" class="back-btn">⬅ Back to Dashboard</a>
+
+    </form>
+</body>
+</html>

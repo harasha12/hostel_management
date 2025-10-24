@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Dashboard</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <%- include('../partials/header') %>
+
+    <div class="container">
+        <h2>Welcome, <%= user.name %> (Admin)</h2>
+
+        <div class="card-container">
+            <a href="/admin/verifyFees" class="card">Verify Student Fees</a>
+            <a href="/admin/manageWardens" class="card">Manage Wardens</a>
+            <a href="/admin/uploadSBI" class="card">Upload SBI PDF</a>
+    <a href="/admin/pendingReceipts" class="card">Pending Receipts</a>
+        <a href="/admin/setFee" class="card">setFee</a>
+        </div>
+
+        <a href="/logout" class="logout-btn">Logout</a>
+    </div>
+
+    <%- include('../partials/footer') %>
+</body>
+</html>
