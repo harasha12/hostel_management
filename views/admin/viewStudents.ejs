@@ -173,7 +173,7 @@
     <h2 class="students-heading">View Student Profiles</h2>
 
     <div class="search-bar">
-      <form method="get" action="/warden/viewStudents">
+      <form method="get" action="/admin/viewStudents">
         <input
           type="text"
           name="search"
@@ -193,13 +193,13 @@
 
               <div class="student-details">
                 <h3><%= s.name %></h3>
-                <p><<strong>ID:</strong> <%= s.student_id %></p>
+                <p><strong>ID:</strong> <%= s.student_id %></p>
                 <p><strong>Room:</strong> <%= s.room_no %></p>
                 <p><strong>Course:</strong> <%= s.course %></p>
                 <p><strong>Year:</strong> <%= s.year %></p>
               </div>
             </div>
-            <a href="/warden/student/<%= s.student_id %>" class="btn">View Profile</a>
+            <a href="/admin/student/<%= s.student_id %>" class="btn">View Profile</a>
           </div>
         <% }) %>
       </div>

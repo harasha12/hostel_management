@@ -1,26 +1,75 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Warden Dashboard</title>
-    <link rel="stylesheet" href="/css/style.css">
+  <title>Warden Dashboard</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    th, td {
+      padding: 10px;
+      border: 1px solid #ddd;
+      text-align: center;
+    }
+    th {
+      background: #f4f4f4;
+    }
+  </style>
 </head>
 <body>
-    <%- include('../partials/header') %>
+  <%- include('../partials/header') %>
 
-    <div class="container">
-        <h2>Welcome, <%= user.name %> (Warden)</h2>
+  <div class="container">
+    <h2>Welcome, <%= session.warden_name %> (Warden)</h2>
 
-        <div class="card-container">
-            <a href="/warden/markAttendance" class="card">Mark Attendance</a>
-<a href="/warden/approveOutpass" class="card">Approve Outpasses</a>
-<a href="/warden/viewStudents" class="card">View Students</a>
+    <div class="card-container">
+      <a href="/warden/markAttendance" class="card">Mark Attendance</a>
+      <a href="/warden/approveOutpass" class="card">Approve Outpasses</a>
+      <a href="/warden/emergencyOutpasses" class="card"> Emergency Outpasses</a>
+      <a href="/warden/viewStudents" class="card">View Student Profiles</a>
+      <a href="/warden/complaints" class="card">Manage Complaints</a>
+      <a href="/warden/upload-students" class="card">Upload Student Details</a>
+      <a href="/warden/upload_results" class="card">Upload Results</a>
+      <a href="/warden/uploadSBI" class="card">Upload sbi file</a>
+<a href="/warden/eligibility" class="card">Check Room Eligibility</a>
 
-
-        </div>
-
-        <a href="/logout" class="logout-btn">Logout</a>
     </div>
 
-    <%- include('../partials/footer') %>
+    <hr>
+    <h3>✅ Outpasses Approved Today: <strong><%= approvedCount %></strong></h3>
+
+    <h3>🎓 Students Whose Outpasses Were Approved</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Student ID</th>
+          <th>Name</th>
+          <th>Status</th>
+          <th>Approved At</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% if (students.length === 0) { %>
+          <tr><td colspan="4">No outpasses approved yet.</td></tr>
+        <% } else { %>
+          <% students.forEach(stu => { %>
+            <tr>
+              <td><%= stu.student_id %></td>
+              <td><%= stu.name %></td>
+              <td><%= stu.status %></td>
+              <td><%= new Date(stu.approved_at).toLocaleString() %></td>
+            </tr>
+          <% }) %>
+        <% } %>
+      </tbody>
+    </table>
+
+    <a href="/logout" class="logout-btn">Logout</a>
+  </div>
+
+  <%- include('../partials/footer') %>
 </body>
 </html>

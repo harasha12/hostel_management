@@ -1,26 +1,118 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Upload SBI PDF</title>
-    <link rel="stylesheet" href="/css/style.css">
-</head>
-<body>
-    <%- include('../partials/header') %>
+<div class="sbipdf-container">
+  <h2 class="sbipdf-heading">Upload SBI Collect PDF</h2>
+  <form action="/warden/uploadSBI" method="POST" enctype="multipart/form-data" class="sbipdf-form">
+    <label for="sbi_pdf" class="sbipdf-label">Select SBI PDF:</label>
+    <input type="file" name="sbi_pdf" id="sbi_pdf" accept="application/pdf" required class="sbipdf-input">
+    <button type="submit" class="sbipdf-upload-btn">Upload</button>
+  </form>
+  <a href="/warden/dashboard" class="back-link">⬅ Back to Dashboard</a>
+</div>
 
-    <div class="container">
-        <h2>Upload SBI Collect PDF</h2>
-        <form action="/admin/uploadSBI" method="POST" enctype="multipart/form-data">
-            <label>Select PDF:</label>
-            <input type="file" name="sbi_pdf" accept="application/pdf" required>
-            <button type="submit">Upload and Process</button>
-        </form>
+<style>
+.sbipdf-container {
+  max-width: 480px;
+  margin: 65px auto 32px auto;
+  background: #f8f9fa;
+  border-radius: 14px;
+  box-shadow: 0 12px 36px #22304c22, 0 1.5px 3px #0001;
+  padding: 38px 28px 34px 28px;
+   border: 3px solid #ffd700; /* Gold border on all 4 sides */
+}
+.sbipdf-heading {
+  text-align: center;
+  font-family: 'Montserrat', 'Georgia', serif;
+  font-size: 1.62em;
+  font-weight: 900;
+  color: #1b243b;
+  letter-spacing: .7px;
+  border-bottom: 3px solid #ffc107;
+  padding-bottom: 7px;
+  margin-bottom: 24px;
+  background: linear-gradient(90deg, #8E8EED 65%, #EBD483 100%);
+  border-radius: 8px 8px 0 0;
+}
+.sbipdf-form {
+  display: flex;
+  flex-direction: column;
+  gap: 19px;
+  margin-bottom: 14px;
+}
+.sbipdf-label {
+  font-weight: 700;
+  font-family: 'Montserrat', sans-serif;
+  color: #22304c;
+  margin-bottom: 7px;
+  font-size: 1.09em;
+  letter-spacing: 0.4px;
+}
+.sbipdf-input[type="file"] {
+  padding: 10px 7px;
+  border-radius: 7px;
+  border: 2px solid #bdc3c7;
+  background: #fff;
+  font-size: 1em;
+  box-shadow: 0 1px 7px #22304c10;
+  color: #222;
+  transition: border-color 0.18s;
+}
+.sbipdf-input[type="file"]:focus {
+  border-color: #ffc107;
+  outline: none;
+}
+.sbipdf-upload-btn {
+  background: #ffc107;
+  color: #222;
+  font-family: 'Montserrat', 'Roboto', sans-serif;
+  border: none;
+  border-radius: 50px;
+  font-weight: 700;
+  font-size: 1.08em;
+  padding: 12px 0;
+  width: 100%;
+  letter-spacing: .9px;
+  box-shadow: 0 2px 8px #ffc10733;
+  cursor: pointer;
+  margin-top: 8px;
+  transition: 
+    background 0.13s,
+    color 0.13s,
+    box-shadow 0.19s,
+    transform 0.19s;
+}
+.sbipdf-upload-btn:hover,
+.sbipdf-upload-btn:focus {
+  background: #ffd700;
+  color: #1b243b;
+  transform: scale(1.04); /* slight zoom-in */
+  box-shadow: 0 0 19px 3px #ffe082b0;
+}
+.back-link {
+  display: block;
+  margin: 21px auto 0 auto;
+  font-size: 1.05em;
+  font-weight: 600;
+  text-align: center;
+  color: #fff;
+  background: linear-gradient(90deg, #d4af37, #ffdd00);
+  border-radius: 50px;
+  padding: 10px 0;
+  width: 75%;
+  max-width: 320px;
+  text-decoration: none;
+  letter-spacing: 0.8px;
+  box-shadow: 0 4px 12px #d4af3733;
+  transition: all 0.25s ease;
+}
+.back-link:hover {
+  background: linear-gradient(90deg, #ffdd00, #ffe382);
+  color: #1b243b;
+  transform: scale(1.07);
+  box-shadow: 0 0 20px #ffe082a9;
+}
 
-        <a href="/admin/dashboard" class="back-link">Back to Dashboard</a>
-    </div>
-    <a href="/student/dashboard" class="back-btn">⬅ Back to Dashboard</a>
-
-
-    <%- include('../partials/footer') %>
-</body>
-</html>
+@media (max-width: 600px) {
+  .sbipdf-container { padding: 12px 2vw; }
+  .sbipdf-heading { font-size: 1.09em; border-bottom-width:2px; }
+  .sbipdf-upload-btn { font-size: 1em; }
+}
+</style>

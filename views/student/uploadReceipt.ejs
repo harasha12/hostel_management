@@ -11,27 +11,32 @@
     <div class="container">
         <h2>Upload Fee Receipt</h2>
         <form action="/student/uploadReceipt" method="POST" enctype="multipart/form-data">
-            <div class="form-group">
-                <label for="ref_id">Reference ID:</label>
-                <input type="text" id="ref_id" name="ref_id" placeholder="Enter Reference ID" required>
-            </div>
+    <label>Unique ID</label>
+    <input type="text" name="student_unique_id" value="<%= user.student_unique_id %>" readonly>
 
-            <div class="form-group">
-                <label for="amount_paid">Amount Paid:</label>
-                <input type="number" id="amount_paid" name="amount_paid" placeholder="Enter Amount Paid" step="0.01" required>
-            </div>
+    <label>Reference ID</label>
+    <input type="text" name="ref_id" required>
 
-            <div class="form-group">
-                <label for="upload_pdf">Upload PDF:</label>
-                <input type="file" name="sbi_pdf" accept="application/pdf" required>
+    <label>Amount Paid (₹)</label>
+    <input type="number" name="amount_paid" step="0.01" required>
 
-                <small>Only PDF files are allowed. Max size: 5MB.</small>
-            </div>
+    <label>Academic Year</label>
+    <input type="number" name="year" value="<%= new Date().getFullYear() %>" required>
 
-            <input type="hidden" name="student_id" value="<%= user.student_id %>">
+    <label>Remarks / Fee Component</label>
+    <select name="remarks" required>
+        <option value="">-- Select --</option>
+        <option value="Room Rent">Room Rent</option>
+        <option value="Mess Bill1">Mess Bill1</option>
+        <option value="Mess Bill2">Mess Bill2</option>
+        <option value="Others">Others</option>
+    </select>
 
-            <button type="submit" class="btn">Upload Receipt</button>
-        </form>
+    <label>Upload PDF Receipt</label>
+    <input type="file" name="sbi_pdf" accept="application/pdf" required>
+
+    <button type="submit">Upload Receipt</button>
+</form>
 
         <a href="/student/dashboard" class="back-link">⬅ Back to Dashboard</a>
     </div>

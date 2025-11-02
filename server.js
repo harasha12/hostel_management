@@ -4,12 +4,14 @@
 const express = require("express");
 const mysql = require("mysql2");
 const session = require("express-session");
+const flash = require("connect-flash");
 const path = require("path");
 const bodyParser = require("body-parser");
 const nodemailer = require("nodemailer");
 const bcrypt = require("bcryptjs");
 const { v4: uuidv4 } = require("uuid");
 const multer = require("multer");
+const xlsx = require("xlsx");
 const fs = require("fs");
 // ======================
 // MULTER CONFIG
@@ -18,44 +20,105 @@ const receiptsDir = path.join(__dirname, "uploads/receipts");
 if (!fs.existsSync(receiptsDir)) {
     fs.mkdirSync(receiptsDir, { recursive: true });
 }
-const app = express();
 
+
+const app = express();
+// ✅ Serve uploads folder publicly
+const uploadsPath = path.join(__dirname, "uploads");
+console.log("📂 Static serving uploads from:", uploadsPath);
+
+if (!fs.existsSync(uploadsPath)) {
+  console.error("❌ uploads folder does not exist at:", uploadsPath);
+}
+
+
+// ✅ serve the entire uploads folder publicly
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+// Serve profile images
+app.use('/uploads/profile_images', express.static(path.join(__dirname, 'uploads/profile_images')));
+
+// Serve default images (like default-avatar.png)
+app.use('/images', express.static(path.join(__dirname, 'public/images')));
+
+app.use(flash());
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     let dir;
-
-    if (file.fieldname === "receipt_pdf") {
-      dir = path.join(__dirname, "uploads/receipts");
-    } else if (file.fieldname === "outpass_pdf") {
-      dir = path.join(__dirname, "uploads/outpasses");
-    } else if (file.fieldname === "sbi_pdf") {
-      dir = path.join(__dirname, "uploads/sbi");
-    } else {
-      dir = path.join(__dirname, "uploads");
+    switch (file.fieldname) {
+      case "receipt_pdf":
+        dir = path.join(__dirname, "uploads/receipts");
+        break;
+      case "outpass_pdf":
+        dir = path.join(__dirname, "uploads/outpasses");
+        break;
+      case "sbi_pdf":
+        dir = path.join(__dirname, "uploads/sbi");
+        break;
+      case "studentsFile":
+        dir = path.join(__dirname, "uploads/students");
+        break;
+      case "student_aadhaar":
+      case "father_aadhaar":
+        dir = path.join(__dirname, "uploads/adhaar");
+        break;
+      case "profile_image":
+        dir = path.join(__dirname, "uploads/profile_images");
+        break;
+      default:
+        dir = path.join(__dirname, "uploads");
     }
-
     if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
     cb(null, dir);
   },
+
   filename: (req, file, cb) => {
-    cb(null, Date.now() + "-" + file.originalname);
-  },
+    if (file.fieldname === "student_aadhaar" || file.fieldname === "father_aadhaar") {
+      const studentId = req.session.user.student_id;
+      const ext = path.extname(file.originalname);
+      cb(null, `${studentId}_${file.fieldname}${ext}`);
+    } else if(file.fieldname === "profile_image") {
+      const studentId = req.session.user.student_id;
+      const ext = path.extname(file.originalname);
+      cb(null, `${studentId}_profile${ext}`);
+    } else {
+      const safeName = path.basename(file.originalname).replace(/[<>:"/\\|?*\s]+/g, "_").trim();
+      cb(null, Date.now() + "-" + safeName);
+    }
+  }
 });
 
 const upload = multer({
   storage,
   limits: { fileSize: 25 * 1024 * 1024 },
   fileFilter: (req, file, cb) => {
-    const allowed = [".pdf", ".xls", ".xlsx"];
+    const allowedPdfExcel = [".pdf", ".xls", ".xlsx", ".csv"];
+    const allowedImages = [".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp", ".tiff", ".svg"];
     const ext = path.extname(file.originalname).toLowerCase();
-    if (!allowed.includes(ext)) {
-      return cb(new Error("Only PDF or Excel files allowed"));
+
+    // For Aadhaar or profile images
+    if (file.fieldname === "student_aadhaar" || file.fieldname === "father_aadhaar" || file.fieldname === "profile_image") {
+      if (!allowedImages.includes(ext)) return cb(new Error("Only image files are allowed"));
+    } else {
+      if (!allowedPdfExcel.includes(ext)) return cb(new Error("Only PDF/Excel files are allowed"));
     }
     cb(null, true);
-  },
+  }
 });
 
+module.exports = upload;
+
+
+
+
+function getJoinYearFromRegId(regId) {
+  if (!regId || regId.length < 2) return null;
+  const prefix = regId.substring(0, 2);
+  const joinYear = 2000 + parseInt(prefix);
+  const currentYear = new Date().getFullYear();
+  if (isNaN(joinYear) || joinYear > currentYear) return null;
+  return joinYear;
+}
 
 
 // ===== Middleware =====
@@ -77,6 +140,7 @@ app.use((req, res, next) => {
   next();
 });
 
+
 // ===== MySQL Connection =====
 const db = mysql.createPool({
     host: 'localhost',
@@ -95,6 +159,10 @@ db.query('SELECT 1', (err) => {
 });
 
 module.exports = db;
+// In your server.js or a new route file
+app.get("/", (req, res) => {
+  res.render("home");
+});
 
 // Show login choice page
 app.get("/choose_login", (req, res) => {
@@ -248,11 +316,20 @@ app.post("/reset-password/:token", (req, res) => {
     );
   });
 });
+
+
 app.get('/download/:type/:filename', (req, res) => {
-    const { type, filename } = req.params; // type=receipts or outpasses
-    const filePath = path.join(__dirname, 'uploads', type, filename);
-    res.download(filePath);
+  const { type, filename } = req.params; // type can be receipts, outpasses, sbi, etc.
+  const filePath = path.join(__dirname, 'uploads', type, filename);
+  res.download(filePath, err => {
+    if (err) {
+      console.error("Download error:", err);
+      res.status(404).send("File not found");
+    }
+  });
 });
+
+
 
 // =====================================
 // STUDENT ROUTES
@@ -265,71 +342,71 @@ app.get("/register/student", (req, res) => res.render("register_student"));
 // const bcrypt = require('bcrypt');
 
 // Student Registration Route
-app.post("/register/student", (req, res) => {
-  const { student_id, name, email, password, room_no, course, year } = req.body;
+app.post("/register/student", async (req, res) => {
+  const { student_id, name, email, password, room_no, course, year, student_unique_id } = req.body;
 
-  if (!student_id || !name || !email || !password) {
-    return res.send("Please fill all required fields");
+  if (!student_id || !name || !email || !password || !student_unique_id) {
+    return res.send("⚠️ Please fill all required fields.");
   }
 
-  const hashedPassword = bcrypt.hashSync(password, 10);
+  try {
+    // Check if student_id or student_unique_id already exists
+    const [existing] = await db.promise().query(
+      "SELECT * FROM students WHERE student_id = ? OR student_unique_id = ?",
+      [student_id, student_unique_id]
+    );
+    if (existing.length > 0) {
+      return res.send("❌ Student ID or Unique ID already exists! Please use a different one.");
+    }
 
-  // Step 0: Check if student_id already exists
-  db.query("SELECT * FROM students WHERE student_id = ?", [student_id], (err, results) => {
-    if (err) return res.send("Database error: " + err);
-    if (results.length > 0) return res.send("Student ID already exists! Use a different ID.");
+    // Extract joining year from student_id
+    const joinYear = 2000 + parseInt(student_id.substring(0, 2));
 
-    // Step 1: Extract admission year from student_id (R19 → 2019, etc.)
-    const prefix = student_id.substring(0, 3);
-    let admissionYear = "2000";
+    // Generate hostel_id
+    const [rows] = await db.promise().query(
+      "SELECT hostel_id FROM students WHERE hostel_id LIKE ? ORDER BY hostel_id DESC LIMIT 1",
+      [`${joinYear}%`]
+    );
+    let newHostelId;
+    if (rows.length > 0 && rows[0].hostel_id) {
+      const lastSeq = parseInt(rows[0].hostel_id.substring(4));
+      newHostelId = joinYear + String(lastSeq + 1).padStart(6, "0");
+    } else {
+      newHostelId = joinYear + "000001";
+    }
 
-    if (prefix === "R19") admissionYear = "2019";
-    else if (prefix === "R20") admissionYear = "2020";
-    else if (prefix === "R23") admissionYear = "2023";
-    else if (prefix === "R27") admissionYear = "2027";
+    // Hash password
+    const hashedPassword = bcrypt.hashSync(password, 10);
 
-    // Step 2: Get last hostel_id for this year
-    const sqlLast = "SELECT hostel_id FROM students WHERE hostel_id LIKE ? ORDER BY hostel_id DESC LIMIT 1";
-    db.query(sqlLast, [`${admissionYear}%`], (err2, rows) => {
-      if (err2) {
-        console.error("Error fetching last hostel_id:", err2);
-        return res.send("Error checking hostel ID");
-      }
+    // Insert student
+    await db.promise().query(`
+      INSERT INTO students
+      (student_id, student_unique_id, name, email, password, hostel_id, room_no, course, year, total_fee, total_paid, year_of_join, created_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 0, ?, NOW())
+    `, [
+      student_id,
+      student_unique_id,
+      name,
+      email,
+      hashedPassword,
+      newHostelId,
+      room_no,
+      course,
+      year,
+      joinYear
+    ]);
 
-      let newHostelId;
-      if (rows.length > 0 && rows[0].hostel_id) {
-        // Increment last sequence
-        const lastId = rows[0].hostel_id;   // e.g. "2023000005"
-        const lastSeq = parseInt(lastId.substring(4)); // get number after year
-        newHostelId = admissionYear + String(lastSeq + 1).padStart(6, "0");
-      } else {
-        // First student of this admission year
-        newHostelId = admissionYear + "000001";
-      }
-
-      // Step 3: Insert student with generated hostel_id
-      const sqlInsert = `
-        INSERT INTO students
-        (student_id, name, email, password, hostel_id, room_no, course, year, total_fee, total_paid, created_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, 0, NOW())
-      `;
-
-      db.query(
-        sqlInsert,
-        [student_id, name, email, hashedPassword, newHostelId, room_no, course, year],
-        (err3) => {
-          if (err3) {
-            console.error("Error inserting student:", err3);
-            return res.send("Error registering student: " + err3);
-          }
-
-          res.send(
-            `✅ Student registered successfully!<br>College ID: ${student_id}<br>Hostel ID: ${newHostelId}`
-          );
-        }
-      );
-    });
-  });
+    res.send(`
+      ✅ Student registered successfully!<br>
+      📘 College ID: ${student_id}<br>
+      🆔 Unique ID: ${student_unique_id}<br>
+      🏠 Hostel ID: ${newHostelId}<br>
+      🎓 Year of Join: ${joinYear}
+    `);
+  } catch (err) {
+    console.error("Error in registration:", err);
+    res.status(500).send("❌ Error registering student. Please try again later.");
+  }
 });
 
 
@@ -358,14 +435,98 @@ app.post("/login/student", (req, res) => {
 });
 
 
-app.get("/student/dashboard", (req, res) => {
-  if (req.session.role !== "student") return res.redirect("/choose_login");
+app.get("/student/dashboard", async (req, res) => {
+  if (!req.session.user || req.session.role !== "student") {
+    return res.redirect("/login/student");
+  }
 
-  // Pass the session user as 'user'
-  res.render("student/dashboard", { user: req.session.user });
+  const student_id = req.session.user.student_id;
+
+  try {
+    // Get student info
+    const [studentRows] = await db.promise().query("SELECT * FROM students WHERE student_id = ?", [student_id]);
+    if (studentRows.length === 0) return res.send("Student not found");
+    const student = studentRows[0];
+
+    // Get join year from reg ID (e.g., 23B81A46__)
+    const joinYear = getJoinYearFromRegId(student.student_id);
+
+    // Get yearly fees and verified payments
+    const [yearFees] = await db.promise().query("SELECT * FROM yearly_fee ORDER BY year ASC");
+    const [paidFees] = await db.promise().query(
+      `SELECT year, SUM(amount_paid) AS total_paid
+       FROM fee_receipts
+       WHERE student_id = ? AND status = 'Verified'
+       GROUP BY year`,
+      [student_id]
+    );
+
+    const paidMap = {};
+    paidFees.forEach((p) => (paidMap[p.year] = parseFloat(p.total_paid || 0)));
+
+    const currentYear = new Date().getFullYear();
+    const feeSummary = [];
+    let unpaidCount = 0;
+
+    for (const yf of yearFees) {
+      if (yf.year >= joinYear && yf.year <= currentYear) {
+        const paid = paidMap[yf.year] || 0;
+        const due = parseFloat(yf.amount) - paid;
+        if (due > 0) unpaidCount++;
+        feeSummary.push({
+          year: yf.year,
+          total_fee: parseFloat(yf.amount),
+          paid_amount: paid,
+          due_amount: due > 0 ? due : 0,
+        });
+      }
+    }
+
+    res.render("student/dashboard", { student, feeSummary, unpaidCount });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Error loading dashboard");
+  }
 });
 
 
+
+// GET complaint form
+app.get('/student/complaint', (req, res) => {
+    if (req.session.role !== 'student') return res.redirect('/choose_login');
+    res.render('student/complaint', { user: req.session.user });
+});
+
+// POST submit complaint
+app.post('/student/complaint', (req, res) => {
+    if (req.session.role !== 'student') return res.redirect('/choose_login');
+
+    const { subject, description } = req.body;
+    const student_id = req.session.user.student_id;
+
+    db.query(
+        "INSERT INTO complaints (student_id, subject, description) VALUES (?, ?, ?)",
+        [student_id, subject, description],
+        (err) => {
+            if (err) return res.send("Error submitting complaint: " + err);
+            res.send("✅ Complaint submitted successfully!");
+        }
+    );
+});
+app.get('/student/complaints', (req, res) => {
+    if (req.session.role !== 'student') return res.redirect('/choose_login');
+
+    const student_id = req.session.user.student_id;
+
+    db.query(
+        "SELECT * FROM complaints WHERE student_id = ? ORDER BY created_at DESC",
+        [student_id],
+        (err, results) => {
+            if (err) return res.send("Error fetching complaints: " + err);
+            res.render('student/viewComplaints', { complaints: results });
+        }
+    );
+});
 
 // Show Apply Outpass form
 app.get("/student/applyoutpass", (req, res) => {
@@ -381,12 +542,17 @@ app.post("/student/applyoutpass", (req, res) => {
     return res.redirect("/login/student");
   }
 
-  const { period, reason, from_date, to_date } = req.body;
+  const { reason, leave_start, leave_end } = req.body;
   const student_id = req.session.user.student_id;
 
+  const from = new Date(leave_start);
+  const to = new Date(leave_end);
+  const diffDays = Math.ceil((to - from) / (1000 * 60 * 60 * 24)) + 1;
+
   db.query(
-    "INSERT INTO outpasses (student_id, period, reason, out_date, return_date, status) VALUES (?, ?, ?, ?, ?, ?)",
-    [student_id, period, reason, from_date, to_date, "Pending"],
+    `INSERT INTO outpasses (student_id, period, reason, outpass_type, out_date, return_date, status)
+     VALUES (?, ?, ?, ?, ?, ?, ?)`,
+    [student_id, diffDays, reason, "Normal", leave_start, leave_end, "Pending"],
     (err) => {
       if (err) {
         console.error("Error Applying Outpass:", err);
@@ -397,6 +563,67 @@ app.post("/student/applyoutpass", (req, res) => {
   );
 });
 
+
+// 🧩 Apply Emergency Outpass (only one per week)
+app.get("/student/applyEmergencyOutpass", async (req, res) => {
+  if (!req.session.user || req.session.role !== "student") {
+    return res.redirect("/login/student");
+  }
+
+  const student_id = req.session.user.student_id;
+
+  // Fetch previous emergency outpasses for display
+  const [rows] = await db.promise().query(
+    "SELECT * FROM outpasses WHERE student_id = ? AND outpass_type = 'Emergency' ORDER BY created_at DESC",
+    [student_id]
+  );
+
+  res.render("student/applyEmergencyOutpass", { outpasses: rows });
+});
+
+app.post("/student/applyEmergencyOutpass", async (req, res) => {
+  if (!req.session.user || req.session.role !== "student") {
+    return res.redirect("/login/student");
+  }
+
+  const { reason, from_date, to_date } = req.body;
+  const student_id = req.session.user.student_id;
+
+  try {
+    // Check if already applied this week
+    const [existing] = await db.promise().query(
+      `SELECT * FROM outpasses 
+       WHERE student_id = ? 
+         AND outpass_type = 'Emergency'
+         AND YEARWEEK(created_at, 1) = YEARWEEK(NOW(), 1)`,
+      [student_id]
+    );
+
+    if (existing.length > 0) {
+      return res.send(`
+        <script>
+          alert("❌ You can only apply one Emergency Outpass per week!");
+          window.location.href = "/student/applyEmergencyOutpass";
+        </script>
+      `);
+    }
+
+    await db
+      .promise()
+      .query(
+        `INSERT INTO outpasses 
+         (student_id, period, reason, out_date, return_date, status, outpass_type)
+         VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        [student_id, "Emergency", reason, from_date, to_date, "Pending", "Emergency"]
+      );
+
+    res.redirect("/student/applyEmergencyOutpass");
+  } catch (err) {
+    console.error("Error applying emergency outpass:", err);
+    res.status(500).send("Error applying emergency outpass");
+  }
+});
+
 // ==========================
 // STUDENT DASHBOARD ROUTES
 // ==========================
@@ -405,102 +632,307 @@ app.get("/student/dashboard", (req, res) => {
   res.render("student/dashboard", { user: req.session.user, session: req.session });
 });
 
-// Student Profile
-app.get("/student/profile", (req, res) => {
-  if (req.session.role !== "student") return res.redirect("/login/student");
+// ============================================
+// ✅ STUDENT PROFILE
+// ============================================
+app.get("/student/profile", async (req, res) => {
+  if (!req.session.user || req.session.role !== "student") 
+    return res.redirect("/login/student");
 
   const student_id = req.session.user.student_id;
-  db.query("SELECT * FROM students WHERE student_id = ?", [student_id], (err, result) => {
-    if (err) return res.send("Error fetching profile: " + err);
-    res.render("student/profile", { student: result[0], session: req.session });
-  });
-});
 
-// Update Profile
-app.post("/student/profile", (req, res) => {
-  if (req.session.role !== "student") return res.redirect("/login/student");
+  try {
+    // 1️⃣ Fetch student
+    const [[student]] = await db.promise().query(
+      "SELECT * FROM students WHERE student_id = ?",
+      [student_id]
+    );
+    if (!student) return res.send("❌ Student not found");
 
-  const student_id = req.session.user.student_id;
-  const { name, email, room_no, course, year } = req.body;
+    const studentYear = parseInt(student.year);
 
-  db.query(
-    "UPDATE students SET name=?, email=?, room_no=?, course=?, year=? WHERE student_id=?",
-    [name, email, room_no, course, year, student_id],
-    (err) => {
-      if (err) {
-        console.error("Error updating profile:", err);
-        return res.send("Error updating profile: " + err);
+    // 2️⃣ Fetch yearly fees up to student year
+    const [yearRows] = await db.promise().query(
+      "SELECT * FROM yearly_fee WHERE year <= ? ORDER BY year ASC",
+      [studentYear]
+    );
+
+    // 3️⃣ Fetch verified receipts for this student
+    const [receipts] = await db.promise().query(
+      "SELECT year, amount_paid, remarks FROM fee_receipts WHERE student_id=? AND status='Verified'",
+      [student_id]
+    );
+
+    // 4️⃣ Map receipts by year & component
+    const paymentMap = {};
+    receipts.forEach(r => {
+      const yr = r.year;
+      if (!paymentMap[yr]) paymentMap[yr] = { 'Room Rent':0, 'Mess Bill1':0, 'Mess Bill2':0, 'Others':0 };
+      
+      let key = r.remarks.trim().toLowerCase();
+      if(key === 'room rent') key = 'Room Rent';
+      else if(key === 'mess bill1') key = 'Mess Bill1';
+      else if(key === 'mess bill2') key = 'Mess Bill2';
+      else key = 'Others';
+
+      paymentMap[yr][key] += parseFloat(r.amount_paid || 0);
+    });
+
+    // 5️⃣ Build fee summary per year
+    const feeSummary = yearRows.map(y => {
+      const room_rent = Number(y.room_rent || 0);
+      const mess_bill1 = Number(y.mess_bill1 || 0);
+      const mess_bill2 = Number(y.mess_bill2 || 0);
+
+      const paid = paymentMap[y.year] || {};
+      const room_rent_paid = Number(paid['Room Rent'] || 0);
+      const mess_bill1_paid = Number(paid['Mess Bill1'] || 0);
+      const mess_bill2_paid = Number(paid['Mess Bill2'] || 0);
+
+      const room_rent_due = Math.max(room_rent - room_rent_paid, 0);
+      const mess_bill1_due = Math.max(mess_bill1 - mess_bill1_paid, 0);
+      const mess_bill2_due = Math.max(mess_bill2 - mess_bill2_paid, 0);
+
+      const total_fee = room_rent + mess_bill1 + mess_bill2;
+      const total_paid = room_rent_paid + mess_bill1_paid + mess_bill2_paid;
+      const total_due = total_fee - total_paid;
+
+      let status = "Not Paid";
+      if (room_rent_paid >= room_rent && 
+          mess_bill1_paid >= mess_bill1 && 
+          mess_bill2_paid >= mess_bill2) {
+        status = "Paid";
+      } else if (room_rent_paid > 0 || mess_bill1_paid > 0 || mess_bill2_paid > 0) {
+        status = "Partial";
       }
 
-      // ✅ Fetch updated data again to show in profile page
-      db.query(
-        "SELECT * FROM students WHERE student_id = ?",
-        [student_id],
-        (err, results) => {
-          if (err) return res.send("Error fetching updated profile: " + err);
+      return {
+        year: y.year,
+        room_rent_paid: room_rent_paid.toFixed(2),
+        room_rent_due: room_rent_due.toFixed(2),
+        mess_bill1_paid: mess_bill1_paid.toFixed(2),
+        mess_bill1_due: mess_bill1_due.toFixed(2),
+        mess_bill2_paid: mess_bill2_paid.toFixed(2),
+        mess_bill2_due: mess_bill2_due.toFixed(2),
+        total_fee: total_fee.toFixed(2),
+        total_paid: total_paid.toFixed(2),
+        total_due: total_due.toFixed(2),
+        status
+      };
+    });
 
-          // Update session also so dashboard shows new info
-          req.session.user = results[0];
+    res.render("student/profile", { student, feeSummary });
 
-          res.render("profile", { student: results[0] });
-        }
-      );
-    }
-  );
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Error loading student profile");
+  }
 });
 
-// Student Attendance
-app.get("/student/viewattendance", (req, res) => {
-  if (req.session.role !== "student") return res.redirect("/login/student");
+
+
+// ============================================
+// ✅ STUDENT UPDATE PROFILE
+// ============================================
+app.post("/student/profile", async (req, res) => {
+  if (!req.session.user || req.session.role !== "student") {
+    return res.redirect("/login/student");
+  }
 
   const student_id = req.session.user.student_id;
-  db.query("SELECT * FROM attendance WHERE student_id = ?", [student_id], (err, results) => {
-    if (err) return res.send("Error fetching attendance: " + err);
-    res.render("student/viewattendance", { attendance: results, session: req.session });
-  });
+  const { name, email, room_no } = req.body;
+
+  try {
+    await db.promise().query(
+      "UPDATE students SET name=?, email=?, room_no=? WHERE student_id=?",
+      [name, email, room_no, student_id]
+    );
+
+    // Refresh session data
+    const [studentRows] = await db.promise().query(
+      "SELECT * FROM students WHERE student_id=?",
+      [student_id]
+    );
+    req.session.user = studentRows[0];
+
+    res.redirect("/student/profile");
+  } catch (err) {
+    console.error("❌ Error updating profile:", err);
+    res.status(500).send("Error updating profile.");
+  }
 });
 
 // Student Fees
 app.get('/student/viewfees', async (req, res) => {
     if (req.session.role !== 'student') return res.redirect('/choose_login');
-
     const student_id = req.session.user.student_id;
 
     try {
-        // Fetch all receipts for this student (including status)
+        // Fetch student info
+        const [[student]] = await db.promise().query(
+            "SELECT * FROM students WHERE student_id = ?",
+            [student_id]
+        );
+        if (!student) return res.send("Student not found");
+
+        // Fetch yearly fees
+        const [yearlyFees] = await db.promise().query(
+            "SELECT * FROM yearly_fee ORDER BY year ASC"
+        );
+
+        // Fetch verified receipts
         const [receipts] = await db.promise().query(
-            "SELECT ref_id, amount_paid, status, created_at FROM fee_receipts WHERE student_id = ? ORDER BY created_at DESC",
-            [student_id]
-        );
+    "SELECT ref_id, year, amount_paid, remarks, status, created_at FROM fee_receipts WHERE student_id=? AND status='Verified' ORDER BY created_at DESC",
+    [student_id]
+);
 
-        // Fetch student's total fee from DB
-        const [studentRows] = await db.promise().query(
-            "SELECT total_fee FROM students WHERE student_id = ?",
-            [student_id]
-        );
+        
 
-        const total_fee = studentRows.length ? parseFloat(studentRows[0].total_fee) : 0;
+        // Map receipts by year & component
+        const paymentMap = {};
+        receipts.forEach(r => {
+            const yr = r.year;
+            if (!paymentMap[yr]) paymentMap[yr] = { 'Room Rent':0, 'Mess Bill1':0, 'Mess Bill2':0, 'Others':0 };
+            
+            let key = r.remarks.trim().toLowerCase();
+            if(key === 'room rent') key = 'Room Rent';
+            else if(key === 'mess bill1') key = 'Mess Bill1';
+            else if(key === 'mess bill2') key = 'Mess Bill2';
+            else key = 'Others';
 
-        // Sum only verified receipts
-        const total_paid = receipts
-            .filter(r => r.status === 'Verified')
-            .reduce((sum, r) => sum + (parseFloat(r.amount_paid) || 0), 0);
+            paymentMap[yr][key] = (paymentMap[yr][key] || 0) + parseFloat(r.amount_paid || 0);
+        });
 
+        // Build fee summary per year
+        const feeSummary = yearlyFees
+            .filter(f => f.year <= student.year)
+            .map(f => {
+                const paid = paymentMap[f.year] || {};
+                const room_rent_paid = paid['Room Rent'] || 0;
+                const mess_bill1_paid = paid['Mess Bill1'] || 0;
+                const mess_bill2_paid = paid['Mess Bill2'] || 0;
+
+                // Use Number(...) and default 0 to avoid NaN
+                const room_rent = Number(f.room_rent || 0);
+                const mess_bill1 = Number(f.mess_bill1 || 0);
+                const mess_bill2 = Number(f.mess_bill2 || 0);
+
+                const room_rent_due = Math.max(room_rent - room_rent_paid, 0);
+                const mess_bill1_due = Math.max(mess_bill1 - mess_bill1_paid, 0);
+                const mess_bill2_due = Math.max(mess_bill2 - mess_bill2_paid, 0);
+
+                const total_fee = room_rent + mess_bill1 + mess_bill2;
+                const total_paid = room_rent_paid + mess_bill1_paid + mess_bill2_paid;
+
+                let status = "Not Paid";
+                if (room_rent_paid >= room_rent &&
+                    mess_bill1_paid >= mess_bill1 &&
+                    mess_bill2_paid >= mess_bill2) {
+                    status = "Paid";
+                } else if (room_rent_paid > 0 || mess_bill1_paid > 0 || mess_bill2_paid > 0) {
+                    status = "Partial";
+                }
+
+                return {
+                    year: f.year,
+                    room_rent_paid: room_rent_paid.toFixed(2),
+                    room_rent_due: room_rent_due.toFixed(2),
+                    mess_bill1_paid: mess_bill1_paid.toFixed(2),
+                    mess_bill1_due: mess_bill1_due.toFixed(2),
+                    mess_bill2_paid: mess_bill2_paid.toFixed(2),
+                    mess_bill2_due: mess_bill2_due.toFixed(2),
+                    total_fee: total_fee.toFixed(2),
+                    total_paid: total_paid.toFixed(2),
+                    total_due: (total_fee - total_paid).toFixed(2),
+                    status
+                };
+            });
+
+        // Calculate totals
+        const total_paid = feeSummary.reduce((sum, f) => sum + parseFloat(f.total_paid), 0);
+        const total_fee = feeSummary.reduce((sum, f) => sum + parseFloat(f.total_fee), 0);
         const remaining_due = total_fee - total_paid;
 
-        res.render('student/viewfees', {
-            receipts,
-            total_paid,
-            remaining_due,
-            total_fee
+        res.render('student/viewfees', { 
+            student, 
+            feeSummary, 
+            total_paid: total_paid.toFixed(2), 
+            remaining_due: remaining_due.toFixed(2),
+            receipts
         });
 
     } catch (err) {
-        console.error("Error loading fee details:", err);
+        console.error("❌ Error loading fee details:", err);
         res.status(500).send("Error loading fee details.");
     }
 });
 
+
+app.post("/student/upload-aadhaar", upload.fields([
+  { name: "student_aadhaar", maxCount: 1 },
+  { name: "father_aadhaar", maxCount: 1 }
+]), async (req, res) => {
+  if (!req.session.user || req.session.role !== "student")
+    return res.status(403).send("Unauthorized");
+
+  const studentId = req.session.user.student_id;
+  const studentFile = req.files["student_aadhaar"] ? req.files["student_aadhaar"][0].filename : null;
+  const fatherFile = req.files["father_aadhaar"] ? req.files["father_aadhaar"][0].filename : null;
+
+  await db.promise().query(
+    "UPDATE students SET student_aadhaar=COALESCE(?, student_aadhaar), father_aadhaar=COALESCE(?, father_aadhaar) WHERE student_id=?",
+    [studentFile, fatherFile, studentId]
+  );
+
+  res.redirect("/student/profile");
+});
+app.get("/student/aadhaar/:type/:studentId", async (req, res) => {
+  const { type, studentId } = req.params;
+  const user = req.session.user;
+
+  // Only student self, warden, admin
+  if (!user || (user.role === "student" && user.student_id !== studentId) && user.role !== "warden" && user.role !== "admin")
+    return res.status(403).send("Unauthorized");
+
+  const [[student]] = await db.promise().query(
+    "SELECT student_aadhaar, father_aadhaar FROM students WHERE student_id=?",
+    [studentId]
+  );
+
+  if (!student) return res.status(404).send("Student not found");
+
+  const fileName = type === "student" ? student.student_aadhaar : student.father_aadhaar;
+  if (!fileName) return res.status(404).send("File not uploaded");
+
+  res.sendFile(path.join(__dirname, "uploads/adhaar", fileName));
+});
+
+app.post("/student/upload-profile", upload.single("profile_image"), async (req, res) => {
+  if (!req.session.user || req.session.role !== "student") return res.redirect("/login/student");
+
+  try {
+    const student_id = req.session.user.student_id;
+    const filename = req.file.filename;
+
+    // Save filename in DB
+    await db.promise().query(
+      "UPDATE students SET profile_image=? WHERE student_id=?",
+      [filename, student_id]
+    );
+
+    // Update session
+    const [studentRows] = await db.promise().query(
+      "SELECT * FROM students WHERE student_id=?",
+      [student_id]
+    );
+    req.session.user = studentRows[0];
+
+    res.redirect("/student/profile");
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Error uploading profile image");
+  }
+});
 
 
 // GET form
@@ -511,58 +943,95 @@ app.get('/student/uploadReceipt', (req, res) => {
 
 // POST upload
 app.post('/student/uploadReceipt', upload.single("sbi_pdf"), async (req, res) => {
-    let conn;
-    try {
-        if (req.session.role !== 'student') return res.redirect('/choose_login');
+  let conn;
+  try {
+    if (req.session.role !== 'student') return res.redirect('/choose_login');
 
-        const student_id = req.session.user.student_id;
-        const { ref_id, amount_paid } = req.body;
+    const student_id = req.session.user.student_id;
+    let { student_unique_id, ref_id, amount_paid, year, remarks } = req.body;
 
-        if (!req.file) return res.send("❌ No PDF uploaded.");
-        const pdf_path = `uploads/receipts/${req.file.filename}`;
+    if (!student_unique_id || !ref_id || !amount_paid || !year || !remarks)
+      return res.send("⚠️ Please fill all required fields.");
 
-        conn = await db.promise().getConnection();
-        await conn.beginTransaction();
+    student_unique_id = student_unique_id.trim().toUpperCase().replace(/\s+/g, "_");
+    ref_id = ref_id.trim();
+    amount_paid = parseFloat(amount_paid);
+    year = parseInt(year);
 
-        // 1️⃣ Verify against SBI transactions
-        const [[match]] = await conn.query(
-            `SELECT * FROM sbi_transactions WHERE TRIM(ref_id)=? AND CAST(amount AS DECIMAL)=? AND status='Pending'`,
-            [ref_id.trim(), parseFloat(amount_paid)]
-        );
+    // Validate student exists
+    const [[student]] = await db.promise().query(
+      "SELECT * FROM students WHERE student_id = ?",
+      [student_id]
+    );
+    if (!student) return res.send("❌ Student not found.");
 
-        if (!match) {
-            await conn.rollback();
-            return res.send("❌ Cannot verify. REF ID or amount not present in the latest SBI upload.");
-        }
+    if (!req.file) return res.send("❌ No PDF uploaded.");
+    const pdf_path = `uploads/sbi/${req.file.filename}`;
 
-        // 2️⃣ Insert fee receipt as Verified
+    conn = await db.promise().getConnection();
+    await conn.beginTransaction();
+
+    // Check SBI transactions
+    const [[txn]] = await conn.query(
+      `SELECT * FROM sbi_transactions 
+       WHERE TRIM(ref_id)=? 
+         AND CAST(amount AS DECIMAL)=? 
+         AND status='Pending'`,
+      [ref_id, amount_paid]
+    );
+
+    // Save receipt as Pending if no matching SBI txn
+    let status = txn ? 'Verified' : 'Pending';
+
+    await conn.query(
+      `INSERT INTO fee_receipts
+       (student_id, student_unique_id, ref_id, amount_paid, pdf_path, year, status, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, NOW())`,
+      [student_id, student_unique_id, ref_id, amount_paid, pdf_path, year, status]
+    );
+
+    // If verified, update student block-wise paid
+    if (status === 'Verified') {
+      let colToUpdate;
+      switch (remarks.toLowerCase()) {
+        case 'room rent': colToUpdate = 'room_rent_paid'; break;
+        case 'mess bill1': colToUpdate = 'mess_bill1_paid'; break;
+        case 'mess bill2': colToUpdate = 'mess_bill2_paid'; break;
+        default: colToUpdate = null;
+      }
+
+      if (colToUpdate) {
+        // Increment component paid
         await conn.query(
-            "INSERT INTO fee_receipts (student_id, ref_id, amount_paid, pdf_path, status, created_at) VALUES (?, ?, ?, ?, 'Verified', NOW())",
-            [student_id, ref_id.trim(), parseFloat(amount_paid), pdf_path]
+          `UPDATE students SET 
+             ${colToUpdate} = IFNULL(${colToUpdate},0) + ?,
+             total_paid = IFNULL(total_paid,0) + ?,
+             remaining_fee = total_fee - (IFNULL(total_paid,0) + ?) 
+           WHERE student_id = ?`,
+          [amount_paid, amount_paid, amount_paid, student_id]
         );
+      }
 
-        // 3️⃣ Update student's total_paid
-        await conn.query(
-            "UPDATE students SET total_paid = total_paid + ? WHERE student_id = ?",
-            [parseFloat(amount_paid), student_id]
-        );
-
-        // 4️⃣ Mark SBI transaction as used
-        await conn.query(
-            "UPDATE sbi_transactions SET status='Verified' WHERE ref_id=?",
-            [ref_id.trim()]
-        );
-
-        await conn.commit();
-        res.send("✅ Receipt verified successfully using official SBI data.");
-
-    } catch (err) {
-        if (conn) await conn.rollback();
-        console.error("❌ Error verifying student receipt:", err);
-        res.status(500).send("Error uploading or verifying receipt: " + err.message);
-    } finally {
-        if (conn) conn.release();
+      // Mark SBI txn as verified
+      await conn.query("UPDATE sbi_transactions SET status='Verified' WHERE ref_id=?", [ref_id]);
     }
+
+    await conn.commit();
+
+    res.send(`
+      ${status === 'Verified' ? '✅ Receipt verified successfully' : '⚠️ Receipt uploaded pending verification'}<br>
+      <b>Academic Year:</b> ${year}<br>
+      <b>Amount Paid:</b> ₹${amount_paid.toFixed(2)}<br>
+      <b>Component Updated:</b> ${remarks}
+    `);
+
+  } catch (err) {
+    if (conn) await conn.rollback();
+    console.error("❌ Error verifying student receipt:", err);
+    res.status(500).send("Error verifying receipt: " + err.message);
+  } finally {
+    if (conn) conn.release();
+  }
 });
 
 
@@ -605,7 +1074,76 @@ app.get("/student/outpasses", (req, res) => {
     }
   );
 });
+// GET - View all complaints submitted by the logged-in student
+app.get('/student/viewComplaints', (req, res) => {
+    if (!req.session.user || req.session.role !== 'student') {
+        return res.redirect('/choose_login');
+    }
 
+    const student_id = req.session.user.student_id;
+
+    const sql = `SELECT * FROM complaints 
+                 WHERE student_id = ? 
+                 ORDER BY created_at DESC`;
+
+    db.query(sql, [student_id], (err, results) => {
+        if (err) {
+            console.error("Error fetching complaints:", err);
+            return res.status(500).send("Database error");
+        }
+
+        res.render('student/viewComplaints', { complaints: results });
+    });
+});
+// POST - Submit a complaint
+app.post('/student/complaint', (req, res) => {
+    if (!req.session.user || req.session.role !== 'student') {
+        return res.redirect('/choose_login');
+    }
+
+    const student_id = req.session.user.student_id;
+    const { subject, description } = req.body;
+
+    const sql = `INSERT INTO complaints (student_id, subject, description, status, created_at)
+                 VALUES (?, ?, ?, 'Pending', NOW())`;
+
+    db.query(sql, [student_id, subject, description], (err, result) => {
+        if (err) {
+            console.error("Error submitting complaint:", err);
+            return res.status(500).send("Database error");
+        }
+
+        res.redirect('/student/viewComplaints');
+    });
+});
+
+// ============================================
+// ✅ STUDENT - VIEW ATTENDANCE
+// ============================================
+app.get("/student/viewattendance", async (req, res) => {
+  if (!req.session.user || req.session.role !== "student") {
+    return res.redirect("/login/student");
+  }
+
+  const student_id = req.session.user.student_id;
+
+  try {
+    // Fetch attendance data for the logged-in student
+    const [attendance] = await db.promise().query(
+      `SELECT date, period, status 
+       FROM attendance 
+       WHERE student_id = ?
+       ORDER BY date DESC`,
+      [student_id]
+    );
+
+    // Render your existing EJS page
+    res.render("student/viewattendance", { attendance });
+  } catch (err) {
+    console.error("❌ Error fetching attendance:", err);
+    res.status(500).send("Error loading attendance records.");
+  }
+});
 
 // =====================================
 // WARDEN ROUTES
@@ -630,106 +1168,657 @@ app.post("/register/warden", (req, res) => {
   });
 });
 
+app.get("/warden/login", (req, res) => {
+  res.render("login_warden"); // make sure you have views/login_warden.ejs
+});
 
 // Warden login
 app.post("/login/warden", (req, res) => {
   const { email, password } = req.body;
+
   db.query("SELECT * FROM wardens WHERE email=?", [email], (err, rows) => {
     if (err) return res.send("DB Error");
     if (!rows.length) return res.send("Invalid Credentials");
 
-    bcrypt.compare(password, rows[0].password).then((match) => {
+    const wardenData = rows[0];
+
+    bcrypt.compare(password, wardenData.password).then((match) => {
       if (!match) return res.send("Invalid Credentials");
-      req.session.user = rows[0];
+
+      // ✅ Save all session info correctly
+      req.session.user = wardenData;
       req.session.role = "warden";
+      req.session.warden = wardenData; // <---- ADD THIS LINE
+      req.session.warden_id = wardenData.warden_id;
+      req.session.warden_name = wardenData.name;
+
       res.redirect("/warden/dashboard");
     });
   });
 });
 
-app.get("/warden/dashboard", (req, res) => {
+
+app.get("/warden/dashboard", async (req, res) => {
   if (req.session.role !== "warden") return res.redirect("/login/warden");
-  res.render("warden/dashboard", { user: req.session.user, session: req.session });
+
+  const wardenName = req.session.warden_name;
+
+  try {
+    // ✅ Count today's approved outpasses by this warden
+    const [approvedToday] = await db.promise().query(
+      `SELECT COUNT(*) AS count 
+       FROM outpasses 
+       WHERE status = 'Approved' 
+         AND accepted_by = ? 
+         AND DATE(approved_at) = CURDATE()`,
+      [wardenName]
+    );
+
+    // ✅ Fetch students whose outpasses were approved by this warden
+    const [studentsWithOutpass] = await db.promise().query(
+      `SELECT s.student_id, s.name, o.status, o.approved_at
+       FROM students s
+       JOIN outpasses o ON s.student_id = o.student_id
+       WHERE o.accepted_by = ?
+       ORDER BY o.approved_at DESC`,
+      [wardenName]
+    );
+
+    // ✅ Render the warden dashboard
+    res.render("warden/dashboard", {
+      user: req.session.user,
+      students: studentsWithOutpass,
+      approvedCount: approvedToday[0]?.count || 0,
+      session: req.session
+    });
+
+  } catch (err) {
+    console.error("❌ Error loading warden dashboard:", err);
+    res.status(500).send("Error loading dashboard");
+  }
 });
 
 
-// Mark attendance
-app.post("/warden/markAttendance", (req, res) => {
-  const date = req.body.date || new Date().toISOString().split('T')[0]; // Use today if date not provided
-  const period = req.body.period || "1"; // Or get from a hidden input if you have period
+// Step 1: Select room and year
+// Example route
+app.get('/warden/markAttendance', async (req, res) => {
+  try {
+    const blocks = ["Old Block", "New Block", "GYM Block", "Amenities"];
+    const roomsByBlock = {};
+
+    // Fetch available rooms per block
+    for (let block of blocks) {
+      const [rows] = await db.promise().query(
+        "SELECT DISTINCT room_no FROM students WHERE block = ? ORDER BY room_no ASC",
+        [block]
+      );
+      roomsByBlock[block] = rows.map(r => r.room_no);
+    }
+
+    // Filters
+    const selectedBlock = req.query.block || '';
+    const selectedYear = req.query.year || '';
+    const selectedRoom = req.query.room_no || '';
+    const rooms = selectedBlock ? roomsByBlock[selectedBlock] : [];
+
+    let students = [];
+
+    // Only fetch if all filters are chosen
+    if (selectedBlock && selectedYear && selectedRoom) {
+      const today = new Date().toISOString().split("T")[0];
+
+      const [rows] = await db.promise().query(`
+        SELECT 
+          s.student_id,
+          s.student_unique_id,
+          s.name,
+          s.room_no,
+          s.block,
+          s.year,
+          s.course,
+          IFNULL(s.total_fee, 0) AS total_fee,
+          IFNULL(s.total_paid, 0) AS total_paid,
+          IFNULL(SUM(CASE WHEN a.status = 'Present' THEN 1 ELSE 0 END), 0) AS present_count,
+          COUNT(a.student_id) AS total_classes,
+          CASE 
+            WHEN EXISTS (
+              SELECT 1 FROM outpasses o
+              WHERE o.student_id = s.student_id
+                AND o.status = 'Approved'
+                AND ? BETWEEN o.out_date AND o.return_date
+            ) THEN 'On Leave'
+            ELSE 'Available'
+          END AS leave_status
+        FROM students s
+        LEFT JOIN attendance a ON s.student_id = a.student_id
+        WHERE s.block = ? AND s.year = ? AND s.room_no = ?
+        GROUP BY s.student_id
+        ORDER BY s.name ASC
+      `, [today, selectedBlock, selectedYear, selectedRoom]);
+
+      // ✅ Wrap attendance & fee safely to prevent undefined access in EJS
+      students = rows.map(stu => ({
+        ...stu,
+        attendanceSummary: {
+          total_classes: stu.total_classes || 0,
+          present_count: stu.present_count || 0
+        },
+        feeSummary: {
+          total_fee: stu.total_fee || 0,
+          total_paid: stu.total_paid || 0
+        }
+      }));
+    }
+
+    // Render page
+    res.render('warden/markAttendance', {
+      blocks,
+      block: selectedBlock,
+      year: selectedYear,
+      room_no: selectedRoom,
+      roomsByBlock,
+      rooms,
+      students
+    });
+
+  } catch (err) {
+    console.error("Error fetching attendance:", err);
+    res.status(500).send("Server Error");
+  }
+});
+
+
+
+
+app.post("/warden/selectRoom", async (req, res) => {
+  try {
+    const { year, room_no } = req.body;
+    console.log("[selectRoom] received year:", year, "room_no:", room_no);
+
+    // ✅ Get only students from selected year & room
+    const [students] = await db.promise().query(
+      "SELECT * FROM students WHERE year = ? AND room_no = ?",
+      [year, room_no]
+    );
+
+    console.log("[selectRoom] SQL returned rows:", students.length);
+
+    // For each student, add current-year fee and attendance summary
+    for (const stu of students) {
+      // Fee for their current year only
+      const [feeRows] = await db.promise().query(`
+        SELECT 
+          yf.year AS year,
+          yf.amount AS total_fee,
+          IFNULL(SUM(fr.amount_paid), 0) AS verified_paid
+        FROM yearly_fee yf
+        LEFT JOIN fee_receipts fr 
+          ON yf.year = fr.year
+          AND fr.student_id = ?
+          AND UPPER(fr.status) = 'VERIFIED'
+        WHERE yf.year = ?
+        GROUP BY yf.year, yf.amount
+      `, [stu.student_id, stu.year]);
+      stu.feeSummary = feeRows[0] || { total_fee: 0, verified_paid: 0 };
+
+      // Attendance summary
+      const [attRows] = await db.promise().query(`
+        SELECT COUNT(*) AS total_classes,
+               SUM(CASE WHEN status='Present' THEN 1 ELSE 0 END) AS present_count
+        FROM attendance
+        WHERE student_id = ?
+      `, [stu.student_id]);
+      stu.attendanceSummary = attRows[0] || { total_classes: 0, present_count: 0 };
+    }
+
+    // ✅ Render one page containing both attendance form + student info
+    res.render("warden/markAttendance", {
+      students,
+      room_no,
+      year,
+    });
+
+  } catch (err) {
+    console.error("❌ Error in selectRoom route:", err);
+    res.status(500).send("Error loading students: " + err.message);
+  }
+});
+
+
+app.post("/mark-attendance", async (req, res) => {
+  const { student_id, date, status } = req.body; // no period needed for one-per-day
+
+  try {
+    // ✅ Check if already marked for that day
+    const [existing] = await db.promise().query(
+      "SELECT * FROM attendance WHERE student_id = ? AND date = ?",
+      [student_id, date]
+    );
+
+    if (existing.length > 0) {
+      // Update the existing record instead of inserting again
+      await db.promise().query(
+        "UPDATE attendance SET status = ? WHERE student_id = ? AND date = ?",
+        [status, student_id, date]
+      );
+      console.log("🟡 Attendance updated for", student_id, date);
+    } else {
+      // Insert new record
+      await db.promise().query(
+        "INSERT INTO attendance (student_id, date, status) VALUES (?, ?, ?)",
+        [student_id, date, status]
+      );
+      console.log("✅ Attendance marked for", student_id, date);
+    }
+
+    res.redirect("/faculty/attendance"); // or wherever your redirect is
+  } catch (err) {
+    console.error("❌ Error marking attendance:", err);
+    res.status(500).send("Error marking attendance");
+  }
+});
+
+// Step 2: Submit attendance
+app.post("/warden/submitAttendance", async (req, res) => {
+  // Check if logged in
+  if (!req.session.warden) {
+    return res.redirect("/warden/dashboard"); // ✅ fixed path
+  }
+
+  const date = new Date().toISOString().split("T")[0];
+  const { year, room_no } = req.body;
+  const marked_by = req.session.warden.warden_id; // ✅ correct key
 
   const attendanceData = [];
 
-  // req.body keys will be like 'attendance_123', 'attendance_124', etc.
   for (let key in req.body) {
     if (key.startsWith("attendance_")) {
-      const student_id = key.split("_")[1]; // get ID from key
+      const student_id = key.split("_")[1];
       const status = req.body[key];
-      attendanceData.push([student_id, date, period, status]);
+      attendanceData.push([student_id, date, room_no, status, marked_by]);
     }
   }
 
-  if (attendanceData.length === 0) return res.send("No attendance data submitted");
+  if (!attendanceData.length) return res.send("⚠️ No attendance marked.");
 
-  // Bulk insert
-  db.query(
-    "INSERT INTO attendance (student_id, date, period, status) VALUES ?",
-    [attendanceData],
-    (err) => {
-      if (err) return res.send("Error Saving Attendance: " + err);
-      res.redirect("/warden/dashboard");
-    }
+  await db.promise().query(
+    "INSERT INTO attendance (student_id, date, period, status, marked_by, created_at) VALUES ?",
+    [attendanceData.map(d => [d[0], date, room_no, d[3], marked_by, new Date()])]
   );
+
+  res.redirect("/warden/markAttendance");
 });
 
 
-// Show Mark Attendance page
-app.get("/warden/markAttendance", (req, res) => {
-  if (req.session.role !== "warden") return res.redirect("/login/warden");
+// View all complaints
+app.get('/warden/complaints', (req, res) => {
+  const query = `
+    SELECT 
+      c.complaint_id, 
+      c.student_id, 
+      s.name AS student_name, 
+      s.room_no,
+      c.subject, 
+      c.description, 
+      c.reply, 
+      c.status, 
+      c.created_at, 
+      c.updated_at
+    FROM complaints c
+    JOIN students s ON c.student_id = s.student_id
+    ORDER BY c.created_at DESC;
+  `;
 
-  db.query("SELECT * FROM students", (err, results) => {
-    if (err) return res.send("Error fetching students: " + err);
-    res.render("warden/markAttendance", { students: results, session: req.session });
+  db.query(query, (err, results) => {
+    if (err) {
+      console.error("Error fetching complaints:", err);
+      return res.status(500).send("Server error while fetching complaints.");
+    }
+
+    // Pass messages as empty object if none
+    res.render('warden/complaints', { complaints: results, messages: {} });
   });
 });
+
+
+// Reply to complaint
+app.post('/warden/complaints/:id/reply', (req, res) => {
+    if (!req.session.user || req.session.role !== 'warden') return res.redirect('/login/warden');
+
+    const complaint_id = req.params.id;
+    const { reply, status } = req.body; // status can be 'Replied' or 'Resolved'
+
+    db.query(
+        "UPDATE complaints SET reply = ?, status = ? WHERE complaint_id = ?",
+        [reply, status, complaint_id],
+        (err) => {
+            if (err) return res.send("Error replying to complaint: " + err);
+            res.redirect('/warden/complaints');
+        }
+    );
+});
+
 
 // Show all outpasses pending approval
 // Show all outpasses pending approval
 app.get("/warden/approveOutpass", (req, res) => {
   if (req.session.role !== "warden") return res.redirect("/login/warden");
 
-  db.query("SELECT * FROM outpasses WHERE status='Pending'", (err, results) => {
+  const query = `
+    SELECT o.*, s.name AS student_name, s.room_no 
+    FROM outpasses o
+    JOIN students s ON o.student_id = s.student_id
+    WHERE o.status='Pending'
+    ORDER BY o.created_at DESC
+  `;
+
+  db.query(query, (err, results) => {
     if (err) return res.send("Error fetching outpasses: " + err);
     res.render("warden/approveOutpass", { outpasses: results, session: req.session });
   });
 });
 
+
 app.post("/warden/approveOutpass/:id/:action", (req, res) => {
   const { id, action } = req.params;
   const status = action === "approve" ? "Approved" : "Rejected";
 
-  db.query("UPDATE outpasses SET status=? WHERE outpass_id=?", [status, id], (err) => {
-    if (err) return res.send("Error Updating Outpass: " + err);
+  // ✅ Fetch warden info from session
+  const acceptedBy = req.session.warden_name || req.session.warden_id || "Unknown Warden";
+  const approvedAt = new Date();
+
+  const query = `
+    UPDATE outpasses
+    SET status = ?, accepted_by = ?, approved_at = ?
+    WHERE outpass_id = ?
+  `;
+
+  db.query(query, [status, acceptedBy, approvedAt, id], (err) => {
+    if (err) {
+      console.error("Error Updating Outpass:", err);
+      return res.send("Error Updating Outpass: " + err);
+    }
     res.redirect("/warden/approveOutpass");
   });
 });
 
 
-
-
-// Show Students list
-app.get("/warden/viewStudents", (req, res) => {
+app.get("/warden/emergencyOutpasses", (req, res) => {
   if (req.session.role !== "warden") return res.redirect("/login/warden");
 
-  db.query("SELECT * FROM students", (err, results) => {
-    if (err) return res.send("Error fetching students: " + err);
-    res.render("warden/viewStudents", { students: results, session: req.session });
+  const query = `
+    SELECT o.*, s.name AS student_name, s.room_no 
+    FROM outpasses o
+    JOIN students s ON o.student_id = s.student_id
+    WHERE o.status='Pending' AND o.outpass_type='Emergency'
+    ORDER BY o.created_at DESC
+  `;
+
+  db.query(query, (err, results) => {
+    if (err) return res.send("Error fetching emergency outpasses: " + err);
+    res.render("warden/approveOutpass", { outpasses: results, session: req.session });
   });
 });
 
+
+// ==================== WARDEN UPLOAD STUDENTS ====================
+
+// ============================================
+// ✅ WARDEN: UPLOAD STUDENTS PAGE
+// ============================================
+app.get("/warden/upload-students", (req, res) => {
+  try {
+    if (!req.session.user || req.session.role !== "warden") {
+      return res.redirect("/choose_login");
+    }
+
+    res.render("warden/upload-students");
+  } catch (err) {
+    console.error("❌ Error loading upload_students page:", err);
+    res.status(500).send("Error loading upload_students page");
+  }
+});
+
+app.post("/warden/upload-students", upload.single("studentsFile"), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.render("warden/upload-students", { success: null, error: "⚠️ Please select a file." });
+    }
+
+    const workbook = xlsx.readFile(req.file.path);
+    const sheetName = workbook.SheetNames[0];
+    const data = xlsx.utils.sheet_to_json(workbook.Sheets[sheetName]);
+
+    let insertedCount = 0;
+
+    for (const student of data) {
+      const {
+        userId,
+        uniqueId,
+        name,
+        email,
+        course,
+        year,
+        mobile_no,         // student mobile
+        father_name,       // father name
+        father_mobile      // father mobile
+      } = student;
+
+      if (!userId || !uniqueId || !name || !email) continue;
+
+      const joinYear = 2000 + parseInt(userId.substring(0, 2));
+
+      // Generate hostel_id automatically
+      const [rows] = await db.promise().query(
+        "SELECT hostel_id FROM students WHERE hostel_id LIKE ? ORDER BY hostel_id DESC LIMIT 1",
+        [`${joinYear}%`]
+      );
+
+      let newHostelId;
+      if (rows.length > 0 && rows[0].hostel_id) {
+        const lastSeq = parseInt(rows[0].hostel_id.substring(4));
+        newHostelId = joinYear + String(lastSeq + 1).padStart(6, "0");
+      } else {
+        newHostelId = joinYear + "000001";
+      }
+
+      const hashedPassword = bcrypt.hashSync(userId.toString(), 10);
+
+      // Insert student
+      await db.promise().query(
+  `INSERT INTO students 
+   (student_id, student_unique_id, name, email, password, hostel_id, 
+    course, year, total_fee, total_paid, created_at, year_of_join, 
+    student_mobile, father_name, father_mobile)
+   VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, 0, NOW(), ?, ?, ?, ?)
+   ON DUPLICATE KEY UPDATE 
+     name = VALUES(name),
+     course = VALUES(course),
+     year = VALUES(year),
+     student_mobile = VALUES(student_mobile),
+     father_name = VALUES(father_name),
+     father_mobile = VALUES(father_mobile)`,
+  [
+    userId,
+    uniqueId,
+    name,
+    email,
+    hashedPassword,
+    newHostelId,
+    course,
+    year,
+    joinYear,
+    mobile_no || null,
+    father_name || null,
+    father_mobile || null
+  ]
+);
+
+
+
+      insertedCount++;
+    }
+
+    res.render("warden/upload-students", {
+      success: `✅ ${insertedCount} students uploaded successfully!`,
+      error: null
+    });
+
+  } catch (err) {
+    console.error(err);
+    res.render("warden/upload-students", {
+      success: null,
+      error: "❌ Error while uploading file."
+    });
+  }
+});
+app.get("/warden/upload_results", (req, res) => {
+  const messages = {};
+
+  if (req.query.success) {
+    messages.success = "✅ Results uploaded and processed successfully!";
+  }
+  if (req.query.error) {
+    messages.error = "❌ Something went wrong while uploading results.";
+  }
+
+  res.render("warden/upload_results", { messages });
+});
+
+
+app.post("/warden/upload_results", async (req, res) => {
+  try {
+    if (!req.files || !req.files.result_pdf) {
+      return res.send("❌ No PDF uploaded");
+    }
+
+    const { year, semester } = req.body;
+    const file = req.files.result_pdf;
+    const folderPath = path.join(__dirname, "uploads", "results");
+
+    if (!fs.existsSync(folderPath)) fs.mkdirSync(folderPath, { recursive: true });
+
+    const filePath = path.join(folderPath, Date.now() + "-" + file.name.replace(/\s+/g, "_"));
+    await file.mv(filePath);
+
+    // Save PDF info in DB
+    await db.promise().query(
+      "INSERT INTO results_pdf (file_path, year, semester, uploaded_by) VALUES (?, ?, ?, ?)",
+      [filePath.replace(__dirname + "/", ""), year, semester, "warden"]
+    );
+
+    // Parse PDF content
+    const pdfBuffer = fs.readFileSync(filePath);
+    const data = await pdfParse(pdfBuffer);
+    const text = data.text;
+
+    const regex = /Reg\.No:\s*(\S+).*?Subjects\s*Failed:\s*(\d+)/gs;
+    let match;
+
+    while ((match = regex.exec(text)) !== null) {
+      const regNo = match[1].trim();
+      const backlogs = parseInt(match[2]);
+      const status = backlogs > 0 ? "Failed" : "Passed";
+
+      const [studentRows] = await db.promise().query(
+        "SELECT student_id FROM students WHERE student_unique_id = ?",
+        [regNo]
+      );
+
+      if (studentRows.length > 0) {
+        const student_id = studentRows[0].student_id;
+
+        const [exists] = await db.promise().query(
+          "SELECT id FROM student_results WHERE student_id = ? AND year = ? AND semester = ?",
+          [student_id, year, semester]
+        );
+
+        if (exists.length > 0) {
+          await db.promise().query(
+            "UPDATE student_results SET total_backlogs=?, status=?, updated_at=CURRENT_TIMESTAMP WHERE student_id=? AND year=? AND semester=?",
+            [backlogs, status, student_id, year, semester]
+          );
+        } else {
+          await db.promise().query(
+            "INSERT INTO student_results (student_id, reg_no, year, semester, total_backlogs, status) VALUES (?, ?, ?, ?, ?, ?)",
+            [student_id, regNo, year, semester, backlogs, status]
+          );
+        }
+
+        await db.promise().query(
+          `UPDATE students 
+           SET remaining_backlogs = (
+             SELECT IFNULL(SUM(total_backlogs), 0)
+             FROM student_results
+             WHERE student_id = ? AND status='Failed'
+           )
+           WHERE student_id = ?`,
+          [student_id, student_id]
+        );
+      }
+    }
+
+    res.redirect("/warden/upload_results?success=1");
+  } catch (err) {
+    console.error("❌ Error uploading results:", err);
+    res.status(500).send("Error processing results PDF");
+  }
+});
+
+app.get("/warden/eligibility", async (req, res) => {
+  try {
+    const [students] = await db.promise().query(`
+      SELECT student_id, student_unique_id, name, year, remaining_backlogs,
+        CASE
+          WHEN remaining_backlogs <= 3 THEN 'Eligible'
+          ELSE 'Not Eligible'
+        END AS room_status
+      FROM students
+    `);
+
+    res.render("warden/eligibility", { students });
+  } catch (err) {
+    console.error("❌ Eligibility Error:", err);
+    res.status(500).send("Database error loading eligibility");
+  }
+});
+
+
+// Show Students list
+// 🔹 View all students (with optional search)
+app.get("/warden/viewStudents", async (req, res) => {
+  if (!req.session.user || req.session.role !== "warden") {
+    return res.redirect("/choose_login");
+  }
+
+  try {
+    const search = req.query.search ? `%${req.query.search}%` : "%%";
+   const [students] = await db.promise().query(
+  `SELECT student_id, name, email, room_no, course, year, total_fee, total_paid, remaining_fee, profile_image
+   FROM students
+   WHERE name LIKE ? OR student_id LIKE ? OR room_no LIKE ?`,
+  [search, search, search]
+);
+
+
+    res.render("warden/viewStudents", {
+      students,
+      search: req.query.search || "",
+      session: req.session
+    });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Error fetching students: " + err.message);
+  }
+});
+
+
 app.post("/warden/markAttendance", (req, res) => {
   const data = req.body;  // all inputs
-  const date = new Date(); // or pick from form
+  const date = new Date();
+   // or pick from form
+   const formattedDate = date.toISOString().slice(0, 19).replace('T', ' '); 
   const period = 1;        // static or from form
 
   const queries = [];
@@ -827,6 +1916,36 @@ app.get("/admin/dashboard", (req, res) => {
     }
     res.render("admin/dashboard", { user: req.session.user, session: req.session });
 });
+app.get('/admin/complaints', (req, res) => {
+  if (!req.session.user || req.session.role !== 'admin') {
+    return res.redirect('/login/admin');
+  }
+
+  const query = "SELECT * FROM complaints ORDER BY complaint_id DESC";
+  db.query(query, (err, results) => {
+    if (err) return res.send("Error fetching complaints: " + err);
+    res.render('admin/admin_complaints', { complaints: results });
+  });
+});
+
+app.post('/admin/complaints/:id/reply', (req, res) => {
+  if (!req.session.user || req.session.role !== 'admin')
+    return res.redirect('/login/admin');
+
+  const complaint_id = req.params.id;
+  const { reply, status } = req.body;
+
+  db.query(
+    "UPDATE complaints SET reply = ?, status = ? WHERE complaint_id = ?",
+    [reply, status, complaint_id],
+    (err) => {
+      if (err) return res.send("Error replying to complaint: " + err);
+      // ✅ Use absolute path here
+      res.redirect('/admin/admin_complaints');
+    }
+  );
+});
+
 
 // ======================
 // ADMIN UPLOAD SBI PDF
@@ -876,6 +1995,182 @@ app.post("/warden/uploadSBI", upload.single("sbi_pdf"), async (req, res) => {
         res.status(500).send("Error processing SBI PDF: " + err.message);
     }
 });
+app.get("/warden/student/:student_id", async (req, res) => {
+  try {
+    if (!req.session.user || req.session.role !== "warden") {
+      return res.redirect("/choose_login");
+    }
+
+    const student_id = req.params.student_id;
+
+    // 1️⃣ Fetch student info
+    const [studentRows] = await db.promise().query(
+  `SELECT student_id, student_unique_id, name, email, room_no, course, year, 
+          total_paid, total_fee, remaining_fee, year_of_join,
+          student_aadhaar, father_aadhaar
+   FROM students WHERE student_id = ?`,
+  [student_id]
+);
+
+    if (!studentRows.length) return res.send("❌ Student not found.");
+    const student = studentRows[0];
+    const studentYear = parseInt(student.year);
+
+    // 2️⃣ Fetch yearly fee components & payments
+    const [rows] = await db.promise().query(
+      `
+      SELECT 
+          CAST(yf.year AS UNSIGNED) AS academic_year,
+          yf.room_rent, yf.mess_bill1, yf.mess_bill2,
+          (yf.room_rent + yf.mess_bill1 + yf.mess_bill2) AS total_fee,
+          IFNULL(SUM(fr.amount_paid), 0) AS paid_amount
+      FROM yearly_fee yf
+      LEFT JOIN fee_receipts fr 
+          ON CAST(yf.year AS UNSIGNED) = CAST(fr.year AS UNSIGNED)
+          AND fr.student_id = ?
+      WHERE CAST(yf.year AS UNSIGNED) <= ?
+      GROUP BY yf.year, yf.room_rent, yf.mess_bill1, yf.mess_bill2
+      ORDER BY yf.year ASC
+      `,
+      [student_id, studentYear]
+    );
+
+    // 3️⃣ Build fee summary
+    const feeSummary = rows.map(row => {
+      const roomRent = parseFloat(row.room_rent || 0);
+      const mess1 = parseFloat(row.mess_bill1 || 0);
+      const mess2 = parseFloat(row.mess_bill2 || 0);
+      const totalFee = parseFloat(row.total_fee || 0);
+      const paid = parseFloat(row.paid_amount || 0);
+      const due = Math.max(totalFee - paid, 0);
+
+      return {
+        academic_year: row.academic_year,
+        room_rent: roomRent.toFixed(2),
+        mess_bill1: mess1.toFixed(2),
+        mess_bill2: mess2.toFixed(2),
+        total_fee: totalFee.toFixed(2),
+        paid_amount: paid.toFixed(2),
+        due_amount: due.toFixed(2),
+      };
+    });
+
+    // 4️⃣ Recalculate totals for student
+    const totalPaid = feeSummary.reduce((s, f) => s + parseFloat(f.paid_amount), 0);
+    const totalFee = feeSummary.reduce((s, f) => s + parseFloat(f.total_fee), 0);
+    const remainingFee = Math.max(totalFee - totalPaid, 0);
+
+    // 5️⃣ Attendance summary
+    const [attendanceRows] = await db.promise().query(
+      `SELECT COUNT(*) AS total_classes,
+              SUM(CASE WHEN status='Present' THEN 1 ELSE 0 END) AS present_count
+       FROM attendance WHERE student_id = ?`,
+      [student_id]
+    );
+    const attendanceSummary = attendanceRows[0] || { total_classes: 0, present_count: 0 };
+
+    // 6️⃣ Render profile page
+    res.render("warden/student_profile", {
+      student,
+      feeSummary,
+      totalPaid,
+      remainingFee,
+      attendanceSummary
+    });
+
+  } catch (err) {
+    console.error("❌ Error fetching student profile:", err);
+    res.status(500).send("Error fetching student profile: " + err.message);
+  }
+});
+
+
+// ✅ WARDEN VIEW STUDENT PROFILE (FINAL FIX)
+app.get("/warden/room/:room_no", async (req, res) => {
+  try {
+    if (!req.session.user || req.session.role !== "warden") {
+      return res.redirect("/choose_login");
+    }
+
+    const { room_no } = req.params;
+
+    // 1️⃣ Get all students in that room
+    const [students] = await db.promise().query(
+      `SELECT student_id, student_unique_id, name, email, course, year, 
+              total_paid, total_fee, remaining_fee, year_of_join
+       FROM students 
+       WHERE room_no = ? 
+       ORDER BY name ASC`,
+      [room_no]
+    );
+
+    if (!students.length) {
+      return res.send("❌ No students found in this room.");
+    }
+
+    // 2️⃣ Build fee + attendance summaries for each student
+    for (let student of students) {
+      // Fee Summary per student (same as your current logic)
+     const [feeRows] = await db.promise().query(`
+  SELECT 
+      yf.year AS academic_year,
+      yf.amount AS total_fee,
+      IFNULL(SUM(CASE WHEN fr.status = 'Verified' THEN fr.amount_paid END), 0) AS verified_amount
+  FROM yearly_fee yf
+  LEFT JOIN fee_receipts fr 
+      ON TRIM(CAST(yf.year AS CHAR)) = TRIM(CAST(fr.year AS CHAR))
+      AND fr.student_id = ?
+  WHERE CAST(yf.year AS UNSIGNED) <= CAST(? AS UNSIGNED)
+  GROUP BY yf.year, yf.amount
+`, [stu.student_id, stu.year]);
+
+
+      // Calculate due + status
+      const feeSummary = feeRows.map(row => {
+        const totalFee = parseFloat(row.total_fee || 0);
+        const verified = parseFloat(row.verified_amount || 0);
+        const uploaded = parseFloat(row.uploaded_amount || 0);
+        const due = totalFee - verified;
+        const status = verified >= totalFee ? "✅ Fully Paid" :
+                       uploaded > 0 ? "⏳ Pending Verification" :
+                       "❌ Not Paid";
+
+        return {
+          academic_year: row.academic_year,
+          total_fee: totalFee.toFixed(2),
+          uploaded_amount: uploaded.toFixed(2),
+          verified_amount: verified.toFixed(2),
+          due_amount: due.toFixed(2),
+          status
+        };
+      });
+
+      student.feeSummary = feeSummary;
+
+      // Attendance summary per student
+      const [attendanceRows] = await db.promise().query(
+        `SELECT COUNT(*) AS total_classes,
+                SUM(CASE WHEN status='Present' THEN 1 ELSE 0 END) AS present_count
+         FROM attendance WHERE student_id = ?`,
+        [student.student_id]
+      );
+
+      const attendanceSummary = attendanceRows[0] || {
+        total_classes: 0,
+        present_count: 0
+      };
+
+      student.attendanceSummary = attendanceSummary;
+    }
+
+    // 3️⃣ Render all students of that room in one page
+    res.render("warden/room_students", { room_no, students });
+
+  } catch (err) {
+    console.error("❌ Error fetching room students:", err);
+    res.status(500).send("Error fetching room students: " + err.message);
+  }
+});
 
 
 // View pending receipts
@@ -903,6 +2198,27 @@ app.get('/admin/viewReceipts', async (req, res) => {
     res.render('admin/viewReceipts', { allReceipts });
 });
 
+// ---------------- ADMIN VIEW ALL OUTPASSES ----------------
+app.get("/admin/viewOutpasses", (req, res) => {
+  if (!req.session.user || req.session.role !== "admin") {
+    return res.redirect("/login/admin");
+  }
+
+  const query = `
+    SELECT o.*, s.name AS student_name, s.room_no, s.course, s.year
+    FROM outpasses o
+    JOIN students s ON o.student_id = s.student_id
+    ORDER BY o.created_at DESC
+  `;
+
+  db.query(query, (err, results) => {
+    if (err) {
+      console.error("Error fetching all outpasses:", err);
+      return res.send("Error fetching all outpasses: " + err);
+    }
+    res.render("admin/viewOutpasses", { outpasses: results, session: req.session });
+  });
+});
 
 // GET form
 app.get("/admin/setFee", (req, res) => {
@@ -931,93 +2247,272 @@ app.post("/admin/setFee", (req, res) => {
         res.send(`Fees of ₹${amount} applied to all ${year} year students.`);
     });
 });
+// GET pending fee receipts
+// GET pending fee receipts
 app.get("/admin/verifyFees", (req, res) => {
-  const sql = "SELECT * FROM fees WHERE status = 'Pending'";
-  db.query(sql, (err, results) => {
-    if (err) {
-      console.error("Error fetching fees:", err);
-      return res.status(500).send("Database error");
-    }
+  if (!req.session.user || req.session.role !== "admin") 
+    return res.redirect("/login/admin");
 
-    // Pass results as receipts to EJS
+  const sql = `
+    SELECT f.receipt_id, f.student_id, s.name, f.ref_id, f.amount_paid, f.year, f.pdf_path, f.status, f.created_at
+    FROM fee_receipts f
+    JOIN students s ON f.student_id = s.student_id
+    WHERE f.status = 'Pending'
+    ORDER BY f.created_at DESC
+  `;
+  db.query(sql, (err, results) => {
+    if (err) return res.status(500).send("Database error: " + err.message);
     res.render("admin/verifyFees", { receipts: results });
   });
 });
 
-
-app.post("/admin/verifyFees/:id", (req, res) => {
-  if (!req.session.user || req.session.role !== "admin") {
+// POST verify or reject a fee receipt
+app.post("/admin/verifyFees/:receipt_id", async (req, res) => {
+  if (!req.session.user || req.session.role !== "admin") 
     return res.redirect("/login/admin");
+
+  const receipt_id = req.params.receipt_id;
+  const { status } = req.body;
+
+  let conn;
+  try {
+    conn = await db.promise().getConnection();
+    await conn.beginTransaction();
+
+    // 1️⃣ Fetch receipt
+    const [rows] = await conn.query("SELECT * FROM fee_receipts WHERE receipt_id=?", [receipt_id]);
+    if (rows.length === 0) {
+      await conn.rollback();
+      return res.send("Fee receipt not found.");
+    }
+    const receipt = rows[0];
+
+    // 2️⃣ If Verified, update student's total_paid and remaining_fee
+    if (status === "Verified") {
+      // Fetch current totals
+      const [[student]] = await conn.query("SELECT total_paid, total_fee FROM students WHERE student_id=?", [receipt.student_id]);
+      if (!student) {
+        await conn.rollback();
+        return res.send("Student not found.");
+      }
+
+      const new_total_paid = parseFloat(student.total_paid) + parseFloat(receipt.amount_paid);
+      const remaining_fee = parseFloat(student.total_fee) - new_total_paid;
+
+      await conn.query(`
+        UPDATE students
+        SET total_paid = ?, remaining_fee = ?
+        WHERE student_id = ?
+      `, [new_total_paid, remaining_fee, receipt.student_id]);
+    }
+
+    // 3️⃣ Update receipt status and verified_at
+    await conn.query("UPDATE fee_receipts SET status=?, verified_at=NOW() WHERE receipt_id=?", [status, receipt_id]);
+
+    await conn.commit();
+    res.redirect("/admin/verifyFees");
+  } catch (err) {
+    if (conn) await conn.rollback();
+    console.error("Error verifying fee:", err);
+    res.status(500).send("Error verifying fee: " + err.message);
+  } finally {
+    if (conn) conn.release();
+  }
+});
+
+app.get("/admin/student/:student_id", async (req, res) => {
+  try {
+    if (!req.session.user || req.session.role !== "admin") {
+      return res.redirect("/choose_login");
+    }
+
+    const student_id = req.params.student_id;
+
+    // Fetch student details
+    const [studentRows] = await db.promise().query(
+      `SELECT student_id, student_unique_id, name, email, room_no, course, year, 
+              total_paid, total_fee, remaining_fee, year_of_join,
+              student_aadhaar, father_aadhaar
+       FROM students WHERE student_id = ?`,
+      [student_id]
+    );
+
+    if (!studentRows.length) return res.send("❌ Student not found.");
+    const student = studentRows[0];
+    const studentYear = parseInt(student.year);
+
+    // Fetch yearly fee + payments
+    const [rows] = await db.promise().query(
+      `
+      SELECT 
+          CAST(yf.year AS UNSIGNED) AS academic_year,
+          yf.room_rent, yf.mess_bill1, yf.mess_bill2,
+          (yf.room_rent + yf.mess_bill1 + yf.mess_bill2) AS total_fee,
+          IFNULL(SUM(fr.amount_paid), 0) AS paid_amount
+      FROM yearly_fee yf
+      LEFT JOIN fee_receipts fr 
+          ON CAST(yf.year AS UNSIGNED) = CAST(fr.year AS UNSIGNED)
+          AND fr.student_id = ?
+      WHERE CAST(yf.year AS UNSIGNED) <= ?
+      GROUP BY yf.year, yf.room_rent, yf.mess_bill1, yf.mess_bill2
+      ORDER BY yf.year ASC
+      `,
+      [student_id, studentYear]
+    );
+
+    const feeSummary = rows.map(row => {
+      const totalFee = parseFloat(row.total_fee || 0);
+      const paid = parseFloat(row.paid_amount || 0);
+      const due = Math.max(totalFee - paid, 0);
+      return {
+        academic_year: row.academic_year,
+        room_rent: parseFloat(row.room_rent || 0).toFixed(2),
+mess_bill1: parseFloat(row.mess_bill1 || 0).toFixed(2),
+mess_bill2: parseFloat(row.mess_bill2 || 0).toFixed(2),
+
+        total_fee: totalFee.toFixed(2),
+        paid_amount: paid.toFixed(2),
+        due_amount: due.toFixed(2),
+      };
+    });
+
+    // Totals
+    const totalPaid = feeSummary.reduce((a, b) => a + parseFloat(b.paid_amount), 0);
+    const totalFee = feeSummary.reduce((a, b) => a + parseFloat(b.total_fee), 0);
+    const remainingFee = Math.max(totalFee - totalPaid, 0);
+
+    // Attendance summary
+    const [attendanceRows] = await db.promise().query(
+      `SELECT COUNT(*) AS total_classes,
+              SUM(CASE WHEN status='Present' THEN 1 ELSE 0 END) AS present_count
+       FROM attendance WHERE student_id = ?`,
+      [student_id]
+    );
+    const attendanceSummary = attendanceRows[0] || { total_classes: 0, present_count: 0 };
+
+    res.render("admin/student_profile", {
+      student,
+      feeSummary,
+      totalPaid,
+      remainingFee,
+      attendanceSummary
+    });
+
+  } catch (err) {
+    console.error("❌ Error fetching student profile (admin):", err);
+    res.status(500).send("Error fetching student profile: " + err.message);
+  }
+});
+
+app.get("/admin/viewStudents", async (req, res) => {
+  if (!req.session.user || req.session.role !== "admin") {
+    return res.redirect("/choose_login");
   }
 
-  const { status } = req.body;
-  const feeId = req.params.id;
+  try {
+    const search = req.query.search ? `%${req.query.search}%` : "%%";
 
-  db.query(
-    "UPDATE fees SET status = ? WHERE id = ?",
-    [status, feeId],
-    (err) => {
-      if (err) {
-        console.error(err);
-        return res.send("Error verifying fee");
-      }
-      res.redirect("/admin/verifyFees");
-    }
-  );
+    const [students] = await db.promise().query(
+      `SELECT student_id, name, email, room_no, course, year, total_fee, total_paid, remaining_fee, profile_image
+       FROM students
+       WHERE name LIKE ? OR student_id LIKE ? OR room_no LIKE ?`,
+      [search, search, search]
+    );
+
+    res.render("admin/viewStudents", {
+      students,
+      search: req.query.search || "",
+      session: req.session
+    });
+
+  } catch (err) {
+    console.error("❌ Error fetching admin student list:", err);
+    res.status(500).send("Error fetching students: " + err.message);
+  }
 });
+
+
 // ========================
 // MANAGE WARDENS
 // ========================
 
-// Show Manage Wardens Page
-app.get("/admin/manageWardens", (req, res) => {
-    const sql = "SELECT * FROM wardens";
-    db.query(sql, (err, results) => {
-        if (err) {
-            console.error("Error fetching wardens:", err);
-            return res.status(500).send("Database error");
-        }
-        res.render("admin/manageWardens", { wardens: results });
+// ===============================
+// ✅ MANAGE WARDENS PAGE
+// ===============================
+app.get("/admin/manageWardens", async (req, res) => {
+  try {
+    // Fetch all wardens only (no hostels table)
+    const [wardens] = await db.promise().query("SELECT * FROM wardens");
+
+    // Render page with wardens and flash messages
+    res.render("admin/manageWardens", {
+      wardens,
+      messages: {
+        success: req.flash("success"),
+        error: req.flash("error")
+      }
     });
+  } catch (err) {
+    console.error("Error fetching wardens:", err);
+    res.status(500).send("Database error");
+  }
 });
 
-// Add Warden
-app.post("/admin/addWarden", (req, res) => {
-    const { name, email, password } = req.body;
 
-    // Hash password before saving (recommended for security)
-    const bcrypt = require("bcrypt");
-    const saltRounds = 10;
+// ===============================
+// ✅ ADD NEW WARDEN (no hostels lookup)
+// ===============================
+app.post("/admin/addWarden", async (req, res) => {
+  try {
+    const { name, email, password, hostel_id } = req.body;
 
-    bcrypt.hash(password, saltRounds, (err, hashedPassword) => {
-        if (err) {
-            console.error("Error hashing password:", err);
-            return res.status(500).send("Error processing request");
-        }
+    if (!name || !email || !password || !hostel_id) {
+      req.flash("error", "All fields are required.");
+      return res.redirect("/admin/manageWardens");
+    }
 
-        const sql = "INSERT INTO wardens (name, email, password) VALUES (?, ?, ?)";
-        db.query(sql, [name, email, hashedPassword], (err) => {
-            if (err) {
-                console.error("Error adding warden:", err);
-                return res.status(500).send("Database error");
-            }
-            res.redirect("/admin/manageWardens");
-        });
-    });
+    const hashedPassword = await bcrypt.hash(password, 10);
+    await db.promise().query(
+      "INSERT INTO wardens (name, email, password, hostel_id, created_at) VALUES (?, ?, ?, ?, NOW())",
+      [name, email, hashedPassword, hostel_id]
+    );
+
+    req.flash("success", "✅ Warden added successfully!");
+    res.redirect("/admin/manageWardens");
+  } catch (err) {
+    console.error("Error adding warden:", err);
+
+    if (err.code === "ER_DUP_ENTRY") {
+      req.flash("error", "⚠️ Email already exists!");
+      return res.redirect("/admin/manageWardens");
+    }
+
+    req.flash("error", "❌ Database error. Please try again.");
+    res.redirect("/admin/manageWardens");
+  }
 });
 
-// Delete Warden
-app.get("/admin/deleteWarden/:id", (req, res) => {
-    const { id } = req.params;
-    const sql = "DELETE FROM wardens WHERE id = ?";
-    db.query(sql, [id], (err) => {
-        if (err) {
-            console.error("Error deleting warden:", err);
-            return res.status(500).send("Database error");
-        }
-        res.redirect("/admin/manageWardens");
-    });
+
+// ===============================
+// ✅ DELETE WARDEN
+// ===============================
+app.post("/admin/deleteWarden/:id", async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    await db.promise().query("DELETE FROM wardens WHERE warden_id = ?", [id]);
+    req.flash("success", "🗑️ Warden deleted successfully!");
+    res.redirect("/admin/manageWardens");
+  } catch (err) {
+    console.error("Error deleting warden:", err);
+    req.flash("error", "❌ Failed to delete warden. Please try again.");
+    res.redirect("/admin/manageWardens");
+  }
 });
+
+
+
+
 // Render the upload SBI page
 app.get("/admin/uploadSBI", (req, res) => {
     if (!req.session.user || req.session.role !== "admin") {
@@ -1037,96 +2532,175 @@ let lastUploadedAmounts = {};       // map REF_ID -> amount
 // Upload SBI PDF or Excel
 app.post("/admin/uploadSBI", upload.single("sbi_pdf"), async (req, res) => {
   try {
-    if (!req.session.user || req.session.role !== "admin")
-      return res.redirect("/choose_login");
-
+    if (!req.session.user || req.session.role !== "admin") return res.redirect("/choose_login");
     if (!req.file) return res.send("❌ No file uploaded!");
 
     const filePath = req.file.path;
     const ext = path.extname(req.file.originalname).toLowerCase();
-    let insertedCount = 0;
+    let sbiTransactions = [];
 
     if (ext === ".xls" || ext === ".xlsx") {
       const workbook = XLSX.readFile(filePath);
       const sheet = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { defval: "" });
 
-      if (!sheet.length) {
-        console.log("⚠️ Excel file is empty or invalid format");
-        return res.send("⚠️ Excel file has no data.");
-      }
-
-      console.log("🧾 Columns in Excel:", Object.keys(sheet[0]));
-      console.log("📄 Sample first row:", sheet[0]);
-
-      for (const row of sheet) {
-        // ✅ Extract REF ID and Amount from correct columns
+      sheet.forEach(row => {
         const ref_id = (row["Bank Reference No"] || "").toString().trim();
         const amount = parseFloat(row["Amount"] || 0);
-
-        if (ref_id && !isNaN(amount)) {
-          await db
-            .promise()
-            .query(
-              `INSERT INTO sbi_transactions (ref_id, amount, uploaded_at)
-               VALUES (?, ?, NOW())
-               ON DUPLICATE KEY UPDATE amount=?, uploaded_at=NOW()`,
-              [ref_id, amount, amount]
-            );
-          insertedCount++;
-        }
-      }
+        if (ref_id && !isNaN(amount)) sbiTransactions.push({ ref_id, amount });
+      });
     }
 
-    fs.unlinkSync(filePath);
-    res.send(`✅ SBI file processed successfully. ${insertedCount} transaction(s) added/updated.`);
+    fs.unlinkSync(filePath); // delete uploaded file after reading
+
+    // ====== HERE: Automatic block-wise verification ======
+    for (const txn of sbiTransactions) {
+      const { ref_id, amount } = txn;
+
+      const [[student]] = await db.promise().query(
+        "SELECT * FROM students WHERE student_unique_id = ?",
+        [ref_id]
+      );
+      if (!student) continue;
+
+      const year = parseInt(student.year); // optional: can use txn.year if present
+      const [[fee]] = await db.promise().query(
+        "SELECT * FROM yearly_fee WHERE year = ?",
+        [year]
+      );
+      if (!fee) continue;
+
+      const room_due = fee.room_rent - (student.room_rent_paid || 0);
+      const mess1_due = fee.mess_bill1 - (student.mess_bill1_paid || 0);
+      const mess2_due = fee.mess_bill2 - (student.mess_bill2_paid || 0);
+
+      if (Math.abs(amount - room_due) < 0.01) {
+        await db.promise().query(
+          "UPDATE students SET room_rent_paid = IFNULL(room_rent_paid,0) + ?, total_paid=IFNULL(total_paid,0)+?, remaining_fee=total_fee-IFNULL(total_paid,0) WHERE student_id=?",
+          [amount, amount, student.student_id]
+        );
+      } else if (Math.abs(amount - mess1_due) < 0.01) {
+        await db.promise().query(
+          "UPDATE students SET mess_bill1_paid = IFNULL(mess_bill1_paid,0) + ?, total_paid=IFNULL(total_paid,0)+?, remaining_fee=total_fee-IFNULL(total_paid,0) WHERE student_id=?",
+          [amount, amount, student.student_id]
+        );
+      } else if (Math.abs(amount - mess2_due) < 0.01) {
+        await db.promise().query(
+          "UPDATE students SET mess_bill2_paid = IFNULL(mess_bill2_paid,0) + ?, total_paid=IFNULL(total_paid,0)+?, remaining_fee=total_fee-IFNULL(total_paid,0) WHERE student_id=?",
+          [amount, amount, student.student_id]
+        );
+      } else {
+        await db.promise().query(
+          `INSERT INTO fee_receipts (student_id, ref_id, amount_paid, status, created_at)
+           VALUES (?, ?, ?, 'Pending', NOW())`,
+          [student.student_id, ref_id, amount]
+        );
+      }
+
+      // Mark SBI transaction as verified
+      await db.promise().query("UPDATE sbi_transactions SET status='Verified' WHERE ref_id=?", [ref_id]);
+    }
+
+    res.send(`✅ SBI transactions processed successfully.`);
+
   } catch (err) {
     console.error("SBI Upload Error:", err);
     res.status(500).send("Error processing SBI file: " + err.message);
   }
 });
 
+
 // Manual verify button
-app.post("/admin/verifyReceipt", async (req, res) => {
+app.get('/admin/acceptedReceipts', async (req, res) => {
+  if (req.session.role !== 'admin') return res.redirect('/choose_login');
+
   try {
-    const { receipt_id } = req.body;
+    // fetch receipts whose status is 'Verified' or 'Accepted'
+    const [accepted] = await db.promise().query(`
+      SELECT fr.*, s.name, s.student_unique_id
+      FROM fee_receipts fr
+      JOIN students s ON fr.student_id = s.student_id
+      WHERE fr.status IN ('Verified', 'Accepted')
+      ORDER BY fr.verified_at DESC
+    `);
 
-    const [[receipt]] = await db
-      .promise()
-      .query("SELECT ref_id, amount_paid FROM fee_receipts WHERE receipt_id=?", [
-        receipt_id,
-      ]);
-
-    if (!receipt) return res.status(404).send("Receipt not found");
-
-    const { ref_id, amount_paid } = receipt;
-
-    // ✅ Verify directly using SBI table (not memory)
-    const [[sbiMatch]] = await db
-      .promise()
-      .query(
-        "SELECT * FROM sbi_transactions WHERE ref_id=? AND amount=?",
-        [ref_id, amount_paid]
-      );
-
-    if (!sbiMatch) {
-      return res.send(
-        "❌ Cannot verify. REF ID or amount not present in latest SBI upload."
-      );
-    }
-
-    await db
-      .promise()
-      .query(
-        "UPDATE fee_receipts SET status='Verified', verified_by=?, verified_at=NOW() WHERE receipt_id=?",
-        [req.session.user.id, receipt_id]
-      );
-
-    res.redirect("/admin/pendingReceipts");
+    res.render('admin/acceptedReceipts', { accepted });
   } catch (err) {
-    console.error("Verify error:", err);
-    res.status(500).send("Error verifying receipt: " + err.message);
+    console.error("Error fetching accepted receipts:", err);
+    res.status(500).send("Database error: " + err.message);
   }
 });
+
+app.get("/admin/yearlyFees", async (req, res) => {
+  if (!req.session.user || req.session.role !== "admin") {
+    return res.redirect("/login/admin");
+  }
+
+  try {
+    const [rows] = await db.promise().query("SELECT * FROM yearly_fee ORDER BY year ASC");
+    res.render("admin/yearlyFees", { fees: rows });
+  } catch (err) {
+    console.error("Error fetching yearly fees:", err);
+    res.status(500).send("Database error");
+  }
+});
+app.post("/admin/yearlyFees", async (req, res) => {
+  if (!req.session.user || req.session.role !== "admin") return res.redirect("/login/admin");
+
+  const { year, room_rent, mess_bill1, mess_bill2 } = req.body;
+
+  try {
+    await db.promise().query(
+      `INSERT INTO yearly_fee (year, room_rent, mess_bill1, mess_bill2, amount)
+       VALUES (?, ?, ?, ?, ?)
+       ON DUPLICATE KEY UPDATE
+       room_rent=VALUES(room_rent),
+       mess_bill1=VALUES(mess_bill1),
+       mess_bill2=VALUES(mess_bill2),
+       amount=VALUES(amount)`,
+      [parseInt(year),
+       parseFloat(room_rent),
+       parseFloat(mess_bill1),
+       parseFloat(mess_bill2),
+       parseFloat(room_rent) + parseFloat(mess_bill1) + parseFloat(mess_bill2)]
+    );
+
+    res.redirect("/admin/yearlyFees");
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Database error");
+  }
+});
+
+// ====================== ADMIN COMPLAINTS PAGE ======================
+app.get('/admin/admin_complaints', (req, res) => {
+  const query = `
+    SELECT 
+      c.complaint_id, 
+      c.student_id, 
+      s.name AS student_name, 
+      s.room_no,
+      c.subject, 
+      c.description, 
+      c.reply, 
+      c.status, 
+      c.created_at, 
+      c.updated_at
+    FROM complaints c
+    JOIN students s ON c.student_id = s.student_id
+    ORDER BY c.created_at DESC;
+  `;
+
+  db.query(query, (err, results) => {
+    if (err) {
+      console.error("Error fetching complaints:", err);
+      return res.status(500).send("Server error while fetching complaints.");
+    }
+
+    // Render EJS from views/admin/admin_complaints.ejs
+    res.render('admin/admin_complaints', { complaints: results, user: req.session.user });
+  });
+});
+
 
 
 // =====================================
@@ -1185,20 +2759,66 @@ app.post("/login/security", (req, res) => {
 });
 
 
-app.get("/security/dashboard", (req, res) => {
-  if (req.session.role !== "security") return res.redirect("/login/security");
-  res.render("security/dashboard", { user: req.session.user, session: req.session });
+app.get("/security/dashboard", async (req, res) => {
+  try {
+    if (req.session.role !== "security") return res.redirect("/login/security");
+
+    const roomQuery = req.query.room_no || "";
+    const today = new Date().toISOString().split("T")[0];
+
+    // ✅ Base SQL with JOIN to students
+    let sql = `
+      SELECT 
+        o.outpass_id, 
+        o.student_id, 
+        s.name, 
+        s.room_no,
+        o.status, 
+        o.accepted_by, 
+        o.approved_at
+      FROM outpasses o
+      JOIN students s ON o.student_id = s.student_id
+      WHERE DATE(o.approved_at) = ?
+    `;
+
+    const params = [today];
+
+    // ✅ Filter by room number if provided
+    if (roomQuery.trim() !== "") {
+      sql += " AND s.room_no = ?";
+      params.push(roomQuery.trim());
+    }
+
+    sql += " ORDER BY o.approved_at DESC";
+
+    const [outpasses] = await db.promise().query(sql, params);
+
+    res.render("security/dashboard", {
+      user: req.session.user,
+      session: req.session,
+      outpasses,
+      roomQuery
+    });
+  } catch (err) {
+    console.error("❌ Error loading security dashboard:", err);
+    res.status(500).send("Error loading security dashboard: " + err.message);
+  }
 });
+
 /// View outpasses
 app.get("/security/viewOutpasses", (req, res) => {
     if (!req.session.user || req.session.role !== "security") {
         return res.redirect("/login/security");
     }
 
-    db.query("SELECT * FROM outpasses ORDER BY out_date DESC", (err, results) => {
-        if (err) return res.send("Error fetching outpasses: " + err);
-        res.render("security/viewOutpasses", { outpasses: results, session: req.session });
-    });
+    db.query(
+  "SELECT * FROM outpasses WHERE status='Approved' ORDER BY out_date DESC",
+  (err, results) => {
+    if (err) return res.send("Error fetching outpasses: " + err);
+    res.render("security/viewOutpasses", { outpasses: results, session: req.session });
+  }
+);
+
 });
 
 // Mark Exit
@@ -1220,8 +2840,58 @@ app.get("/security/markReturn/:id", (req, res) => {
         res.redirect("/security/viewOutpasses");
     });
 });
+app.get("/security/todayOutpasses", async (req, res) => {
+  if (!req.session.user || req.session.role !== "security") {
+    return res.redirect("/login/security");
+  }
 
+  try {
+    const [rows] = await db.promise().query(
+      `SELECT o.*, s.name AS student_name, s.room_no
+       FROM outpasses o
+       JOIN students s ON o.student_id = s.student_id
+       WHERE DATE(o.updated_at) = CURDATE()
+       ORDER BY o.updated_at DESC`
+    );
 
+    res.render("security/todayOutpasses", { outpasses: rows });
+  } catch (err) {
+    console.error("Error fetching today's outpasses:", err);
+    res.status(500).send("Error loading today's outpasses");
+  }
+});
+
+app.get("/security/searchByRoom", async (req, res) => {
+  if (!req.session.user || req.session.role !== "security") {
+    return res.redirect("/login/security");
+  }
+
+  const { room_no } = req.query;
+
+  try {
+    const [rows] = await db.promise().query(
+      `SELECT o.*, s.name AS student_name, s.room_no
+       FROM outpasses o
+       JOIN students s ON o.student_id = s.student_id
+       WHERE DATE(o.updated_at) = CURDATE()
+         AND s.room_no = ?
+       ORDER BY o.updated_at DESC`,
+      [room_no]
+    );
+
+    res.render("security/todayOutpasses", { outpasses: rows });
+  } catch (err) {
+    console.error("Error searching outpasses:", err);
+    res.status(500).send("Error searching outpasses");
+  }
+});
+
+app.get("/security/emergencyOutpasses", async (req, res) => {
+  const [rows] = await db.promise().query(
+    "SELECT * FROM outpasses WHERE outpass_type='Emergency' AND status='Approved' ORDER BY created_at DESC"
+  );
+  res.render("security/emergencyOutpasses", { outpasses: rows });
+});
 
 // =====================================
 // START SERVER
