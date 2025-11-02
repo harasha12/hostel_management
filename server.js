@@ -1,6 +1,3 @@
-
-// ================================
-// FILE UPLOAD CONFIGURATION
 // ================================
 const express = require("express");
 const mysql = require("mysql2");
@@ -144,10 +141,11 @@ app.use((req, res, next) => {
 
 // ===== MySQL Connection =====
 const db = mysql.createPool({
-    host: 'localhost',
-    user: 'root',
-    password: 'Phani@2005$',
-    database: 'hostel_management',
+    host: 'hopper.proxy.rlwy.net',   // Railway host
+    user: 'root',                     // Railway username
+    password: 'NsQUjQuHuvHTtLEtpnKmRwaNUuySXKoj',     // Railway password
+    database: 'railway',              // Railway database name
+    port: 43366,                      // Railway port
     waitForConnections: true,
     connectionLimit: 10,
     queueLimit: 0
@@ -534,7 +532,7 @@ app.get("/student/applyoutpass", (req, res) => {
   if (!req.session.user || req.session.role !== "student") {
     return res.redirect("/login/student");
   }
-  res.render("student/applyOutpass");
+  res.render("student/applyoutpass");
 });
 
 // Handle Apply Outpass form submission
@@ -2898,3 +2896,5 @@ app.get("/security/emergencyOutpasses", async (req, res) => {
 // START SERVER
 // =====================================
 app.listen(3000, () => console.log("🚀 Server running on http://localhost:3000"));
+
+
