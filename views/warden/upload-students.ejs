@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -66,72 +66,4 @@
   </div>
 </body>
 </html>
-=======
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Warden - Upload Students</title>
-  <link rel="stylesheet" href="/css/style.css">
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f2f2f2;
-      padding: 40px;
-    }
-    .container {
-      background: white;
-      max-width: 600px;
-      margin: auto;
-      padding: 30px;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    }
-    h2 { text-align: center; }
-    input[type=file], button {
-      width: 100%;
-      padding: 10px;
-      margin-top: 10px;
-    }
-    button {
-      background: #3498db;
-      border: none;
-      color: white;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-    button:hover { background: #2980b9; }
-    .message {
-      text-align: center;
-      margin-bottom: 10px;
-      font-weight: bold;
-    }
-    .success { color: green; }
-    .error { color: red; }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <h2>📁 Upload Student Details</h2>
 
-    <% if (typeof success !== "undefined" && success) { %>
-  <p class="message success"><%= success %></p>
-<% } %>
-<% if (typeof error !== "undefined" && error) { %>
-  <p class="message error"><%= error %></p>
-<% } %>
-
-
-    <form action="/warden/upload-students" method="POST" enctype="multipart/form-data">
-      <label>Select Excel or CSV File:</label>
-      <input type="file" name="studentsFile" accept=".xlsx,.csv" required>
-      <button type="submit">Upload</button>
-    </form>
-
-    <p style="text-align:center; margin-top:20px;">
-      <a href="/warden/dashboard">⬅ Back to Dashboard</a>
-    </p>
-  </div>
-</body>
-</html>
->>>>>>> 5deacb7d32ce0bc057ab3ee486e159913ed1d163
