@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -45,51 +45,4 @@
   <%- include('../partials/footer') %>
 </body>
 </html>
-=======
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Emergency Outpass</title>
-  <link rel="stylesheet" href="/css/style.css">
-</head>
-<body>
-  <%- include('../partials/header') %>
 
-  <div class="container">
-    <h2>Emergency Outpass Application</h2>
-
-    <form action="/student/applyEmergencyOutpass" method="POST" class="outpass-form">
-      <label>Reason:</label>
-      <textarea name="reason" required></textarea>
-
-      <label>Out Date:</label>
-      <input type="date" name="from_date" required>
-
-      <label>Return Date:</label>
-      <input type="date" name="to_date" required>
-
-      <button type="submit" class="btn">Apply Emergency Outpass</button>
-    </form>
-
-    <h3>Your Emergency Requests</h3>
-    <table border="1">
-      <tr>
-        <th>Reason</th><th>Out Date</th><th>Return Date</th><th>Status</th><th>Applied On</th>
-      </tr>
-      <% outpasses.forEach(o => { %>
-      <tr>
-        <td><%= o.reason %></td>
-        <td><%= o.out_date %></td>
-        <td><%= o.return_date %></td>
-        <td><%= o.status %></td>
-        <td><%= new Date(o.created_at).toLocaleString() %></td>
-      </tr>
-      <% }) %>
-    </table>
-  </div>
-
-  <%- include('../partials/footer') %>
-</body>
-</html>
->>>>>>> 5deacb7d32ce0bc057ab3ee486e159913ed1d163
