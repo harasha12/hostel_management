@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 <%- include('../partials/header') %>
 
 <div class="container">
@@ -50,56 +50,4 @@
   .exited { color: blue; font-weight: bold; }
   .returned { color: purple; font-weight: bold; }
 </style>
-=======
-<%- include('../partials/header') %>
 
-<div class="container">
-  <h2>All Outpasses</h2>
-  <table class="outpass-table">
-    <thead>
-      <tr>
-        <th>ID</th>
-        <th>Student</th>
-        <th>Room</th>
-        <th>Course</th>
-        <th>Year</th>
-        <th>Out Date</th>
-        <th>Return Date</th>
-        <th>Status</th>
-        <th>Approved By</th>
-      </tr>
-    </thead>
-    <tbody>
-      <% if (outpasses.length === 0) { %>
-        <tr><td colspan="9">No Outpasses Found</td></tr>
-      <% } else { %>
-        <% outpasses.forEach(o => { %>
-          <tr>
-            <td><%= o.outpass_id %></td>
-            <td><%= o.student_name %></td>
-            <td><%= o.room_no %></td>
-            <td><%= o.course %></td>
-            <td><%= o.year %></td>
-            <td><%= o.out_date.toLocaleDateString() %></td>
-            <td><%= o.return_date.toLocaleDateString() %></td>
-            <td class="<%= o.status.toLowerCase() %>"><%= o.status %></td>
-            <td><%= o.accepted_by || '—' %></td>
-          </tr>
-        <% }); %>
-      <% } %>
-    </tbody>
-  </table>
-</div>
-
-<style>
-  .container { padding: 20px; background: #f9f9f9; border-radius: 8px; }
-  .outpass-table { width: 100%; border-collapse: collapse; background: #fff; }
-  .outpass-table th, .outpass-table td { border: 1px solid #ddd; padding: 8px; text-align: center; }
-  .outpass-table th { background: #4CAF50; color: white; }
-  .pending { color: orange; font-weight: bold; }
-  .approved { color: green; font-weight: bold; }
-  .rejected { color: red; font-weight: bold; }
-  .exited { color: blue; font-weight: bold; }
-  .returned { color: purple; font-weight: bold; }
-</style>
->>>>>>> 5deacb7d32ce0bc057ab3ee486e159913ed1d163
