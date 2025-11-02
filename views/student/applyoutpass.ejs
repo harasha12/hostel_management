@@ -1,26 +1,103 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Apply Outpass</title>
-    <link rel="stylesheet" href="/css/style.css">
+  <meta charset="UTF-8">
+  <title>Apply Outpass | Student Portal</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    body {
+      font-family: "Poppins", sans-serif;
+      background: linear-gradient(135deg, #1b2235, #2a3550);
+      color: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+    }
+
+    .outpass-container {
+      background: #ffffff15;
+      backdrop-filter: blur(10px);
+      padding: 30px 40px;
+      border-radius: 16px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.3);
+      width: 400px;
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 25px;
+      color: #ffd54f;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 16px;
+      border: none;
+      border-radius: 8px;
+      font-size: 15px;
+      outline: none;
+    }
+
+    input[type="date"], select {
+      background: #fff;
+    }
+
+    textarea {
+      resize: none;
+      height: 70px;
+    }
+
+    button {
+      background: #ffc107;
+      color: #1b2235;
+      font-weight: 700;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 15px;
+      cursor: pointer;
+      width: 100%;
+      transition: all 0.2s;
+    }
+
+    button:hover {
+      background: #ffca28;
+      transform: scale(1.05);
+    }
+  </style>
 </head>
 <body>
+
+  <div class="outpass-container">
     <h2>Apply for Outpass</h2>
-    <form action="/student/applyoutpass" method="POST">
-        <label>Period:</label><br>
-        <input type="text" name="period" required><br>
-        <label>From Date:</label>
-<input type="date" name="from_date" required>
+    <form action="/student/applyOutpass" method="POST">
+      <label>Reason:</label>
+      <textarea name="reason" placeholder="Enter reason for outpass..." required></textarea>
 
-<label>To Date:</label>
-<input type="date" name="to_date" required>
+      <label>Outpass Type:</label>
+      <select name="type" required>
+        <option value="">-- Select Type --</option>
+        <option value="Normal">Normal</option>
+        <option value="Emergency">Emergency</option>
+      </select>
 
-<label>Reason:</label>
-<textarea name="reason" required></textarea>
+      <label>Leave Start Date:</label>
+      <input type="date" name="leave_start" required>
 
-        <button type="submit">Submit Outpass</button>
-        <a href="/student/dashboard" class="back-btn">⬅ Back to Dashboard</a>
+      <label>Leave End Date:</label>
+      <input type="date" name="leave_end" required>
 
+      <button type="submit">Submit Outpass</button>
     </form>
+  </div>
+
 </body>
 </html>
