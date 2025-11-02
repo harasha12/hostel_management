@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Select Room for Attendance</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <%- include('../partials/header') %>
+
+  <div class="container">
+    <h2>📋 Mark Attendance by Room</h2>
+
+    <form action="/warden/selectRoom" method="POST">
+      <label for="year">Select Year:</label>
+      <select name="year" required>
+        <option value="">--Select Year--</option>
+        <option value="1">1st Year</option>
+        <option value="2">2nd Year</option>
+        <option value="3">3rd Year</option>
+        <option value="4">4th Year</option>
+      </select>
+
+      <label for="room_no">Select Room No:</label>
+      <select name="room_no" required>
+        <% rooms.forEach(room => { %>
+          <option value="<%= room.room_no %>"><%= room.room_no %></option>
+        <% }) %>
+      </select>
+
+      <button type="submit">Next</button>
+    </form>
+
+    <a href="/warden/dashboard" class="back-link">Back to Dashboard</a>
+  </div>
+
+  <%- include('../partials/footer') %>
+</body>
+</html>

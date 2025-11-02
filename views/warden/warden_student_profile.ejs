@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>CRR Boys Hostel | Student Profile</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;900&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        /* General page styling to mimic a backend context */
+        body {
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            background: #182235; /* Dark background to match previous context */
+            padding-top: 50px;
+            min-height: 100vh;
+        }
+
+        /* --- Custom Profile Styles --- */
+        .profile-container {
+            max-width: 520px;
+            margin: 56px auto 36px auto;
+            background: #f8f9fa;
+            border-radius: 16px;
+            box-shadow: 0 12px 40px #22304c22, 0 1.5px 3px #0001;
+            padding: 38px 28px 34px 28px;
+        }
+        .profile-heading {
+            font-family: 'Montserrat', 'Georgia', serif;
+            text-align: center;
+            font-weight: 900;
+            color: #1b243b;
+            font-size: 1.85em;
+            background: linear-gradient(90deg, #f3f5fd 75%, #fffbe8 100%);
+            border-bottom: 3px solid #ffc107;
+            padding-bottom: 10px;
+            margin-bottom: 24px;
+            border-radius: 8px 8px 0 0;
+            letter-spacing: 1px;
+        }
+        .profile-table {
+            width: 100%;
+            border-spacing: 0;
+            border-collapse: separate;
+            margin: 0 auto 19px auto;
+            background: #fff;
+            font-size: 1.08em;
+            border-radius: 12px;
+            box-shadow: 0 2px 32px #18223517;
+            overflow: hidden;
+        }
+        .profile-table th, .profile-table td {
+            padding: 12px 20px;
+            text-align: left;
+        }
+        .profile-table th {
+            background: #ffc10733;
+            color: #22304c;
+            font-weight: 700;
+            width: 46%;
+            letter-spacing: 0.5px;
+            border-right: 1px solid #ffe082;
+            font-family: 'Montserrat', sans-serif;
+        }
+        .profile-table td {
+            background: #fff;
+            color: #222;
+            font-family: 'Roboto', sans-serif;
+            font-weight: 500;
+            border-bottom: 1px solid #eee;
+        }
+        .profile-table tr:last-child td {
+            border-bottom: none;
+        }
+        .profile-table tr:hover td {
+            background: #ffe08230;
+            transition: background 0.2s;
+        }
+        .profile-back-link {
+            display: block;
+            margin: 25px auto 0 auto;
+            font-size: 1.09em;
+            font-weight: 600;
+            text-align: center;
+            color: #22304c;
+            background: #ffe08236;
+            border-radius: 8px;
+            padding: 9px 0;
+            max-width: 270px;
+            text-decoration: none;
+            letter-spacing: 0.8px;
+            transition: background 0.13s, transform 0.13s, color 0.15s;
+        }
+        .profile-back-link:hover {
+            background: #ffe08296;
+            color: #b8950f;
+            transform: scale(1.07);
+        }
+        @media (max-width: 650px) {
+            .profile-container { 
+                padding: 14px 2vw; 
+                margin-top: 20px;
+                margin-left: 10px;
+                margin-right: 10px;
+            }
+            .profile-heading { 
+                font-size: 1.5em; 
+                border-bottom-width:2px; 
+            }
+            .profile-table th, .profile-table td { 
+                font-size: 0.9em; 
+                padding: 8px 10px; 
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- The new profile structure -->
+    <div class="profile-container">
+        <h2 class="profile-heading">Student Profile</h2>
+        <table class="profile-table">
+            <tr><th>Name</th><td><%= student.name %></td></tr>
+            <tr><th>Student ID</th><td><%= student.student_id %></td></tr>
+            <tr><th>Unique ID</th><td><%= student.student_unique_id %></td></tr>
+            <tr><th>Email</th><td><%= student.email %></td></tr>
+            <tr><th>Room Number</th><td><%= student.room_no %></td></tr>
+            <tr><th>Course</th><td><%= student.course %></td></tr>
+            <tr><th>Year</th><td><%= student.year %></td></tr>
+            <tr><th>Total Fee</th><td>₹<%= student.total_fee %></td></tr>
+            <tr><th>Total Paid</th><td>₹<%= student.total_paid %></td></tr>
+            <tr><th>Remaining Fee</th><td>₹<%= student.remaining_fee %></td></tr>
+            
+            <!-- Re-added missing attendance details -->
+            <tr><th>Total Classes</th><td><%= attendanceSummary.total_classes %></td></tr>
+            <tr><th>Classes Present</th><td><%= attendanceSummary.present_count %></td></tr>
+
+            <tr><th>Attendance %</th>
+                <td>
+                    <%= attendanceSummary.total_classes > 0
+                        ? ((attendanceSummary.present_count / attendanceSummary.total_classes) * 100).toFixed(2)
+                        : '0.00' %>%
+                </td>
+            </tr>
+        </table>
+        <a href="/warden/markAttendance" class="profile-back-link">⬅ Back to Mark Attendance</a>
+    </div>
+
+</body>
+</html>

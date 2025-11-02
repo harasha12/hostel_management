@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Student Profile & Yearly Fee Summary</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #f0f9ff, #cbebff);
+      margin: 0;
+      padding: 30px;
+      animation: fadeIn 0.7s ease-in;
+    }
+    @keyframes fadeIn { from {opacity: 0; transform: translateY(20px);} to {opacity: 1; transform: translateY(0);} }
+
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+      background: #fff;
+      border-radius: 18px;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+      padding: 40px;
+      transition: all 0.3s ease;
+    }
+    .container:hover { transform: translateY(-3px); box-shadow: 0 10px 28px rgba(0,0,0,0.1); }
+
+    /* Profile Section */
+    .profile-header {
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 25px; margin-bottom: 20px;
+      border-bottom: 2px solid #e8e8e8; padding-bottom: 20px;
+    }
+    .profile-left { display: flex; align-items: center; gap: 25px; }
+    .profile-img-wrapper { position: relative; width: 140px; height: 140px; }
+    .profile-img {
+      width: 140px; height: 140px; border-radius: 50%; border: 4px solid #2e8b57;
+      object-fit: cover; box-shadow: 0 0 10px rgba(0,0,0,0.15); transition: 0.3s;
+    }
+    .profile-img:hover { transform: scale(1.03); }
+    .edit-photo-btn {
+      position: absolute; bottom: 8px; right: 8px;
+      background: #2e8b57; color: #fff; border: none; border-radius: 50%;
+      width: 38px; height: 38px; display: flex; align-items: center; justify-content: center;
+      cursor: pointer; font-size: 16px; opacity: 0; transition: opacity 0.3s ease;
+    }
+    .profile-img-wrapper:hover .edit-photo-btn { opacity: 1; }
+    .profile-info h2 { color: #2e8b57; margin-bottom: 10px; font-size: 28px; font-weight: 700; }
+    .profile-info p { margin: 5px 0; color: #444; font-size: 15px; }
+
+    /* Fee Table */
+    h3 { text-align: center; color: #2e8b57; margin-top: 40px; font-size: 22px; }
+    table {
+      width: 100%; border-collapse: collapse; margin-top: 15px;
+      border-radius: 12px; overflow: hidden;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+    table th { background: #2e8b57; color: #fff; padding: 12px; font-size: 14px; text-transform: uppercase; }
+    table td { padding: 12px; text-align: center; border-bottom: 1px solid #eee; font-size: 15px; }
+    td.paid { color: green; font-weight: 600; }
+    td.due { color: red; font-weight: 600; }
+    td.partial { color: orange; font-weight: 600; }
+
+    /* Aadhaar Section */
+    .upload-section {
+      background: #f9fafb; padding: 25px; border-radius: 12px;
+      margin-top: 30px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+    .upload-section h3 { text-align: left; font-size: 20px; margin-bottom: 10px; }
+    .upload-section label { display: block; font-weight: 600; margin: 12px 0 6px; }
+    .upload-section button {
+      background: #2e8b57; color: #fff; border: none; border-radius: 8px;
+      padding: 10px 18px; font-size: 15px; cursor: pointer; transition: 0.3s;
+    }
+    .upload-section button:hover { background: #256b46; }
+    .uploaded-links p { margin: 8px 0; font-size: 15px; }
+    .uploaded-links a { color: #2e8b57; font-weight: 600; text-decoration: none; }
+    .uploaded-links a:hover { text-decoration: underline; }
+
+    /* Back Link */
+    .back-link {
+      display: block; text-align: center; color: #333;
+      font-weight: 600; margin-top: 30px; text-decoration: none;
+    }
+    .back-link:hover { color: #2e8b57; }
+
+    @media (max-width: 768px) {
+      .profile-header { flex-direction: column; text-align: center; }
+      .profile-left { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+
+  <%- include('../partials/header') %>
+
+  <div class="container">
+
+    <!-- Profile Section -->
+    <div class="profile-header">
+      <div class="profile-left">
+        <div class="profile-img-wrapper">
+          <% if(student.profile_image){ %>
+            <img class="profile-img" src="/uploads/profile_images/<%= student.profile_image %>" alt="Profile Photo">
+          <% } else { %>
+            <img class="profile-img" src="/images/pr.png" alt="Profile Photo">
+          <% } %>
+          <button class="edit-photo-btn" onclick="document.getElementById('photoUpload').click()">
+            <i class="fa fa-edit"></i>
+          </button>
+        </div>
+
+        <div class="profile-info">
+          <h2><%= student.name %></h2>
+          <p><b>Email:</b> <%= student.email %></p>
+          <p><b>Room No:</b> <%= student.room_no || 'N/A' %></p>
+          <p><b>Course:</b> <%= student.course || 'N/A' %></p>
+          <p><b>Year:</b> <%= student.year || 'N/A' %></p>
+        </div>
+      </div>
+    </div>
+
+    
+
+    <!-- Fee Summary -->
+    <h3>Year-wise Fee Summary</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Year</th>
+          <th>Room Rent Paid / Due</th>
+          <th>Mess Bill 1 Paid / Due</th>
+          <th>Mess Bill 2 Paid / Due</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% if(feeSummary.length === 0){ %>
+          <tr><td colspan="5">No fee data available</td></tr>
+        <% } else { %>
+          <% feeSummary.forEach(f => { 
+            const roomClass = f.room_rent_due > 0 ? (f.room_rent_paid > 0 ? 'partial' : 'due') : 'paid';
+            const mess1Class = f.mess_bill1_due > 0 ? (f.mess_bill1_paid > 0 ? 'partial' : 'due') : 'paid';
+            const mess2Class = f.mess_bill2_due > 0 ? (f.mess_bill2_paid > 0 ? 'partial' : 'due') : 'paid';
+            const totalPaid = Number(f.total_paid);
+            const totalFee = Number(f.total_fee);
+            let status = 'Not Paid';
+            if(totalPaid >= totalFee) status = 'Paid';
+            else if(totalPaid > 0) status = 'Partial';
+          %>
+          <tr>
+            <td><%= f.year %></td>
+            <td class="<%= roomClass %>">₹<%= f.room_rent_paid %> / ₹<%= f.room_rent_due %></td>
+            <td class="<%= mess1Class %>">₹<%= f.mess_bill1_paid %> / ₹<%= f.mess_bill1_due %></td>
+            <td class="<%= mess2Class %>">₹<%= f.mess_bill2_paid %> / ₹<%= f.mess_bill2_due %></td>
+            <td class="<%= status === 'Paid' ? 'paid' : status === 'Partial' ? 'partial' : 'due' %>"><%= status %></td>
+          </tr>
+          <% }) %>
+        <% } %>
+      </tbody>
+    </table>
+
+    <!-- Aadhaar Upload Section -->
+    <div class="upload-section">
+      <h3>Aadhaar Upload</h3>
+
+      <!-- Student Aadhaar Upload -->
+      <form action="/student/upload-aadhaar/student" method="POST" enctype="multipart/form-data">
+        <label>Upload Student Aadhaar</label>
+        <input type="file" name="aadhaar" accept="image/*" required>
+        <button type="submit">Upload Student Aadhaar</button>
+      </form>
+
+      <!-- Father Aadhaar Upload -->
+      <form action="/student/upload-aadhaar/father" method="POST" enctype="multipart/form-data">
+        <label>Upload Father Aadhaar</label>
+        <input type="file" name="aadhaar" accept="image/*" required>
+        <button type="submit">Upload Father Aadhaar</button>
+      </form>
+
+      <div class="uploaded-links">
+        <% if (student.student_aadhaar) { %>
+          <p>📘 Student Aadhaar:
+            <a href="/student/aadhaar/student/<%= student.student_id %>" target="_blank">View</a>
+          </p>
+        <% } %>
+
+        <% if (student.father_aadhaar) { %>
+          <p>📗 Father Aadhaar:
+            <a href="/student/aadhaar/father/<%= student.student_id %>" target="_blank">View</a>
+          </p>
+        <% } %>
+      </div>
+    </div>
+    <!-- Upload Profile Photo -->
+     <h3>profile photo Upload</h3>
+    <form id="photoForm" action="/student/upload-profile" method="POST" enctype="multipart/form-data" class="upload-form">
+      <input type="file" id="photoUpload" name="profile_image" accept="image/*" onchange="previewImage(event)">
+      <button type="submit">Save New Photo</button>
+    </form>
+
+    <a class="back-link" href="/student/dashboard">← Back to Dashboard</a>
+  </div>
+
+  <%- include('../partials/footer') %>
+  <script src="https://kit.fontawesome.com/a2e0f1a6d3.js" crossorigin="anonymous"></script>
+  <script>
+    function previewImage(event) {
+      const img = document.querySelector('.profile-img');
+      img.src = URL.createObjectURL(event.target.files[0]);
+    }
+  </script>
+</body>
+</html>

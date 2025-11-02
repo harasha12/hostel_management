@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Security Dashboard</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    input[type="text"] {
+      padding: 8px;
+      margin-bottom: 15px;
+      width: 250px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    th, td {
+      padding: 10px;
+      border: 1px solid #ccc;
+      text-align: center;
+    }
+    th {
+      background-color: #f2f2f2;
+    }
+  </style>
+</head>
+<body>
+  <%- include('../partials/header') %>
+
+  <div class="container">
+    <h2>Welcome, <%= user.name %> (Security)</h2>
+
+    <div class="card-container">
+      <a href="/security/viewOutpasses" class="card">View All Outpasses</a>
+    </div>
+<div class="dashboard-card">
+  <h3>Emergency Outpasses</h3>
+  <p>View approved emergency outpasses for verification.</p>
+  <a href="/security/emergencyOutpasses" class="btn">View Emergency Outpasses</a>
+</div>
+
+    <hr>
+    <h3>📅 Outpasses Accepted Today</h3>
+
+    <form method="GET" action="/security/dashboard">
+      <input type="text" name="room_no" placeholder="Search by Room Number" value="<%= roomQuery || '' %>">
+      <button type="submit">Search</button>
+    </form>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Student ID</th>
+          <th>Name</th>
+          <th>Room No</th>
+          <th>Status</th>
+          <th>Accepted By</th>
+          <th>Approved At</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% if (outpasses.length === 0) { %>
+          <tr><td colspan="6">No outpasses found.</td></tr>
+        <% } else { %>
+          <% outpasses.forEach(op => { %>
+            <tr>
+              <td><%= op.student_id %></td>
+              <td><%= op.name %></td>
+              <td><%= op.room_no %></td>
+              <td><%= op.status %></td>
+              <td><%= op.accepted_by %></td>
+              <td><%= new Date(op.approved_at).toLocaleString() %></td>
+            </tr>
+          <% }) %>
+        <% } %>
+      </tbody>
+    </table>
+
+    <a href="/logout" class="logout-btn">Logout</a>
+  </div>
+
+  <%- include('../partials/footer') %>
+</body>
+</html>
