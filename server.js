@@ -534,7 +534,7 @@ app.get("/student/applyoutpass", (req, res) => {
   if (!req.session.user || req.session.role !== "student") {
     return res.redirect("/login/student");
   }
-  res.render("student/applyOutpass");
+  res.render("student/applyoutpass");
 });
 
 // Handle Apply Outpass form submission
@@ -2898,4 +2898,5 @@ app.get("/security/emergencyOutpasses", async (req, res) => {
 // START SERVER
 // =====================================
 app.listen(3000, () => console.log("🚀 Server running on http://localhost:3000"));
+
 
