@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <h2>🚪 Today's Outpasses</h2>
 
 <form action="/security/searchByRoom" method="GET">
@@ -29,3 +30,36 @@
     <% }) %>
   </tbody>
 </table>
+=======
+<h2>🚪 Today's Outpasses</h2>
+
+<form action="/security/searchByRoom" method="GET">
+  <input type="text" name="room_no" placeholder="Enter Room No" required>
+  <button type="submit">🔍 Search</button>
+</form>
+
+<table border="1" cellpadding="8">
+  <thead>
+    <tr>
+      <th>Student Name</th>
+      <th>Room No</th>
+      <th>Reason</th>
+      <th>Status</th>
+      <th>Approved By</th>
+      <th>Approved At</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% outpasses.forEach(outpass => { %>
+      <tr>
+        <td><%= outpass.student_name %></td>
+        <td><%= outpass.room_no %></td>
+        <td><%= outpass.reason %></td>
+        <td><%= outpass.status %></td>
+        <td><%= outpass.accepted_by %></td>
+        <td><%= new Date(outpass.updated_at).toLocaleString() %></td>
+      </tr>
+    <% }) %>
+  </tbody>
+</table>
+>>>>>>> 5deacb7d32ce0bc057ab3ee486e159913ed1d163

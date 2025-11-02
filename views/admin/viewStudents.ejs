@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -210,4 +211,218 @@
 
   <%- include('../partials/footer') %>
 </body>
+=======
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>View Student Profiles</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;900&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      font-family: 'Roboto', sans-serif;
+      margin: 0;
+      background: #182235;
+      padding-top: 30px;
+      min-height: 100vh;
+      color: #f8f9fa;
+    }
+
+    .students-container {
+      max-width: 1200px;
+      margin: 56px auto 36px auto;
+      background: #f8f9fa;
+      border-radius: 16px;
+      box-shadow: 0 12px 48px #22304c22, 0 1.5px 3px #0001;
+      padding: 45px 38px 36px 38px;
+    }
+
+    .students-heading {
+      font-family: 'Montserrat', 'Georgia', serif;
+      color: #1b243b;
+      text-align: center;
+      font-weight: 900;
+      margin-bottom: 30px;
+      font-size: 2em;
+      border-bottom: 3px solid #ffc107;
+      padding-bottom: 6px;
+      background: linear-gradient(90deg, #f3f5fd 75%, #fffbe8 100%);
+      border-radius: 8px 8px 0 0;
+      letter-spacing: 1px;
+    }
+
+    /* Search Bar */
+    .search-bar {
+      margin: 25px 0;
+      text-align: center;
+    }
+
+    .search-bar input {
+      padding: 10px 15px;
+      width: 300px;
+      border-radius: 8px;
+      border: 2px solid #ffc107;
+      font-size: 1em;
+      color: #22304c;
+    }
+
+    .search-bar button {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      background-color: #22304c;
+      color: #ffe082;
+      cursor: pointer;
+      font-weight: 700;
+      font-family: 'Montserrat', sans-serif;
+      transition: background-color 0.2s, transform 0.1s;
+    }
+
+    .search-bar button:hover {
+      background-color: #1b243b;
+      transform: translateY(-1px);
+    }
+
+    /* === Grid layout for cards === */
+    .students-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(330px, 1fr));
+      gap: 25px;
+    }
+
+    /* === Student Card === */
+    .student-card {
+      background: #ffffff;
+      border-radius: 14px;
+      box-shadow: 0 4px 16px rgba(34, 48, 76, 0.15);
+      overflow: hidden;
+      transition: transform 0.25s ease, box-shadow 0.25s ease, border 0.25s ease;
+      padding: 18px 20px 20px 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+      border: 2px solid transparent;
+    }
+
+    /* 🌟 Gold Glow Hover Effect */
+    .student-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 0 18px rgba(255, 215, 0, 0.4), 0 6px 20px rgba(34, 48, 76, 0.25);
+      border: 2px solid #ffd700;
+    }
+
+    .student-top {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .student-top img {
+      width: 100px;
+      height: 100px;
+      border-radius: 10px;
+      object-fit: cover;
+      margin-right: 20px;
+      border: 3px solid #ffc107;
+      background: #f5f5f5;
+    }
+
+    .student-details {
+      flex: 1;
+      color: #1b243b;
+    }
+
+    .student-details h3 {
+      margin: 0;
+      font-size: 1.25em;
+      font-weight: 800;
+      color: #182235;
+    }
+
+    .student-details p {
+      margin: 4px 0;
+      font-size: 0.93em;
+      color: #333;
+      line-height: 1.4;
+    }
+
+    .btn {
+      background-color: #ffc107;
+      color: #1b243b;
+      padding: 8px 14px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-size: 0.9em;
+      font-weight: 700;
+      transition: background-color 0.2s, box-shadow 0.2s;
+      display: inline-block;
+      width: fit-content;
+      align-self: center;
+      margin-top: 10px;
+    }
+
+    .btn:hover {
+      background-color: #ff9800;
+      box-shadow: 0 4px 10px rgba(34, 48, 76, 0.15);
+    }
+
+    /* Responsive tweaks */
+    @media (max-width: 500px) {
+      .student-top {
+        flex-direction: column;
+        text-align: center;
+      }
+      .student-top img {
+        margin: 0 0 10px 0;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="students-container">
+    <h2 class="students-heading">View Student Profiles</h2>
+
+    <div class="search-bar">
+      <form method="get" action="/admin/viewStudents">
+        <input
+          type="text"
+          name="search"
+          value="<%= search %>"
+          placeholder="Search by name, ID, or room number"
+        >
+        <button type="submit">Search</button>
+      </form>
+    </div>
+
+    <% if (students.length > 0) { %>
+      <div class="students-grid">
+        <% students.forEach(s => { %>
+          <div class="student-card">
+            <div class="student-top">
+<img src="<%= s.profile_image ? '/uploads/profile_images/' + s.profile_image : '/images/default-avatar.png' %>" alt="Student Photo">
+
+              <div class="student-details">
+                <h3><%= s.name %></h3>
+                <p><strong>ID:</strong> <%= s.student_id %></p>
+                <p><strong>Room:</strong> <%= s.room_no %></p>
+                <p><strong>Course:</strong> <%= s.course %></p>
+                <p><strong>Year:</strong> <%= s.year %></p>
+              </div>
+            </div>
+            <a href="/admin/student/<%= s.student_id %>" class="btn">View Profile</a>
+          </div>
+        <% }) %>
+      </div>
+    <% } else { %>
+      <p style="text-align:center; color: #22304c; font-weight: 500;">No students found.</p>
+    <% } %>
+  </div>
+
+  <%- include('../partials/footer') %>
+</body>
+>>>>>>> 5deacb7d32ce0bc057ab3ee486e159913ed1d163
 </html>

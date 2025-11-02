@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <%- include('../partials/header') %>
 
 <div class="container">
@@ -137,3 +138,144 @@ button:hover { background:#0056b3; }
 .back-link { display:block; text-align:center; margin:25px auto; font-weight:700; color:#007bff; text-decoration:none; }
 .back-link:hover { text-decoration:underline; }
 </style>
+=======
+<%- include('../partials/header') %>
+
+<div class="container">
+    <h2>Student Profile (Admin View)</h2>
+
+    <!-- Student Information -->
+    <table class="profile-table">
+        <tr><th>Name</th><td><%= student.name %></td></tr>
+        <tr><th>Student ID</th><td><%= student.student_id %></td></tr>
+        <tr><th>Unique ID</th><td><%= student.student_unique_id || '-' %></td></tr>
+        <tr><th>Email</th><td><%= student.email %></td></tr>
+        <tr><th>Room Number</th><td><%= student.room_no || 'Not assigned' %></td></tr>
+        <tr><th>Course</th><td><%= student.course || '-' %></td></tr>
+        <tr><th>Year</th><td><%= student.year || '-' %></td></tr>
+        <tr><th>Year of Join</th><td><%= student.year_of_join || '-' %></td></tr>
+        <tr><th>Total Classes</th><td><%= (attendanceSummary && attendanceSummary.total_classes) || 0 %></td></tr>
+        <tr><th>Classes Present</th><td><%= (attendanceSummary && attendanceSummary.present_count) || 0 %></td></tr>
+        <tr>
+            <th>Attendance %</th>
+            <td>
+                <% if (attendanceSummary && attendanceSummary.total_classes > 0) { %>
+                    <%= ((attendanceSummary.present_count / attendanceSummary.total_classes) * 100).toFixed(2) %>%
+                <% } else { %> 0% <% } %>
+            </td>
+        </tr>
+        <tr>
+            <th>Student Aadhaar</th>
+            <td>
+                <% if(student.student_aadhaar){ %>
+                    **** **** **** <%= student.student_aadhaar.slice(-4) %>
+                    <button onclick="viewAadhaar('<%= student.student_id %>', 'student')">View</button>
+                <% } else { %> Not uploaded <% } %>
+            </td>
+        </tr>
+        <tr>
+            <th>Father Aadhaar</th>
+            <td>
+                <% if(student.father_aadhaar){ %>
+                    **** **** **** <%= student.father_aadhaar.slice(-4) %>
+                    <button onclick="viewAadhaar('<%= student.student_id %>', 'father')">View</button>
+                <% } else { %> Not uploaded <% } %>
+            </td>
+        </tr>
+    </table>
+
+    <!-- Year-wise Fee Summary -->
+    <h3>Academic Year-wise Fee Summary</h3>
+    <table class="fee-table">
+        <thead>
+            <tr>
+                <th>Academic Year</th>
+                <th>Room Rent (₹)</th>
+                <th>Mess Bill 1 (₹)</th>
+                <th>Mess Bill 2 (₹)</th>
+                <th>Total Fee (₹)</th>
+                <th>Paid Amount (₹)</th>
+                <th>Due Amount (₹)</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% if (!feeSummary || feeSummary.length === 0) { %>
+                <tr><td colspan="8" style="color:#666; padding:16px;">No payments yet</td></tr>
+            <% } else { %>
+                <% feeSummary.forEach(function(fee) { %>
+                    <tr>
+                        <td><%= fee.academic_year %></td>
+                        <td>₹<%= (parseFloat(fee.room_rent) || 0).toFixed(2) %></td>
+                        <td>₹<%= (parseFloat(fee.mess_bill1) || 0).toFixed(2) %></td>
+                        <td>₹<%= (parseFloat(fee.mess_bill2) || 0).toFixed(2) %></td>
+                        <td>₹<%= (parseFloat(fee.total_fee) || 0).toFixed(2) %></td>
+                        <td class="paid">₹<%= (parseFloat(fee.paid_amount) || 0).toFixed(2) %></td>
+                        <td class="due">₹<%= (parseFloat(fee.due_amount) || 0).toFixed(2) %></td>
+                        <td>
+                            <% if (parseFloat(fee.due_amount) === 0) { %>
+                                ✅ Fully Paid
+                            <% } else if (parseFloat(fee.paid_amount) > 0) { %>
+                                🕐 Partially Paid
+                            <% } else { %>
+                                ⚠️ Pending
+                            <% } %>
+                        </td>
+                    </tr>
+                <% }); %>
+            <% } %>
+        </tbody>
+    </table>
+
+    <a class="back-link" href="/admin/dashboard">⬅ Back to Dashboard</a>
+</div>
+
+<!-- Aadhaar Modal -->
+<div id="aadhaarModal" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); background:#fff; padding:20px; border:1px solid #ccc; z-index:1000;">
+    <span onclick="closeModal()" style="cursor:pointer; float:right; font-size:20px;">&times;</span>
+    <img id="aadhaarImage" src="" width="400">
+</div>
+
+<script>
+function viewAadhaar(studentId, type) {
+    document.getElementById('aadhaarImage').src = `/student/aadhaar/${type}/${studentId}`;
+    document.getElementById('aadhaarModal').style.display = 'block';
+}
+function closeModal() {
+    document.getElementById('aadhaarModal').style.display = 'none';
+}
+</script>
+
+<%- include('../partials/footer') %>
+
+<style>
+.container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 20px;
+}
+h2, h3 { text-align:center; color:#333; margin-top:20px; }
+.profile-table, .fee-table {
+    width: 95%;
+    margin: 20px auto;
+    border-collapse: collapse;
+    background:#fff;
+    box-shadow:0 2px 8px rgba(0,0,0,0.1);
+    border-radius:8px;
+    overflow:hidden;
+}
+.profile-table th, .profile-table td, .fee-table th, .fee-table td {
+    padding:12px 15px;
+    border-bottom:1px solid #eee;
+}
+.profile-table th { width:240px; background:#fafafa; font-weight:600; text-align:left; }
+.fee-table th { background:#007bff; color:#fff; font-weight:600; text-align:center; }
+.fee-table td { text-align:center; font-size:15px; }
+td.paid { color:green; font-weight:600; }
+td.due { color:red; font-weight:600; }
+button { margin-left:10px; padding:4px 8px; font-size:13px; cursor:pointer; border:none; background:#007bff; color:white; border-radius:5px; transition:0.2s; }
+button:hover { background:#0056b3; }
+.back-link { display:block; text-align:center; margin:25px auto; font-weight:700; color:#007bff; text-decoration:none; }
+.back-link:hover { text-decoration:underline; }
+</style>
+>>>>>>> 5deacb7d32ce0bc057ab3ee486e159913ed1d163

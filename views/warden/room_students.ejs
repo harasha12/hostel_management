@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -155,3 +156,162 @@
   </div>
 </body>
 </html>
+=======
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Room <%= room_no %> - Students Overview</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+
+  <style>
+    body {
+      background: #f4f7f9;
+      font-family: "Poppins", sans-serif;
+      color: #333;
+      padding: 30px;
+    }
+
+    h2 {
+      text-align: center;
+      font-weight: 600;
+      color: #2c3e50;
+      margin-bottom: 25px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #fff;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    th {
+      background: #2c3e50;
+      color: #fff;
+      text-align: center;
+      padding: 12px;
+    }
+
+    td {
+      text-align: center;
+      padding: 10px;
+      border-bottom: 1px solid #e1e1e1;
+    }
+
+    tr:hover {
+      background: #f9f9f9;
+      transition: 0.2s ease;
+    }
+
+    .status-paid {
+      color: #28a745;
+      font-weight: 600;
+    }
+
+    .status-due {
+      color: #e67e22;
+      font-weight: 600;
+    }
+
+    .status-notpaid {
+      color: #e74c3c;
+      font-weight: 600;
+    }
+
+    .view-btn {
+      background: #3498db;
+      color: white;
+      padding: 5px 10px;
+      border-radius: 6px;
+      text-decoration: none;
+      transition: 0.2s ease;
+    }
+
+    .view-btn:hover {
+      background: #2c80b4;
+    }
+
+    .summary {
+      margin-top: 20px;
+      text-align: right;
+      font-weight: 600;
+      color: #555;
+    }
+
+    .back-btn {
+      display: inline-block;
+      margin-bottom: 20px;
+      background: #6c757d;
+      color: white;
+      padding: 8px 15px;
+      border-radius: 6px;
+      text-decoration: none;
+      transition: 0.2s ease;
+    }
+
+    .back-btn:hover {
+      background: #5a6268;
+    }
+  </style>
+</head>
+
+<body>
+  <a href="/warden/dashboard" class="back-btn"><i class="fa fa-arrow-left"></i> Back to Dashboard</a>
+
+  <h2>🏠 Room <%= room_no %> - Students Overview</h2>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Reg ID</th>
+        <th>Course</th>
+        <th>Year</th>
+        <th>Paid (₹)</th>
+        <th>Due (₹)</th>
+        <th>Fee Status</th>
+        <th>Attendance (%)</th>
+        <th>Profile</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% if (students.length === 0) { %>
+        <tr>
+          <td colspan="9">No students found in this room.</td>
+        </tr>
+      <% } else { %>
+        <% students.forEach(stu => { 
+            const totalVerified = stu.feeSummary.reduce((acc, yr) => acc + parseFloat(yr.verified_amount), 0);
+            const totalDue = stu.feeSummary.reduce((acc, yr) => acc + parseFloat(yr.due_amount), 0);
+            const attendance = stu.attendanceSummary.total_classes > 0
+                ? ((stu.attendanceSummary.present_count / stu.attendanceSummary.total_classes) * 100).toFixed(1)
+                : 0;
+        %>
+          <tr>
+            <td><%= stu.name %></td>
+            <td><%= stu.student_unique_id %></td>
+            <td><%= stu.course %></td>
+            <td><%= stu.year %></td>
+            <td>₹<%= totalVerified.toFixed(2) %></td>
+            <td>₹<%= totalDue.toFixed(2) %></td>
+            <td class="<%= totalDue <= 0 ? 'status-paid' : 'status-due' %>">
+              <%= totalDue <= 0 ? "✅ Fully Paid" : "⏳ Due" %>
+            </td>
+            <td><%= attendance %>%</td>
+            <td><a href="/warden/student/<%= stu.student_id %>" class="view-btn"><i class="fa fa-eye"></i> View</a></td>
+          </tr>
+        <% }) %>
+      <% } %>
+    </tbody>
+  </table>
+
+  <div class="summary">
+    Total Students: <%= students.length %>
+  </div>
+</body>
+</html>
+>>>>>>> 5deacb7d32ce0bc057ab3ee486e159913ed1d163

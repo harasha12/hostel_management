@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <!DOCTYPE html>
 <html>
 <head>
@@ -29,3 +30,36 @@
 
 </body>
 </html>
+=======
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Your Outpasses</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <h2>Your Outpass Requests</h2>
+    <table border="1">
+        <tr>
+            <th>Period</th>
+            <th>Reason</th>
+            <th>Out Date</th>
+            <th>Return Date</th>
+            <th>Status</th>
+        </tr>
+        <% outpasses.forEach(op => { %>
+            <tr>
+                <td><%= op.period %></td>
+                <td><%= op.reason %></td>
+                <td><%= op.out_date.toISOString().split('T')[0] %></td>
+                <td><%= op.return_date.toISOString().split('T')[0] %></td>
+                <td><%= op.status %></td>
+            </tr>
+        <% }) %>
+    </table>
+    <a href="/student/dashboard">Back to Dashboard</a>
+    
+
+</body>
+</html>
+>>>>>>> 5deacb7d32ce0bc057ab3ee486e159913ed1d163

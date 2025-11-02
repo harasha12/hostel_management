@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -44,3 +45,51 @@
     <%- include('../partials/footer') %>
 </body>
 </html>
+=======
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Upload Fee Receipt</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <%- include('../partials/header') %>
+
+    <div class="container">
+        <h2>Upload Fee Receipt</h2>
+        <form action="/student/uploadReceipt" method="POST" enctype="multipart/form-data">
+    <label>Unique ID</label>
+    <input type="text" name="student_unique_id" value="<%= user.student_unique_id %>" readonly>
+
+    <label>Reference ID</label>
+    <input type="text" name="ref_id" required>
+
+    <label>Amount Paid (₹)</label>
+    <input type="number" name="amount_paid" step="0.01" required>
+
+    <label>Academic Year</label>
+    <input type="number" name="year" value="<%= new Date().getFullYear() %>" required>
+
+    <label>Remarks / Fee Component</label>
+    <select name="remarks" required>
+        <option value="">-- Select --</option>
+        <option value="Room Rent">Room Rent</option>
+        <option value="Mess Bill1">Mess Bill1</option>
+        <option value="Mess Bill2">Mess Bill2</option>
+        <option value="Others">Others</option>
+    </select>
+
+    <label>Upload PDF Receipt</label>
+    <input type="file" name="sbi_pdf" accept="application/pdf" required>
+
+    <button type="submit">Upload Receipt</button>
+</form>
+
+        <a href="/student/dashboard" class="back-link">⬅ Back to Dashboard</a>
+    </div>
+
+    <%- include('../partials/footer') %>
+</body>
+</html>
+>>>>>>> 5deacb7d32ce0bc057ab3ee486e159913ed1d163

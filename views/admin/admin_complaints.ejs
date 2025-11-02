@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -195,4 +196,203 @@
     <a href="/admin/dashboard" class="back-link">⬅ Back to Dashboard</a>
   </div>
 </body>
+=======
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Manage Complaints</title>
+  <link rel="stylesheet" href="/css/style.css">
+
+  <style>
+    /* ===== General Page Style ===== */
+    body {
+      font-family: 'Poppins', 'Segoe UI', Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f6f7fb;
+      color: #1b2430;
+    }
+
+    /* ===== Container ===== */
+    .container {
+      max-width: 1150px;
+      margin: 60px auto;
+      background: #fff;
+      padding: 35px 40px;
+      border-radius: 16px;
+      border: 3px solid #ffd700;
+      box-shadow: 0 10px 35px rgba(0, 0, 0, 0.08), 0 2px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    h2 {
+      text-align: center;
+      font-size: 2em;
+      font-weight: 700;
+      color: #222;
+      margin-bottom: 25px;
+      display: inline-block;
+      border-bottom: 3px solid #ffd700;
+      background: linear-gradient(90deg, #8E8EED 60%, #EBD483 100%);
+      border-radius: 6px;
+      padding: 10px 18px;
+    }
+
+    /* ===== Table ===== */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #fff;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.05);
+    }
+
+    /* ===== Table Header Row (th) ===== */
+    th {
+      background: linear-gradient(135deg, #e6c36a 0%, #d9b75a 50%, #c2a45a 100%);
+      color: #222;
+      text-transform: uppercase;
+      padding: 14px;
+      font-size: 0.97em;
+      font-weight: 700;
+      letter-spacing: 0.4px;
+      border-bottom: 2px solid #b59a52;
+    }
+
+    td {
+      padding: 14px;
+      border-bottom: 1px solid #eee;
+      text-align: left;
+      font-size: 0.95em;
+    }
+
+    tr:hover {
+      filter: brightness(1.02);
+      transition: 0.2s ease-in-out;
+    }
+
+    /* ===== Status Row Background Colors ===== */
+    tr.status-Pending {
+      background: #ffffff; /* White */
+      color: #333;
+    }
+
+    tr.status-Replied {
+     background: #e3f2fd; /* Light blue */
+      color: #0d47a1; /* Deep blue */
+    }
+
+    tr.status-Resolved {
+       background: #e8f5e9; /* Light green */
+      color: #1b5e20; /* Dark green */
+    }
+
+    /* ===== Form Styling ===== */
+    form {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    form input[type="text"],
+    form select {
+      padding: 6px 10px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      font-size: 0.9em;
+      outline: none;
+      transition: border 0.2s;
+    }
+
+    form input[type="text"]:focus,
+    form select:focus {
+      border-color: #007bff;
+    }
+
+    form button {
+      padding: 7px 12px;
+      background: linear-gradient(135deg, #007bff, #0056b3);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.2s, background 0.2s;
+    }
+
+    form button:hover {
+      background: linear-gradient(135deg, #1e90ff, #004b9a);
+      transform: translateY(-1px);
+    }
+
+    /* ===== Back Link ===== */
+    .back-link {
+      display: block;
+      text-align: center;
+      margin-top: 30px;
+      text-decoration: none;
+      font-weight: 700;
+      color: #fff;
+      font-size: 1em;
+      background: linear-gradient(90deg, #d4af37, #ffdd00);
+      width: fit-content;
+      margin-left: auto;
+      margin-right: auto;
+      padding: 12px 24px;
+      border-radius: 50px;
+      box-shadow: 0 4px 12px rgba(212, 175, 55, 0.4);
+      transition: 0.25s;
+    }
+
+    .back-link:hover {
+      background: linear-gradient(90deg, #ffdd00, #ffe382);
+      color: #1b243b;
+      transform: scale(1.05);
+      box-shadow: 0 0 18px rgba(255, 228, 130, 0.7);
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <h2>All Complaints</h2>
+
+    <table>
+      <tr>
+        <th>Student</th>
+        <th>Subject</th>
+        <th>Description</th>
+        <th>Status</th>
+        <th>Reply</th>
+        <th>Action</th>
+      </tr>
+
+      <% complaints.forEach(c => { %>
+        <tr class="status-<%= c.status %>">
+          <td><%= c.student_name %></td>
+          <td><%= c.subject %></td>
+          <td><%= c.description %></td>
+          <td><%= c.status %></td>
+          <td><%= c.reply || "-" %></td>
+          <td>
+            <form action="/admin/complaints/<%= c.complaint_id %>/reply" method="POST">
+              <input type="text" name="reply" placeholder="Reply" required>
+              <select name="status">
+                <option value="Replied" <%= c.status === 'Replied' ? 'selected' : '' %>>Replied</option>
+                <option value="Resolved" <%= c.status === 'Resolved' ? 'selected' : '' %>>Resolved</option>
+              </select>
+              <button type="submit">Send</button>
+            </form>
+          </td>
+        </tr>
+      <% }) %>
+    </table>
+
+    <a href="/admin/dashboard" class="back-link">⬅ Back to Dashboard</a>
+  </div>
+</body>
+>>>>>>> 5deacb7d32ce0bc057ab3ee486e159913ed1d163
 </html>

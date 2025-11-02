@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -48,3 +49,55 @@
     <%- include('../partials/footer') %>
 </body>
 </html>
+=======
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>View Fees</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <%- include('../partials/header') %>
+
+    <div class="container">
+        <h2>Fees Dashboard</h2>
+
+        <p><strong>Total Paid:</strong> <%= total_paid %></p>
+        <p><strong>Remaining Due:</strong> <%= remaining_due %></p>
+
+        <h3>Uploaded Receipts</h3>
+        <table border="1">
+            <tr>
+                <th>Ref ID</th>
+                <th>Amount</th>
+                <th>Status</th>
+                <th>PDF</th>
+                <th>Uploaded At</th>
+            </tr>
+            <% receipts.forEach(r => { %>
+                <tr>
+                    <td><%= r.ref_id %></td>
+                    <td><%= r.amount_paid %></td>
+                    <td><%= r.status %></td>
+                    <td>
+                        <% if (r.pdf_path) { %>
+                            <a href="/<%= r.pdf_path %>" target="_blank">Download</a>
+                        <% } else { %>
+                            N/A
+                        <% } %>
+                    </td>
+                    <td><%= r.created_at %></td>
+                </tr>
+            <% }) %>
+        </table>
+
+        <a href="/student/dashboard" class="back-link">Back to Dashboard</a>
+    </div>
+    
+
+
+    <%- include('../partials/footer') %>
+</body>
+</html>
+>>>>>>> 5deacb7d32ce0bc057ab3ee486e159913ed1d163

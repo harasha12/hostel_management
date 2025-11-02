@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <!DOCTYPE html>
 <html>
 <head>
@@ -35,3 +36,42 @@
   </table>
 </body>
 </html>
+=======
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Room Eligibility</title>
+  <style>
+    .eligible { background-color: #c8f7c5; } /* green */
+    .not-eligible { background-color: #f7c5c5; } /* red */
+    table { border-collapse: collapse; width: 70%; margin-top: 20px; }
+    th, td { border: 1px solid #333; padding: 8px; text-align: center; }
+  </style>
+</head>
+<body>
+  <h2>Student Room Eligibility</h2>
+
+  <table>
+    <tr>
+      <th>Reg No</th>
+      <th>Name</th>
+      <th>Year</th>
+      <th>Backlogs</th>
+      <th>Status</th>
+    </tr>
+
+    <% students.forEach(s => { 
+         const rowClass = s.room_status === 'Eligible' ? 'eligible' : 'not-eligible';
+    %>
+      <tr class="<%= rowClass %>">
+        <td><%= s.student_unique_id %></td>
+        <td><%= s.name %></td>
+        <td><%= s.year %></td>
+        <td><%= s.remaining_backlogs %></td>
+        <td><%= s.room_status %></td>
+      </tr>
+    <% }) %>
+  </table>
+</body>
+</html>
+>>>>>>> 5deacb7d32ce0bc057ab3ee486e159913ed1d163

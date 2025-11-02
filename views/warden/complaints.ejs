@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -248,3 +249,255 @@
   </script>
 </body>
 </html>
+=======
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Manage Complaints</title>
+
+  <!-- Fonts & Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --primary-dark: #162039;
+      --primary-blue: #2853a0;
+      --accent-gold: #f8d300;
+      --soft-gray: #f4f6fb;
+      --danger: #db3159;
+      --success: #28bb75;
+      --table-header: #22304c;
+      --card-shadow: 0 10px 25px rgba(0,0,0,0.08);
+    }
+
+    body {
+      background: linear-gradient(135deg, #f2f5fb 0%, #dfe8f2 100%);
+      font-family: 'Montserrat', sans-serif;
+      color: #22304c;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    .content-wrapper {
+      width: 95%;
+      max-width: 1150px;
+      padding: 40px 20px;
+      box-sizing: border-box;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: var(--card-shadow);
+      border-top: 6px solid var(--accent-gold);
+      padding: 30px 25px;
+      position: relative;
+    }
+
+    h2.page-title {
+      font-size: 2rem;
+      font-weight: 800;
+      color: var(--primary-dark);
+      margin-bottom: 8px;
+      text-align: center;
+    }
+
+    p.page-subtitle {
+      font-size: 1rem;
+      color: #4a6c8c;
+      text-align: center;
+      margin-bottom: 25px;
+      font-weight: 500;
+    }
+
+    /* Message container */
+    #message-container {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 9999;
+      width: 90%;
+      max-width: 420px;
+      text-align: center;
+    }
+    .message-box {
+      display: inline-block;
+      width: 100%;
+      padding: 15px 20px;
+      border-radius: 10px;
+      color: white;
+      font-weight: 700;
+      font-size: 1rem;
+      animation: fadeInOut 4s ease forwards;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+    .message-box.success { background: var(--success); }
+    .message-box.error { background: var(--danger); }
+    @keyframes fadeInOut {
+      0% { opacity: 0; transform: translateY(-20px); }
+      10%, 90% { opacity: 1; transform: translateY(0); }
+      100% { opacity: 0; transform: translateY(-20px); }
+    }
+
+    /* Table styling */
+    .table-wrapper {
+      overflow-x: auto;
+      border: 1.5px solid #dee7f8;
+      border-radius: 10px;
+      box-shadow: 0 4px 14px #d6e2f186;
+      background: #f8fafe;
+      margin-top: 20px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 700px;
+    }
+    th {
+      background: linear-gradient(90deg, var(--table-header) 70%, #3b5c97 100%);
+      color: #ffe082;
+      font-weight: 700;
+      padding: 12px 18px;
+      text-align: left;
+    }
+    td {
+      padding: 12px 18px;
+      border-bottom: 1px solid #e8eaf0;
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+    tr:nth-child(even) { background: #f7f9fc; }
+    tr:hover { background: #fffbe5; box-shadow: 0 2px 10px #ffd70020; }
+
+    /* Form inside table */
+    form input[type="text"], form select {
+      padding: 6px 10px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      font-size: 0.9em;
+      margin-right: 5px;
+    }
+    form button {
+      padding: 6px 12px;
+      background: var(--primary-blue);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    form button:hover {
+      background: #1b3f7a;
+    }
+
+    /* Back to dashboard button */
+    .back-dashboard {
+      background: #22304c;
+      color: #ffe082;
+      padding: 12px 30px;
+      border-radius: 10px;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      margin-top: 30px;
+      transition: 0.25s;
+    }
+    .back-dashboard:hover {
+      background: linear-gradient(90deg,#ffe17a 0%, #ffd700 100%);
+      color: #22304c;
+      transform: scale(1.05);
+    }
+
+    @media (max-width: 768px) {
+      table { font-size: 0.85rem; }
+      form { display: flex; flex-direction: column; align-items: flex-start; }
+      form input, form select, form button { margin-bottom: 5px; width: 100%; }
+    }
+  </style>
+</head>
+
+<body>
+  <%- include('../partials/header') %>
+
+  <div id="message-container">
+    <% if (messages && messages.success) { %>
+      <div class="message-box success"><i class="fas fa-check-circle"></i> <%= messages.success %></div>
+    <% } %>
+    <% if (messages && messages.error) { %>
+      <div class="message-box error"><i class="fas fa-times-circle"></i> <%= messages.error %></div>
+    <% } %>
+  </div>
+
+  <div class="content-wrapper">
+    <div class="card">
+      <h2 class="page-title"><i class="fas fa-bullhorn"></i> All Complaints</h2>
+      <p class="page-subtitle">View and manage all complaints submitted by students.</p>
+
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Student</th>
+              <th>Room</th>
+              <th>Subject</th>
+              <th>Description</th>
+              <th>Status</th>
+              <th>Reply</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% complaints.forEach(c => { %>
+            <tr class="status-<%= c.status %>">
+              <td><%= c.student_name %></td>
+              <td><%= c.room_no %></td>
+              <td><%= c.subject %></td>
+              <td><%= c.description %></td>
+              <td><%= c.status %></td>
+              <td><%= c.reply || "-" %></td>
+              <td>
+                <form action="/admin/complaints/<%= c.complaint_id %>/reply" method="POST">
+                  <input type="text" name="reply" placeholder="Reply" required>
+                  <select name="status">
+                    <option value="Replied" <%= c.status === 'Replied' ? 'selected' : '' %>>Replied</option>
+                    <option value="Resolved" <%= c.status === 'Resolved' ? 'selected' : '' %>>Resolved</option>
+                  </select>
+                  <button type="submit">Send</button>
+                </form>
+              </td>
+            </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+
+      <div style="text-align:center;">
+        <a href="/admin/dashboard" class="back-dashboard"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
+      </div>
+    </div>
+  </div>
+
+  <%- include('../partials/footer') %>
+
+  <script>
+    // Auto-hide messages after 4s
+    setTimeout(() => {
+      const msgBox = document.querySelector('.message-box');
+      if(msgBox) msgBox.style.display = 'none';
+    }, 4000);
+  </script>
+</body>
+</html>
+>>>>>>> 5deacb7d32ce0bc057ab3ee486e159913ed1d163
