@@ -867,24 +867,35 @@ app.get('/student/viewfees', async (req, res) => {
 });
 
 
-app.post("/student/upload-aadhaar", upload.fields([
-  { name: "student_aadhaar", maxCount: 1 },
-  { name: "father_aadhaar", maxCount: 1 }
-]), async (req, res) => {
-  if (!req.session.user || req.session.role !== "student")
+// Aadhaar upload route for both student & father
+app.post("/student/upload-aadhaar/:type", upload.single("aadhaar"), async (req, res) => {
+  if (!req.session.user || req.session.role !== "student") {
     return res.status(403).send("Unauthorized");
+  }
 
+  const { type } = req.params; // "student" or "father"
   const studentId = req.session.user.student_id;
-  const studentFile = req.files["student_aadhaar"] ? req.files["student_aadhaar"][0].filename : null;
-  const fatherFile = req.files["father_aadhaar"] ? req.files["father_aadhaar"][0].filename : null;
+  const fileName = req.file ? req.file.filename : null;
 
-  await db.promise().query(
-    "UPDATE students SET student_aadhaar=COALESCE(?, student_aadhaar), father_aadhaar=COALESCE(?, father_aadhaar) WHERE student_id=?",
-    [studentFile, fatherFile, studentId]
-  );
+  if (!fileName) return res.status(400).send("No file uploaded");
+
+  if (type === "student") {
+    await db.promise().query(
+      "UPDATE students SET student_aadhaar=? WHERE student_id=?",
+      [fileName, studentId]
+    );
+  } else if (type === "father") {
+    await db.promise().query(
+      "UPDATE students SET father_aadhaar=? WHERE student_id=?",
+      [fileName, studentId]
+    );
+  } else {
+    return res.status(400).send("Invalid Aadhaar type");
+  }
 
   res.redirect("/student/profile");
 });
+
 app.get("/student/aadhaar/:type/:studentId", async (req, res) => {
   const { type, studentId } = req.params;
   const user = req.session.user;
