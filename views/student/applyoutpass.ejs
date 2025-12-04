@@ -1,105 +1,209 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Apply Outpass | Student Portal</title>
-  <link rel="stylesheet" href="/css/style.css">
-  <style>
-    body {
-      font-family: "Poppins", sans-serif;
-      background: linear-gradient(135deg, #1b2235, #2a3550);
-      color: #fff;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      margin: 0;
-    }
+    <meta charset="UTF-8">
+    <title>Apply Outpass | Student Portal</title>
+    <style>
+        /* Global Reset/Base */
+        :root {
+            /* Updated background variable for a subtle dark color */
+            --color-bg-subtle: #242D40; 
 
-    .outpass-container {
-      background: #ffffff15;
-      backdrop-filter: blur(10px);
-      padding: 30px 40px;
-      border-radius: 16px;
-      box-shadow: 0 0 20px rgba(0,0,0,0.3);
-      width: 400px;
-    }
+            --color-bg-dark: #1b2235;
+            --color-bg-light: #2a3550;
+            --color-accent-gold: #ffd54f; /* Lighter gold for text/headings */
+            --color-button-primary: #ffc107; /* Darker gold for buttons */
+            --color-button-hover: #ffca28;
+            --color-card-bg: #ffffff15;
+            --color-text-light: #e0e0e0;
+            --color-input-bg: #3c4a67; /* Darker input background for contrast */
+            --color-input-text: #fff;
+            --border-radius-base: 12px;
+            --shadow-base: 0 8px 30px rgba(0, 0, 0, 0.4);
+        }
 
-    h2 {
-      text-align: center;
-      margin-bottom: 25px;
-      color: #ffd54f;
-    }
+        body {
+            font-family: 'Poppins', sans-serif;
+            /* Applying the subtle dark background */
+            background: var(--color-bg-subtle); 
+            
+            color: var(--color-text-light);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+        }
 
-    label {
-      display: block;
-      margin-bottom: 8px;
-      font-weight: 600;
-    }
+        /* Container */
+        .outpass-container {
+            background: var(--color-card-bg);
+            backdrop-filter: blur(15px); /* Increased blur */
+            border: 1px solid rgba(255, 255, 255, 0.1); /* Subtle border for definition */
+            padding: 40px;
+            border-radius: var(--border-radius-base);
+            box-shadow: var(--shadow-base);
+            width: 100%;
+            max-width: 450px; /* Slightly wider for better form flow */
+            animation: fadeIn 0.5s ease-out;
+        }
 
-    input, select, textarea {
-      width: 100%;
-      padding: 10px;
-      margin-bottom: 16px;
-      border: none;
-      border-radius: 8px;
-      font-size: 15px;
-      outline: none;
-    }
+        /* Header */
+        h2 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: var(--color-accent-gold);
+            font-weight: 700;
+            letter-spacing: 1px;
+            border-bottom: 2px solid var(--color-button-primary); /* Underline for emphasis */
+            padding-bottom: 10px;
+        }
 
-    input[type="date"], select {
-      background: #fff;
-    }
+        /* Form Elements */
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--color-text-light);
+            font-size: 14px;
+            text-transform: uppercase;
+        }
 
-    textarea {
-      resize: none;
-      height: 70px;
-    }
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 20px;
+            border: 1px solid transparent;
+            border-radius: 8px;
+            font-size: 15px;
+            outline: none;
+            background: var(--color-input-bg);
+            color: var(--color-input-text);
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        
+        /* Placeholder styling for better contrast */
+        ::placeholder { 
+            color: #b0b0b0; 
+            opacity: 0.7;
+        }
 
-    button {
-      background: #ffc107;
-      color: #1b2235;
-      font-weight: 700;
-      border: none;
-      border-radius: 8px;
-      padding: 10px 15px;
-      cursor: pointer;
-      width: 100%;
-      transition: all 0.2s;
-    }
+        input:focus, select:focus, textarea:focus {
+            border-color: var(--color-accent-gold);
+            box-shadow: 0 0 0 3px rgba(255, 213, 79, 0.3); /* Accent glow on focus */
+        }
 
-    button:hover {
-      background: #ffca28;
-      transform: scale(1.05);
-    }
-  </style>
+        /* Select custom arrow styling */
+        select {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            background-image: url('data:image/svg+xml;charset=US-ASCII,<svg xmlns="http://www.w3.org/2000/svg" width="292.4" height="292.4" viewBox="0 0 292.4 292.4"><path fill="%23FFD54F" d="M287 75.4L146.2 216.6 5.4 75.4z"/></svg>');
+            background-repeat: no-repeat;
+            background-position: right 10px top 50%;
+            background-size: 12px;
+            cursor: pointer;
+        }
+        
+        option {
+            background: var(--color-bg-light);
+            color: var(--color-text-light);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+            max-height: 150px;
+        }
+        
+        /* Date Fields Grouping */
+        .date-group {
+            display: flex; 
+            gap: 20px;
+        }
+
+        .date-group .input-group {
+            flex: 1;
+        }
+
+
+        /* Button */
+        button[type="submit"] {
+            background: var(--color-button-primary);
+            color: var(--color-bg-dark);
+            font-weight: 700;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 15px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 16px;
+            letter-spacing: 0.5px;
+            transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
+            margin-top: 10px;
+        }
+
+        button[type="submit"]:hover {
+            background: var(--color-button-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(255, 193, 7, 0.3);
+        }
+        
+        button[type="submit"]:active {
+            transform: translateY(0);
+        }
+
+        /* Animation */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
 </head>
 <body>
 
-  <div class="outpass-container">
-    <h2>Apply for Outpass</h2>
-    <form action="/student/applyOutpass" method="POST">
-      <label>Reason:</label>
-      <textarea name="reason" placeholder="Enter reason for outpass..." required></textarea>
+    <div class="outpass-container">
+        <h2>Apply for Outpass</h2>
+        <form action="/student/applyOutpass" method="POST">
+            <div class="input-group">
+                <label for="reason">Reason:</label>
+                <textarea id="reason" name="reason" placeholder="Enter detailed reason for outpass (e.g., Family Emergency, Festival Trip, etc.)" required></textarea>
+            </div>
 
-      <label>Outpass Type:</label>
-      <select name="type" required>
-        <option value="">-- Select Type --</option>
-        <option value="Normal">Normal</option>
-        <option value="Emergency">Emergency</option>
-      </select>
+            <div class="input-group">
+                <label for="type">Outpass Type:</label>
+                <select id="type" name="type" required>
+                    <option value="" disabled selected>-- Select Outpass Type --</option>
+                    <option value="Normal">Normal (Planned leave)</option>
+                    <option value="Emergency">Emergency (Urgent, unexpected)</option>
+                </select>
+            </div>
 
-      <label>Leave Start Date:</label>
-      <input type="date" name="leave_start" required>
+            <div class="date-group">
+                <div class="input-group">
+                    <label for="leave_start">Leave Start Date:</label>
+                    <input type="date" id="leave_start" name="leave_start" required>
+                </div>
 
-      <label>Leave End Date:</label>
-      <input type="date" name="leave_end" required>
+                <div class="input-group">
+                    <label for="leave_end">Leave End Date:</label>
+                    <input type="date" id="leave_end" name="leave_end" required>
+                </div>
+            </div>
 
-      <button type="submit">Submit Outpass</button>
-    </form>
-  </div>
+            <button type="submit">
+                <i class="fas fa-paper-plane"></i> Submit Outpass Request
+            </button>
+        </form>
+    </div>
 
 </body>
 </html>
-
