@@ -1,0 +1,41 @@
+<%- include('../partials/header') %>
+
+<h2 style="text-align:center;margin:20px;">All Paid Receipts</h2>
+
+<table border="1" cellspacing="0" cellpadding="10" style="width:100%;background:white;">
+  <tr style="background:#007bff;color:white;">
+    <th>Student ID</th>
+    <th>Name</th>
+    <th>Course</th>
+    <th>Year</th>
+    <th>Room</th>
+    <th>Ref ID</th>
+    <th>Amount</th>
+    <th>Status</th>
+    <th>PDF</th>
+    <th>Uploaded At</th>
+  </tr>
+
+  <% receipts.forEach(r => { %>
+    <tr>
+      <td><%= r.student_id %></td>
+      <td><%= r.name %></td>
+      <td><%= r.course %></td>
+      <td><%= r.year %></td>
+      <td><%= r.room_no %></td>
+      <td><%= r.ref_id %></td>
+      <td>₹<%= r.amount_paid %></td>
+      <td><%= r.status %></td>
+
+      <td>
+       <a href="/<%= r.pdf_path %>" download>Download</a>
+
+      </td>
+
+      <td><%= r.created_at.toLocaleString() %></td>
+    </tr>
+  <% }) %>
+
+</table>
+
+<%- include('../partials/footer') %>
