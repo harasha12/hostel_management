@@ -154,28 +154,36 @@ function getJoinYearFromRegId(regId) {
   return joinYear;
 }
 
+// near top of file if not already present:
+const fs = require('fs');
+const path = require('path');
+
 // Serve downloads from the uploads directory (secure)
 const uploadsDir = path.join(__dirname, "uploads");
 
-app.get("/uploads/:file(*)", (req, res) => {
+// Regex route — compatible with all Express/path-to-regexp versions
+app.get(/^\/uploads\/(.*)$/, (req, res) => {
   try {
-    // req.params.file contains the rest of the path after /uploads/
-    const requested = req.params.file || "";
-    // Normalize to remove any ../ attempts
-    const safePath = path.normalize(requested).replace(/^(\.\.(\/|\\|$))+/, "");
+    const requested = req.params[0] || ""; // captured group from (.*)
 
-    const absolute = path.join(uploadsDir, safePath);
+    // Normalize and remove any leading ../ attempts
+    const safeRel = path.normalize(requested).replace(/^(\.\.(\/|\\|$))+/, "");
 
-    // Security check: ensure the resolved path is still inside uploadsDir
-    if (!absolute.startsWith(uploadsDir + path.sep) && absolute !== uploadsDir) {
-      console.warn("Blocked suspicious download path:", requested);
+    // Resolve absolute paths
+    const absolute = path.join(uploadsDir, safeRel);
+    const normalizedUploadsDir = path.resolve(uploadsDir) + path.sep;
+    const normalizedAbsolute = path.resolve(absolute);
+
+    // Ensure the file is within uploadsDir (prevent path traversal)
+    if (!normalizedAbsolute.startsWith(normalizedUploadsDir) && normalizedAbsolute !== path.resolve(uploadsDir)) {
+      console.warn("Blocked suspicious download attempt:", requested);
       return res.status(400).send("Invalid file path");
     }
 
-    // Optionally: check file existence first
+    // Check file exists & readable, then send as download
     fs.access(absolute, fs.constants.R_OK, (err) => {
       if (err) {
-        console.error("DOWNLOAD ERROR: file not found or unreadable:", absolute, err);
+        console.error("DOWNLOAD ERROR: file not found/unreadable:", absolute, err);
         return res.status(404).send("File not found");
       }
 
