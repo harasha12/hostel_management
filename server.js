@@ -141,11 +141,11 @@ app.use((req, res, next) => {
 
 // ===== MySQL Connection =====
 const db = mysql.createPool({
-    host: 'hopper.proxy.rlwy.net',   // Railway host
+    host: 'tramway.proxy.rlwy.net',   // Railway host
     user: 'root',                     // Railway username
-    password: 'NsQUjQuHuvHTtLEtpnKmRwaNUuySXKoj',     // Railway password
-    database: 'railway',              // Railway database name
-    port: 43366,                      // Railway port
+    password: 'PrSpzKuerkeTMsPHGgnrwXFuDwhPDQfC',     // Railway password
+    database: 'hdb',              // Railway database name
+    port: 50208,                      // Railway port
     waitForConnections: true,
     connectionLimit: 10,
     queueLimit: 0
