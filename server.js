@@ -154,9 +154,7 @@ function getJoinYearFromRegId(regId) {
   return joinYear;
 }
 
-// near top of file if not already present:
-const fs = require('fs');
-const path = require('path');
+
 
 // Serve downloads from the uploads directory (secure)
 const uploadsDir = path.join(__dirname, "uploads");
