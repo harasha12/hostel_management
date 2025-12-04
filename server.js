@@ -1,3 +1,6 @@
+
+// ================================
+// FILE UPLOAD CONFIGURATION
 // ================================
 const express = require("express");
 const mysql = require("mysql2");
@@ -30,6 +33,16 @@ if (!fs.existsSync(uploadsPath)) {
 }
 
 
+
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: "harshavardhanvangara@gmail.com",      // your gmail
+    pass: "bfllbazxsxinlheb",      // app password
+  },
+});
+
+
 // ✅ serve the entire uploads folder publicly
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 // Serve profile images
@@ -43,47 +56,70 @@ app.use(flash());
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     let dir;
+
     switch (file.fieldname) {
+
       case "receipt_pdf":
         dir = path.join(__dirname, "uploads/receipts");
         break;
+
       case "outpass_pdf":
         dir = path.join(__dirname, "uploads/outpasses");
         break;
+
       case "sbi_pdf":
-        dir = path.join(__dirname, "uploads/sbi");
+        dir = path.join(__dirname, "uploads/receipts");
         break;
+
       case "studentsFile":
         dir = path.join(__dirname, "uploads/students");
         break;
+
       case "student_aadhaar":
       case "father_aadhaar":
-        dir = path.join(__dirname, "uploads/adhaar");
+        dir = path.join(__dirname, "uploads/aadhaar"); // ✔ Corrected folder name
         break;
+
       case "profile_image":
         dir = path.join(__dirname, "uploads/profile_images");
         break;
+
+      case "mess_bill_pdf":
+        dir = path.join(__dirname, "uploads/mess_bills");
+        break;
+
       default:
         dir = path.join(__dirname, "uploads");
     }
+
     if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
     cb(null, dir);
   },
 
-  filename: (req, file, cb) => {
-    if (file.fieldname === "student_aadhaar" || file.fieldname === "father_aadhaar") {
-      const studentId = req.session.user.student_id;
-      const ext = path.extname(file.originalname);
-      cb(null, `${studentId}_${file.fieldname}${ext}`);
-    } else if(file.fieldname === "profile_image") {
-      const studentId = req.session.user.student_id;
-      const ext = path.extname(file.originalname);
-      cb(null, `${studentId}_profile${ext}`);
-    } else {
-      const safeName = path.basename(file.originalname).replace(/[<>:"/\\|?*\s]+/g, "_").trim();
-      cb(null, Date.now() + "-" + safeName);
-    }
+filename: (req, file, cb) => {
+  const studentId = req.session?.user?.student_id || "unknown";
+  const ext = path.extname(file.originalname);
+
+  // ---------- AADHAAR (student & father) ----------
+  if (file.fieldname === "student_aadhaar" || file.fieldname === "father_aadhaar") {
+    return cb(null, `${studentId}_${file.fieldname}${ext}`);
   }
+
+  // ---------- PROFILE IMAGE ----------
+  if (file.fieldname === "profile_image") {
+    return cb(null, `${studentId}_profile${ext}`);
+  }
+
+  // ---------- ALL OTHER FILES (SBI RECEIPTS, ETC.) ----------
+  // Replace spaces + all invalid characters with "_"
+  safeName = file.originalname
+  .replace(/\s+/g, "_")              // replace SPACES
+  .replace(/[<>:"/\\|?*]+/g, "")     // remove invalid characters
+  .trim();
+
+
+  return cb(null, Date.now() + "-" + safeName);
+}
 });
 
 const upload = multer({
@@ -118,6 +154,15 @@ function getJoinYearFromRegId(regId) {
   return joinYear;
 }
 
+app.get("/uploads/*", (req, res) => {
+  const filePath = path.join(__dirname, req.path);
+  res.download(filePath, (err) => {
+    if (err) {
+      console.error("DOWNLOAD ERROR:", err);
+      res.status(404).send("File not found");
+    }
+  });
+});
 
 // ===== Middleware =====
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -188,68 +233,8 @@ app.get("/", (req, res) => {
 
   res.render("choose_login");
 });
-// ===== FORGOT PASSWORD =====
-app.get("/forgot-password", (req, res) => {
-  res.render("forgot-password"); // simple email input form
-});
 
-app.post("/forgot-password", (req, res) => {
-  const { email } = req.body;
 
-  // Check if user exists
-  db.query("SELECT * FROM users WHERE email=?", [email], (err, rows) => {
-    if (err) return res.send("DB Error");
-    if (!rows.length) return res.send("No account found with this email");
-
-    const resetToken = uuidv4(); // unique token
-    const resetLink = `http://localhost:3000/reset-password/${resetToken}`;
-
-    // Store token temporarily (you can add a reset_tokens table instead)
-    db.query("UPDATE users SET reset_token=? WHERE email=?", [resetToken, email]);
-
-    // Send email
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: "harshavardhanvangara@gmail.com",
-        pass: "bfllbazxsxinlheb", // app password if 2FA enabled
-      },
-    });
-
-    const mailOptions = {
-      from: "harshavardhanvangara@gmail.com",
-      to: email,
-      subject: "Password Reset - Hostel Management",
-      text: `Click the following link to reset your password: ${resetLink}`,
-    };
-
-    transporter.sendMail(mailOptions, (error, info) => {
-      if (error) return res.send("Error sending email: " + error);
-      res.send("Password reset link sent to your email");
-    });
-  });
-});
-
-// ===== RESET PASSWORD =====
-app.get("/reset-password/:token", (req, res) => {
-  res.render("reset-password", { token: req.params.token });
-});
-
-app.post("/reset-password/:token", (req, res) => {
-  const { password } = req.body;
-  const { token } = req.params;
-
-  bcrypt.hash(password, 10).then((hash) => {
-    db.query(
-      "UPDATE users SET password=?, reset_token=NULL WHERE reset_token=?",
-      [hash, token],
-      (err) => {
-        if (err) return res.send("Error resetting password");
-        res.send("Password reset successful. <a href='/'>Login</a>");
-      }
-    );
-  });
-});
 // ===== Logout =====
 app.get("/logout", (req, res) => {
   req.session.destroy(() => res.redirect("/"));
@@ -260,61 +245,100 @@ app.get("/forgot-password", (req, res) => {
   res.render("forgot-password"); // email input form
 });
 
+
+
+// ========== FORGOT PASSWORD WITH OTP ==========
 app.post("/forgot-password", (req, res) => {
   const { email } = req.body;
+  const otp = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit OTP
+  const tables = ["students", "wardens", "admins", "security"];
 
-  db.query("SELECT * FROM users WHERE email=?", [email], (err, rows) => {
-    if (err) return res.send("DB Error");
-    if (!rows.length) return res.send("No account found with this email");
+  const checkNextTable = (index) => {
+    if (index >= tables.length)
+      return res.send("No account found with this email");
 
-    const resetToken = uuidv4(); // unique token
-    const resetLink = `http://localhost:3000/reset-password/${resetToken}`;
+    const table = tables[index];
+    db.query(`SELECT * FROM ${table} WHERE email=?`, [email], (err, rows) => {
+      if (err) return res.send("DB Error");
+      if (rows.length > 0) {
+        // Found the user — store OTP
+        db.query(`UPDATE ${table} SET otp=? WHERE email=?`, [otp, email], (err2) => {
+          if (err2) return res.send("Error saving OTP");
 
-    db.query("UPDATE users SET reset_token=? WHERE email=?", [resetToken, email]);
+          // Send OTP via email
+          const transporter = nodemailer.createTransport({
+            service: "gmail",
+            auth: {
+              user: "harshavardhanvangara@gmail.com",
+              pass: "bfllbazxsxinlheb", // Use App Password
+            },
+          });
 
-    // send email
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: "harshavardhanvangara@gmail.com",
-        pass: "bfllbazxsxinlheb", // app password if 2FA enabled
-      },
+          const mailOptions = {
+            from: "harshavardhanvangara@gmail.com",
+            to: email,
+            subject: "Password Reset OTP - Hostel Management System",
+            text: `Your OTP for password reset is: ${otp}\n\nIt will expire in 10 minutes.`,
+          };
+
+          transporter.sendMail(mailOptions, (error) => {
+            if (error) return res.send("Error sending email: " + error);
+            res.render("reset-password", { table, email }); // show reset form
+          });
+        });
+      } else {
+        checkNextTable(index + 1);
+      }
     });
+  };
 
-    const mailOptions = {
-      from: "harshavardhanvangara@gmail.com",
-      to: email,
-      subject: "Password Reset - Hostel Management",
-      text: `Click to reset password: ${resetLink}`,
-    };
-
-    transporter.sendMail(mailOptions, (error, info) => {
-      if (error) return res.send("Error sending email: " + error);
-      res.send("Password reset link sent to your email");
-    });
-  });
+  checkNextTable(0);
 });
+
 
 // ===== RESET PASSWORD =====
 app.get("/reset-password/:token", (req, res) => {
   res.render("reset-password", { token: req.params.token });
 });
 
-app.post("/reset-password/:token", (req, res) => {
-  const { password } = req.body;
-  const { token } = req.params;
+app.post("/reset-password", (req, res) => {
+  const { email, otp, newPassword } = req.body;
+  const tables = ["students", "wardens", "admins", "security"];
 
-  bcrypt.hash(password, 10).then((hash) => {
+  const checkNextTable = (index) => {
+    if (index >= tables.length)
+      return res.send("Invalid OTP or Email");
+
+    const table = tables[index];
     db.query(
-      "UPDATE users SET password=?, reset_token=NULL WHERE reset_token=?",
-      [hash, token],
-      (err) => {
-        if (err) return res.send("Error resetting password");
-        res.send("Password reset successful. <a href='/'>Login</a>");
+      `SELECT * FROM ${table} WHERE email=? AND otp=?`,
+      [email, otp],
+      (err, rows) => {
+        if (err) return res.send("DB Error");
+        if (rows.length > 0) {
+          // OTP valid — update password
+          bcrypt.hash(newPassword, 10).then((hash) => {
+            db.query(
+              `UPDATE ${table} SET password=?, otp=NULL WHERE email=?`,
+              [hash, email],
+              (err2) => {
+                if (err2) return res.send("Error updating password");
+                res.send(
+                  "Password reset successful. <a href='/choose_login.ejs'>Login</a>"
+                );
+              }
+            );
+          });
+        } else {
+          checkNextTable(index + 1);
+        }
       }
     );
-  });
+  };
+
+  checkNextTable(0);
 });
+
 
 
 app.get('/download/:type/:filename', (req, res) => {
@@ -532,7 +556,7 @@ app.get("/student/applyoutpass", (req, res) => {
   if (!req.session.user || req.session.role !== "student") {
     return res.redirect("/login/student");
   }
-  res.render("student/applyoutpass");
+  res.render("student/applyOutpass");
 });
 
 // Handle Apply Outpass form submission
@@ -867,35 +891,24 @@ app.get('/student/viewfees', async (req, res) => {
 });
 
 
-// Aadhaar upload route for both student & father
-app.post("/student/upload-aadhaar/:type", upload.single("aadhaar"), async (req, res) => {
-  if (!req.session.user || req.session.role !== "student") {
+app.post("/student/upload-aadhaar", upload.fields([
+  { name: "student_aadhaar", maxCount: 1 },
+  { name: "father_aadhaar", maxCount: 1 }
+]), async (req, res) => {
+  if (!req.session.user || req.session.role !== "student")
     return res.status(403).send("Unauthorized");
-  }
 
-  const { type } = req.params; // "student" or "father"
   const studentId = req.session.user.student_id;
-  const fileName = req.file ? req.file.filename : null;
+  const studentFile = req.files["student_aadhaar"] ? req.files["student_aadhaar"][0].filename : null;
+  const fatherFile = req.files["father_aadhaar"] ? req.files["father_aadhaar"][0].filename : null;
 
-  if (!fileName) return res.status(400).send("No file uploaded");
-
-  if (type === "student") {
-    await db.promise().query(
-      "UPDATE students SET student_aadhaar=? WHERE student_id=?",
-      [fileName, studentId]
-    );
-  } else if (type === "father") {
-    await db.promise().query(
-      "UPDATE students SET father_aadhaar=? WHERE student_id=?",
-      [fileName, studentId]
-    );
-  } else {
-    return res.status(400).send("Invalid Aadhaar type");
-  }
+  await db.promise().query(
+    "UPDATE students SET student_aadhaar=COALESCE(?, student_aadhaar), father_aadhaar=COALESCE(?, father_aadhaar) WHERE student_id=?",
+    [studentFile, fatherFile, studentId]
+  );
 
   res.redirect("/student/profile");
 });
-
 app.get("/student/aadhaar/:type/:studentId", async (req, res) => {
   const { type, studentId } = req.params;
   const user = req.session.user;
@@ -976,7 +989,9 @@ app.post('/student/uploadReceipt', upload.single("sbi_pdf"), async (req, res) =>
     if (!student) return res.send("❌ Student not found.");
 
     if (!req.file) return res.send("❌ No PDF uploaded.");
-    const pdf_path = `uploads/sbi/${req.file.filename}`;
+
+    // 🔥🔥 FIX #1: SAVE ALL RECEIPTS INTO uploads/receipts/
+    const pdf_path = `uploads/receipts/${req.file.filename}`;
 
     conn = await db.promise().getConnection();
     await conn.beginTransaction();
@@ -1000,9 +1015,10 @@ app.post('/student/uploadReceipt', upload.single("sbi_pdf"), async (req, res) =>
       [student_id, student_unique_id, ref_id, amount_paid, pdf_path, year, status]
     );
 
-    // If verified, update student block-wise paid
+    // If verified, update related fee fields
     if (status === 'Verified') {
       let colToUpdate;
+
       switch (remarks.toLowerCase()) {
         case 'room rent': colToUpdate = 'room_rent_paid'; break;
         case 'mess bill1': colToUpdate = 'mess_bill1_paid'; break;
@@ -1011,7 +1027,6 @@ app.post('/student/uploadReceipt', upload.single("sbi_pdf"), async (req, res) =>
       }
 
       if (colToUpdate) {
-        // Increment component paid
         await conn.query(
           `UPDATE students SET 
              ${colToUpdate} = IFNULL(${colToUpdate},0) + ?,
@@ -1043,6 +1058,73 @@ app.post('/student/uploadReceipt', upload.single("sbi_pdf"), async (req, res) =>
     if (conn) conn.release();
   }
 });
+app.get('/warden/acceptedReceipts', async (req, res) => {
+  if (req.session.role !== 'admin') return res.redirect('/choose_login');
+
+  try {
+    // fetch receipts whose status is 'Verified' or 'Accepted'
+    const [accepted] = await db.promise().query(`
+      SELECT fr.*, s.name, s.student_unique_id
+      FROM fee_receipts fr
+      JOIN students s ON fr.student_id = s.student_id
+      WHERE fr.status IN ('Verified', 'Accepted')
+      ORDER BY fr.verified_at DESC
+    `);
+
+    res.render('warden/acceptedReceipts', { accepted });
+  } catch (err) {
+    console.error("Error fetching accepted receipts:", err);
+    res.status(500).send("Database error: " + err.message);
+  }
+});
+
+app.get("/viewReceipts", async (req, res) => {
+  try {
+    const [receipts] = await db.promise().query(
+      `SELECT fr.*, s.name, s.course, s.year, s.room_no 
+       FROM fee_receipts fr
+       JOIN students s ON s.student_id = fr.student_id
+       ORDER BY fr.created_at DESC`
+    );
+
+    res.render("admin/viewReceipts", { receipts });
+
+  } catch (err) {
+    console.error("Error loading receipts:", err);
+    res.status(500).send("Error loading receipts");
+  }
+});
+app.get("/receipt/download/:receipt_id", async (req, res) => {
+  try {
+    const receiptId = req.params.receipt_id;
+
+    const [rows] = await db.promise().query(
+      "SELECT pdf_path FROM fee_receipts WHERE receipt_id = ?",
+      [receiptId]
+    );
+
+    if (!rows.length) {
+      console.error("❌ Receipt not found");
+      return res.status(404).send("Receipt not found");
+    }
+
+    const relativePath = rows[0].pdf_path; 
+    const fullPath = path.join(__dirname, relativePath);
+
+    console.log("Downloading file:", fullPath);
+
+    res.download(fullPath, (err) => {
+      if (err) {
+        console.error("Download error:", err);
+        res.status(404).send("File not found");
+      }
+    });
+
+  } catch (err) {
+    console.error("Server error:", err);
+    res.status(500).send("Server error");
+  }
+});
 
 
 
@@ -1064,6 +1146,28 @@ app.get('/student/viewfees', async (req, res) => {
     const remaining_due = total_fee - total_paid;
 
     res.render('student/viewFees', { receipts, total_paid, remaining_due });
+});
+// ==============================
+// ADMIN — VIEW ALL PAID RECEIPTS
+// ==============================
+app.get("/admin/viewReceipts", async (req, res) => {
+  try {
+    if (!req.session.user || req.session.role !== "admin") {
+      return res.redirect("/choose_login");
+    }
+
+    const [receipts] = await db.promise().query(`
+      SELECT fr.*, s.name, s.course, s.year, s.room_no
+      FROM fee_receipts fr
+      JOIN students s ON fr.student_id = s.student_id
+      ORDER BY fr.created_at DESC
+    `);
+
+    res.render("admin/viewReceipts", { receipts });
+  } catch (err) {
+    console.error("ERROR loading paid receipts:", err);
+    res.status(500).send("Server Error");
+  }
 });
 
 // View student outpasses
@@ -1253,7 +1357,7 @@ app.get("/warden/dashboard", async (req, res) => {
 // Example route
 app.get('/warden/markAttendance', async (req, res) => {
   try {
-    const blocks = ["Old Block", "New Block", "GYM Block", "Amenities"];
+    const blocks = ["Old Block", "New Block", "Main Block", "Aminities", "GYM"];
     const roomsByBlock = {};
 
     // Fetch available rooms per block
@@ -1531,26 +1635,96 @@ app.get("/warden/approveOutpass", (req, res) => {
 
 app.post("/warden/approveOutpass/:id/:action", (req, res) => {
   const { id, action } = req.params;
+
   const status = action === "approve" ? "Approved" : "Rejected";
 
-  // ✅ Fetch warden info from session
-  const acceptedBy = req.session.warden_name || req.session.warden_id || "Unknown Warden";
+  // Warden info
+  const acceptedBy = req.session.warden_name || "Unknown Warden";
   const approvedAt = new Date();
 
-  const query = `
-    UPDATE outpasses
-    SET status = ?, accepted_by = ?, approved_at = ?
-    WHERE outpass_id = ?
+  // 1️⃣ Update outpass status
+ // 1️⃣ Update outpass status
+const updateQuery = `
+  UPDATE outpasses
+  SET status = ?, accepted_by = ?, approved_at = ?
+  WHERE outpass_id = ?
+`;
+
+db.query(updateQuery, [status, acceptedBy, approvedAt, id], (err) => {
+  if (err) {
+    console.error("Outpass Update Error:", err);
+    return res.send("Error updating outpass: " + err);
+  }
+
+  // 2️⃣ Fetch student email + details
+  const fetchQuery = `
+    SELECT s.email, s.name, o.out_date, o.return_date, o.reason
+    FROM outpasses o
+    JOIN students s ON o.student_id = s.student_id
+    WHERE o.outpass_id = ?
   `;
 
-  db.query(query, [status, acceptedBy, approvedAt, id], (err) => {
-    if (err) {
-      console.error("Error Updating Outpass:", err);
-      return res.send("Error Updating Outpass: " + err);
+  db.query(fetchQuery, [id], (err2, results) => {
+    if (err2 || results.length === 0) {
+      console.log("Email fetch error:", err2);
+      return res.redirect("/warden/approveOutpass");
     }
-    res.redirect("/warden/approveOutpass");
+
+    const student = results[0];
+
+    // 3️⃣ Prepare Email
+    const subject =
+      status === "Approved"
+        ? "Outpass Approved - Hostel Management"
+        : "Outpass Rejected - Hostel Management";
+
+    const message =
+      status === "Approved"
+        ? `Hello ${student.name},
+
+Your outpass request has been *approved*.
+
+📅 Out Date: ${student.out_date}
+📅 Return Date: ${student.return_date}
+📝 Reason: ${student.reason}
+
+Please follow hostel rules during your outing.
+
+Regards,
+Hostel Warden`
+        : `Hello ${student.name},
+
+Your outpass request has been *rejected*.
+
+📝 Reason Provided: ${student.reason}
+
+If you need clarification, kindly meet the warden.
+
+Regards,
+Hostel Warden`;
+
+    // 4️⃣ Send Email
+    transporter.sendMail(
+      {
+        from: "harshavardhanvangara@gmail.com",
+        to: student.email,
+        subject: subject,
+        text: message
+      },
+      (mailErr, info) => {
+        if (mailErr) {
+          console.log("Email Send Error:", mailErr);
+        } else {
+          console.log("Email sent:", info.response);
+        }
+
+        return res.redirect("/warden/approveOutpass");
+      }
+    );
   });
 });
+});
+
 
 
 app.get("/warden/emergencyOutpasses", (req, res) => {
@@ -1592,33 +1766,134 @@ app.get("/warden/upload-students", (req, res) => {
 app.post("/warden/upload-students", upload.single("studentsFile"), async (req, res) => {
   try {
     if (!req.file) {
-      return res.render("warden/upload-students", { success: null, error: "⚠️ Please select a file." });
+      return res.render("warden/upload-students", {
+        success: null,
+        error: "⚠️ Please select a file."
+      });
     }
 
     const workbook = xlsx.readFile(req.file.path);
-    const sheetName = workbook.SheetNames[0];
-    const data = xlsx.utils.sheet_to_json(workbook.Sheets[sheetName]);
+    const sheet = workbook.Sheets[workbook.SheetNames[0]];
+
+    // Read sheet with empty cells
+    let data = xlsx.utils.sheet_to_json(sheet, { defval: "" });
+
+    // Skip heading rows
+    data = data.slice(4);
+
+    // ---------- CLEANING FUNCTIONS ----------
+    function clean(val) {
+      if (!val) return "";
+      return val.toString().trim();
+    }
+
+    function cleanRoom(val) {
+      if (!val) return "";
+      return val.toString().trim().replace(/\s+/g, "");
+    }
+
+    function cleanStudentId(val) {
+      if (!val) return "";
+      return val
+        .toString()
+        .trim()
+        .split(/[\s\n]+/)[0]   // Only first reg
+        .trim();
+    }
+
+    // 🚀 FIXED: PERFECT COURSE HANDLING
+    function normalizeCourse(c) {
+      if (!c) return "";
+
+      let text = c.toString().toUpperCase().trim();
+
+      // Remove BTECH / B.TECH / B-TECH / B TECH / BTECH(CSE)
+      text = text.replace(/B[\.\-\s]*TECH[\s\-\.\(\)]*/g, "");
+      text = text.replace(/B[\.\-\s]*T[\.\-\s]*/g, "");
+
+      // Remove extra symbols
+      text = text.replace(/[\.\-\(\)]/g, "");
+      text = text.replace(/\s+/g, "");
+
+      const map = {
+        "CSE": "CSE",
+        "CS": "CSE",
+        "CSC": "CSC",
+        "CSD": "CSD",
+        "CYS": "CYS",
+        "AI&DS": "AIDS",
+        "AIDS": "AIDS",
+
+        "ECE": "ECE",
+        "EEE": "EEE",
+
+        "ME": "MECH",
+        "MECH": "MECH",
+
+        "CIVIL": "CIVIL"
+      };
+
+      // exact match
+      if (map[text]) return map[text];
+
+      // contains match
+      for (let key in map) {
+        if (text.includes(key)) return map[key];
+      }
+
+      return text;
+    }
+
+    function normalizeBlock(b) {
+      if (!b) return "";
+      const block = b.toString().replace(/\s+/g, "").toUpperCase();
+
+      if (block.includes("OLD")) return "Old Block";
+      if (block.includes("NEW")) return "New Block";
+      if (block.includes("MAIN")) return "Main Block";
+      if (block.includes("AMEN")) return "Amenities";
+      if (block.includes("GYM")) return "GYM Block";
+
+      return "";
+    }
+
+    function romanToNumber(roman) {
+      if (!roman) return null;
+      const map = { I: 1, II: 2, III: 3, IV: 4 };
+      return map[roman.trim().toUpperCase()] || null;
+    }
+
+    // -------- ROOM/BLOCK INHERIT FIX ----------
+    let lastRoom = "";
+    let lastBlock = "";
 
     let insertedCount = 0;
 
-    for (const student of data) {
-      const {
-        userId,
-        uniqueId,
-        name,
-        email,
-        course,
-        year,
-        mobile_no,         // student mobile
-        father_name,       // father name
-        father_mobile      // father mobile
-      } = student;
+    for (const row of data) {
+      let room_no = cleanRoom(row["__EMPTY_1"]);
+      const name  = clean(row["__EMPTY_2"]);
+      const student_id = cleanStudentId(row["__EMPTY_3"]);
+      const course = normalizeCourse(row["__EMPTY_4"] || "");
+      const year = romanToNumber(clean(row["__EMPTY_5"]));
+      let block = normalizeBlock(row["__EMPTY_6"]);
+      const student_mobile = clean(row["__EMPTY_7"]);
+      const father_mobile  = clean(row["__EMPTY_8"]);
 
-      if (!userId || !uniqueId || !name || !email) continue;
+      // inherit room, block
+      if (!room_no && lastRoom) room_no = lastRoom;
+      if (!block && lastBlock) block = lastBlock;
 
-      const joinYear = 2000 + parseInt(userId.substring(0, 2));
+      if (room_no) lastRoom = room_no;
+      if (block)   lastBlock = block;
 
-      // Generate hostel_id automatically
+      if (!student_id || !name) continue;
+
+      const email = `${student_id}@gmail.com`;
+      const uniqueId = student_id;
+
+      const joinYear = 2000 + parseInt(student_id.substring(0, 2));
+
+      // Generate hostel_id
       const [rows] = await db.promise().query(
         "SELECT hostel_id FROM students WHERE hostel_id LIKE ? ORDER BY hostel_id DESC LIMIT 1",
         [`${joinYear}%`]
@@ -1632,39 +1907,28 @@ app.post("/warden/upload-students", upload.single("studentsFile"), async (req, r
         newHostelId = joinYear + "000001";
       }
 
-      const hashedPassword = bcrypt.hashSync(userId.toString(), 10);
+      const hashedPassword = bcrypt.hashSync(student_id.toString(), 10);
 
-      // Insert student
+      // INSERT
       await db.promise().query(
-  `INSERT INTO students 
-   (student_id, student_unique_id, name, email, password, hostel_id, 
-    course, year, total_fee, total_paid, created_at, year_of_join, 
-    student_mobile, father_name, father_mobile)
-   VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, 0, NOW(), ?, ?, ?, ?)
-   ON DUPLICATE KEY UPDATE 
-     name = VALUES(name),
-     course = VALUES(course),
-     year = VALUES(year),
-     student_mobile = VALUES(student_mobile),
-     father_name = VALUES(father_name),
-     father_mobile = VALUES(father_mobile)`,
-  [
-    userId,
-    uniqueId,
-    name,
-    email,
-    hashedPassword,
-    newHostelId,
-    course,
-    year,
-    joinYear,
-    mobile_no || null,
-    father_name || null,
-    father_mobile || null
-  ]
-);
-
-
+        `INSERT INTO students 
+          (student_id, student_unique_id, name, email, password, hostel_id, 
+           room_no, course, year, block, student_mobile, father_mobile, year_of_join)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+         ON DUPLICATE KEY UPDATE 
+           name = VALUES(name), 
+           course = VALUES(course), 
+           year = VALUES(year), 
+           room_no = VALUES(room_no),
+           block = VALUES(block), 
+           student_mobile = VALUES(student_mobile),
+           father_mobile = VALUES(father_mobile)`,
+        [
+          student_id, uniqueId, name, email, hashedPassword,
+          newHostelId, room_no, course, year, block,
+          student_mobile, father_mobile, joinYear
+        ]
+      );
 
       insertedCount++;
     }
@@ -1675,13 +1939,14 @@ app.post("/warden/upload-students", upload.single("studentsFile"), async (req, r
     });
 
   } catch (err) {
-    console.error(err);
+    console.error("UPLOAD ERROR:", err);
     res.render("warden/upload-students", {
       success: null,
       error: "❌ Error while uploading file."
     });
   }
 });
+
 app.get("/warden/upload_results", (req, res) => {
   const messages = {};
 
@@ -1772,6 +2037,63 @@ app.post("/warden/upload_results", async (req, res) => {
   } catch (err) {
     console.error("❌ Error uploading results:", err);
     res.status(500).send("Error processing results PDF");
+  }
+});
+
+
+app.get("/warden/uploadMessBill", (req, res) => {
+  res.render("warden/uploadMessBill");
+});
+
+app.post("/warden/uploadMessBill", upload.single("mess_bill_pdf"), async (req, res) => {
+  try {
+    const pdfBuffer = fs.readFileSync(req.file.path);
+    const data = await pdfParse(pdfBuffer);
+    const text = data.text.trim();
+
+    const lines = text.split("\n").map(l => l.trim()).filter(l => l);
+    const month = new Date().toLocaleString("default", { month: "long", year: "numeric" });
+    const uploadedBy = req.session?.warden?.name || "Admin";
+
+    for (const line of lines) {
+      // Expected line: "205 Harsha STU123 3200"
+      const parts = line.split(/\s+/);
+      if (parts.length < 3) continue;
+
+      let room_no, name, student_id, amount;
+
+      if (!isNaN(parts[0])) room_no = parts[0];
+      name = parts[1];
+      amount = parseFloat(parts[parts.length - 1]);
+      student_id = parts.find(p => p.startsWith("STU")) || null;
+
+      // Find matching student
+      const [rows] = await db.promise().query(
+        "SELECT * FROM students WHERE student_id = ? OR (room_no = ? AND name = ?)",
+        [student_id, room_no, name]
+      );
+
+      if (rows.length > 0) {
+        const s = rows[0];
+
+        // Insert or update in mess_bills
+        await db.promise().query(
+          "INSERT INTO mess_bills (student_id, month, amount, uploaded_by) VALUES (?, ?, ?, ?)",
+          [s.student_id, month, amount, uploadedBy]
+        );
+
+        // Update student's current mess bill
+        await db.promise().query(
+          "UPDATE students SET current_mess_bill = ? WHERE student_id = ?",
+          [amount, s.student_id]
+        );
+      }
+    }
+
+    res.send("✅ Mess Bill uploaded and updated successfully!");
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("❌ Error reading PDF: " + err.message);
   }
 });
 
@@ -2207,7 +2529,39 @@ app.get('/admin/viewReceipts', async (req, res) => {
 
     res.render('admin/viewReceipts', { allReceipts });
 });
+// ⭐ View ALL Receipts for Warden
+app.get("/warden/viewReceipts", async (req, res) => {
+  try {
+    if (!req.session.user || req.session.role !== "warden") {
+      return res.redirect("/choose_login");
+    }
 
+    const [receipts] = await db.promise().query(`
+      SELECT fr.receipt_id, fr.student_id, s.name, s.course, s.year, s.room_no,
+             fr.ref_id, fr.amount_paid, fr.status, fr.pdf_path, fr.created_at
+      FROM fee_receipts fr
+      JOIN students s ON fr.student_id = s.student_id
+      ORDER BY fr.created_at DESC
+    `);
+
+    res.render("warden/viewReceipts", { receipts });
+
+  } catch (err) {
+    console.error("Error loading receipts:", err);
+    res.status(500).send("Server Error");
+  }
+});
+
+
+app.get('/warden/pendingReceipts', async (req, res) => {
+    if (req.session.role !== 'admin') return res.redirect('/choose_login');
+
+    const [pending] = await db.promise().query(
+        "SELECT fr.*, s.name FROM fee_receipts fr JOIN students s ON fr.student_id=s.student_id WHERE fr.status='Pending' ORDER BY fr.created_at DESC"
+    );
+
+    res.render('warden/pendingReceipts', { pending });
+});
 // ---------------- ADMIN VIEW ALL OUTPASSES ----------------
 app.get("/admin/viewOutpasses", (req, res) => {
   if (!req.session.user || req.session.role !== "admin") {
@@ -2776,7 +3130,6 @@ app.get("/security/dashboard", async (req, res) => {
     const roomQuery = req.query.room_no || "";
     const today = new Date().toISOString().split("T")[0];
 
-    // ✅ Base SQL with JOIN to students
     let sql = `
       SELECT 
         o.outpass_id, 
@@ -2793,7 +3146,6 @@ app.get("/security/dashboard", async (req, res) => {
 
     const params = [today];
 
-    // ✅ Filter by room number if provided
     if (roomQuery.trim() !== "") {
       sql += " AND s.room_no = ?";
       params.push(roomQuery.trim());
@@ -2803,17 +3155,22 @@ app.get("/security/dashboard", async (req, res) => {
 
     const [outpasses] = await db.promise().query(sql, params);
 
+    // ✅ Add countToday so EJS doesn't throw undefined error
+    const countToday = outpasses.length;
+
     res.render("security/dashboard", {
       user: req.session.user,
       session: req.session,
       outpasses,
-      roomQuery
+      roomQuery,
+      countToday   // 🔥 FIXED
     });
   } catch (err) {
     console.error("❌ Error loading security dashboard:", err);
     res.status(500).send("Error loading security dashboard: " + err.message);
   }
 });
+
 
 /// View outpasses
 app.get("/security/viewOutpasses", (req, res) => {
@@ -2822,14 +3179,14 @@ app.get("/security/viewOutpasses", (req, res) => {
     }
 
     db.query(
-  "SELECT * FROM outpasses WHERE status='Approved' ORDER BY out_date DESC",
-  (err, results) => {
-    if (err) return res.send("Error fetching outpasses: " + err);
-    res.render("security/viewOutpasses", { outpasses: results, session: req.session });
-  }
-);
-
+        "SELECT * FROM outpasses WHERE status IN ('Approved', 'Exited') ORDER BY out_date DESC",
+        (err, results) => {
+            if (err) return res.send("Error fetching outpasses: " + err);
+            res.render("security/viewOutpasses", { outpasses: results, session: req.session });
+        }
+    );
 });
+
 
 // Mark Exit
 app.get("/security/markExit/:id", (req, res) => {
@@ -2907,5 +3264,4 @@ app.get("/security/emergencyOutpasses", async (req, res) => {
 // START SERVER
 // =====================================
 app.listen(3000, () => console.log("🚀 Server running on http://localhost:3000"));
-
 
