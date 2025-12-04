@@ -1,76 +1,441 @@
-
+<% 
+  // Safe fallbacks so template doesn't crash when backend didn't supply variables
+  const wardenNameSafe    = (typeof wardenName !== 'undefined' && wardenName) ? wardenName : 'Warden';
+  const pendingCountSafe  = (typeof pendingCount !== 'undefined' && pendingCount !== null) ? pendingCount : 0;
+  const studentCountSafe  = (typeof studentCount !== 'undefined' && studentCount !== null) ? studentCount : 0;
+  const complaintCountSafe= (typeof complaintCount !== 'undefined' && complaintCount !== null) ? complaintCount : 0;
+  const approvedCountSafe = (typeof approvedCount !== 'undefined' && approvedCount !== null) ? approvedCount : 0;
+  const studentsSafe      = Array.isArray(students) ? students : [];
+%>
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Warden Dashboard</title>
-  <link rel="stylesheet" href="/css/style.css">
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"/>
+
   <style>
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 20px;
+    :root{
+      --sidebar-width: 250px;
+      --sidebar-collapsed: 70px;
+      --accent-gold: #ffd600;
+      --glass: rgba(255,255,255,0.06);
     }
-    th, td {
-      padding: 10px;
-      border: 1px solid #ddd;
-      text-align: center;
+
+    /* Background image (use your image path) */
+    body{
+      margin:0;
+      font-family: "Segoe UI", Roboto, Arial, sans-serif;
+      min-height:100vh;
+      background: url('/images/hostel-bg.jpg') center/cover no-repeat fixed;
+      color:#fff;
     }
-    th {
-      background: #f4f4f4;
+
+    /* dark overlay so text is readable */
+    .overlay {
+      min-height:100vh;
+      background: linear-gradient(to bottom, rgba(2,6,23,0.65), rgba(2,6,23,0.75));
+      backdrop-filter: blur(3px);
+      display:flex;
+      flex-direction:column;
+    }
+
+    /* ---------- HEADER (CENTERED) ---------- */
+    .college-header{
+      display:flex;
+      align-items:center;
+      gap:18px;
+      padding:18px 28px;
+      border-bottom: 3px solid rgba(0,0,0,0.35);
+      background: linear-gradient(90deg, rgba(0,0,0,0.35), rgba(0,0,0,0.15));
+      justify-content:center;           /* CENTER content horizontally */
+      text-align:center;                /* center text inside header-text */
+      flex-wrap:wrap;                   /* allow logo + text to wrap on narrow screens */
+    }
+
+    .college-header-inner{
+      display:flex;
+      align-items:center;
+      gap:18px;
+      max-width:1150px;                 /* keeps header content centered with a max width */
+      width:100%;
+      padding:0 12px;
+      justify-content:center;
+      box-sizing:border-box;
+    }
+
+    .college-header img{
+      height:78px;
+      width:auto;
+      border-radius:6px;
+      box-shadow:0 6px 18px rgba(0,0,0,0.5);
+      animation: float 4s ease-in-out infinite;
+      flex-shrink:0;
+    }
+    @keyframes float {50%{transform:translateY(-6px)}}
+
+    .header-text{
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+    }
+
+    .header-text h2{
+      margin:0;
+      font-size:1.6rem;
+      letter-spacing:0.6px;
+      text-transform:uppercase;
+      color:#fff;
+      text-shadow:0 3px 6px rgba(0,0,0,0.7);
+    }
+    .header-text p{
+      margin:6px 0 0 0;
+      color: #e6e6e6;
+      font-size:0.9rem;
+      line-height:1.2;
+    }
+    .header-text .autonomous{ color: var(--accent-gold); font-weight:700; }
+
+    /* Layout */
+    .dashboard {
+      display:flex;
+      width:100%;
+      flex:1;
+    }
+
+    /* Sidebar */
+    .sidebar{
+      width:var(--sidebar-width);
+      min-width:var(--sidebar-width);
+      background: linear-gradient(180deg, rgba(6,25,63,0.95), rgba(15,45,99,0.95));
+      box-shadow: 6px 0 30px rgba(0,0,0,0.6);
+      display:flex;
+      flex-direction:column;
+      transition: width .28s ease;
+      z-index: 20;
+    }
+
+    .sidebar.collapsed{
+      width:var(--sidebar-collapsed);
+      min-width:var(--sidebar-collapsed);
+    }
+
+    .toggle-area {
+      display:flex;
+      justify-content:flex-end;
+      padding:12px;
+    }
+
+    .toggle-btn{
+      width:44px; height:44px;
+      border-radius:10px;
+      border:none;
+      background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
+      color:var(--accent-gold);
+      cursor:pointer;
+      box-shadow: 0 6px 14px rgba(0,0,0,0.4);
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      font-size:18px;
+    }
+
+    .nav {
+      padding:10px 8px 12px 8px;
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+      overflow:auto;
+    }
+
+    .nav a{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      color:#fff;
+      text-decoration:none;
+      padding:12px 16px;
+      border-radius:10px;
+      transition: all .18s ease;
+      font-weight:600;
+    }
+    .nav a i{ color: var(--accent-gold); width:22px; text-align:center; }
+    .nav a:hover{ background: rgba(255,255,255,0.04); transform:translateX(4px); color:var(--accent-gold); }
+
+    /* hide text when collapsed */
+    .sidebar.collapsed .nav a span.label { opacity:0; width:0; pointer-events:none; transition: opacity .18s, width .18s; }
+    .sidebar.collapsed .nav a { justify-content:center; padding:12px 6px; }
+
+    .logout{
+      margin-top:auto;
+      padding:18px;
+      border-top:1px solid rgba(255,255,255,0.04);
+    }
+    .logout a{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      justify-content:center;
+      background:transparent;
+      padding:10px 8px;
+      border-radius:8px;
+      color:var(--accent-gold);
+      border:1px solid rgba(255,214,0,0.14);
+      text-decoration:none;
+      font-weight:700;
+    }
+    .logout a:hover{ background:var(--accent-gold); color:#08203b; }
+
+    /* Main content */
+    .main{
+      flex:1;
+      padding:36px;
+      transition: margin-left .28s ease;
+      min-height: calc(100vh - 150px);
+    }
+
+    /* welcome */
+    .welcome{
+      text-align:center;
+      margin-top:8px;
+      margin-bottom:20px;
+    }
+    .welcome h1{
+      margin:0;
+      font-size:28px;
+      color:var(--accent-gold);
+      text-shadow:0 4px 18px rgba(0,0,0,0.6);
+    }
+
+    /* metric cards */
+    .metrics{
+      display:grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px,1fr));
+      gap:18px;
+      margin-top:26px;
+    }
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+      border-radius:12px;
+      padding:18px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.5);
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      transition: transform .16s, box-shadow .16s;
+      min-height:110px;
+    }
+    .card:hover{ transform:translateY(-6px); box-shadow: 0 18px 40px rgba(0,0,0,0.6); }
+    .card .icon{ font-size:34px; color:var(--accent-gold); }
+    .card .num{ font-size:28px; font-weight:800; color:#fff; }
+    .card .label{ color:#dcdcdc; font-weight:700; }
+
+    /* table */
+    .table-section{
+      margin-top:28px;
+    }
+    .table-title{ color:var(--accent-gold); font-weight:800; margin-bottom:8px; }
+
+    table{
+      width:100%;
+      border-collapse:collapse;
+      border-radius:10px;
+      overflow:hidden;
+      background: rgba(0,0,0,0.35);
+      box-shadow: 0 8px 30px rgba(0,0,0,0.5);
+    }
+    thead th{
+      padding:12px 16px;
+      text-align:left;
+      color:var(--accent-gold);
+      background: linear-gradient(90deg, rgba(0,0,0,0.25), rgba(255,255,255,0.02));
+      font-weight:700;
+    }
+    tbody td{
+      padding:12px 16px;
+      border-bottom:1px solid rgba(255,255,255,0.04);
+      color:#f6f6f6;
+    }
+    tbody tr:last-child td{ border-bottom:none; } /* remove bottom line */
+
+    /* responsive */
+    @media (max-width:900px){
+      .college-header{ padding:12px 14px; }
+      .college-header img{ height:56px; }
+      .main{ padding:18px; }
+      .nav a span.label{ display:inline-block; } /* keep visible on narrow */
+    }
+    @media (max-width:720px){
+      .sidebar{ position:fixed; left:-100%; top:0; height:100vh; z-index:40; }
+      .sidebar.open{ left:0; }
+      .sidebar.collapsed{ width:250px; min-width:250px; } /* mobile uses overlay menu */
+      .main{ padding:18px; }
+      .toggle-area{ position:fixed; left:12px; top:12px; z-index:50; }
     }
   </style>
 </head>
 <body>
-  <%- include('../partials/header') %>
+  <div class="overlay">
+    <!-- header -->
+    <header class="college-header">
+      <div class="college-header-inner">
+        <img src="/images/college_logo.png" alt="logo" />
+        <div class="header-text">
+          <h2>SIR C R REDDY COLLEGE OF ENGINEERING - BOYS HOSTEL (<span class="autonomous">AUTONOMOUS</span>)</h2>
+          <p>Approved by AICTE & Permanently Affiliated to JNTUk, Kakinada, NAAC-A<br>
+          Accredited by NBA (CSE, IT, EEE, Mech, ECE, Civil)<br>
+          Vatluru, Eluru, Eluru District, AP - 534007</p>
+        </div>
+      </div>
+    </header>
 
-  <div class="container">
-    <h2>Welcome, <%= session.warden_name %> (Warden)</h2>
+    <div class="dashboard">
+      <!-- sidebar -->
+      <nav id="sidebar" class="sidebar">
+        <div class="toggle-area">
+          <button id="toggleBtn" class="toggle-btn" aria-label="Toggle navigation">
+            <i id="toggleIcon" class="fas fa-bars"></i>
+          </button>
+        </div>
 
-    <div class="card-container">
-      <a href="/warden/markAttendance" class="card">Mark Attendance</a>
-      <a href="/warden/approveOutpass" class="card">Approve Outpasses</a>
-      <a href="/warden/emergencyOutpasses" class="card"> Emergency Outpasses</a>
-      <a href="/warden/viewStudents" class="card">View Student Profiles</a>
-      <a href="/warden/complaints" class="card">Manage Complaints</a>
-      <a href="/warden/upload-students" class="card">Upload Student Details</a>
-      <a href="/warden/upload_results" class="card">Upload Results</a>
-      <a href="/warden/uploadSBI" class="card">Upload sbi file</a>
-<a href="/warden/eligibility" class="card">Check Room Eligibility</a>
+        <div class="nav" role="navigation" aria-label="Main menu">
+          <a href="/warden/markAttendance"><i class="fas fa-clipboard-check"></i><span class="label">Mark Attendance</span></a>
+          <a href="/warden/approveOutpass"><i class="fas fa-check-circle"></i><span class="label">Approve Outpasses</span></a>
+          <a href="/warden/emergencyOutpasses"><i class="fas fa-bell"></i><span class="label">Emergency Outpasses</span></a>
+          <a href="/warden/viewStudents"><i class="fas fa-users"></i><span class="label">View Student Profiles</span></a>
+          <a href="/warden/complaints"><i class="fas fa-comments"></i><span class="label">Manage Complaints</span></a>
+          <a href="/warden/upload-students"><i class="fas fa-file-upload"></i><span class="label">Upload Students</span></a>
+          <a href="/warden/upload_results"><i class="fas fa-file-alt"></i><span class="label">Upload Results</span></a>
+          <a href="/warden/uploadSBI"><i class="fas fa-file-invoice"></i><span class="label">Upload SBI File</span></a>
+          <a href="/warden/uploadMessBill"><i class="fas fa-receipt"></i><span class="label">Upload Mess Bill</span></a>
+          <a href="/warden/viewReceipts"><i class="fas fa-receipt"></i><span class="label"> View Paid Receipts</span></a>
+    
+        </div>
 
+        <div class="logout">
+          <a href="/logout"><i class="fas fa-sign-out-alt"></i><span class="label">Logout</span></a>
+        </div>
+      </nav>
+
+      <!-- main -->
+      <main class="main" id="main">
+        <div class="welcome">
+          <h1>Welcome, <%= wardenNameSafe %>!</h1>
+        </div>
+
+        <section class="metrics" aria-label="Key metrics">
+          <div class="card" role="article" aria-labelledby="m1">
+            <div class="icon"><i class="fa-solid fa-user-clock"></i></div>
+            <div id="m1" class="num"><%= pendingCountSafe %></div>
+            <div class="label">Pending Outpasses</div>
+          </div>
+
+          <div class="card" role="article" aria-labelledby="m2">
+            <div class="icon"><i class="fa-solid fa-school"></i></div>
+            <div id="m2" class="num"><%= studentCountSafe %></div>
+            <div class="label">Total Students Today</div>
+          </div>
+
+          <div class="card" role="article" aria-labelledby="m3">
+            <div class="icon"><i class="fa-solid fa-flag"></i></div>
+            <div id="m3" class="num"><%= complaintCountSafe %></div>
+            <div class="label">New Complaints</div>
+          </div>
+
+          <div class="card" role="article" aria-labelledby="m4">
+            <div class="icon"><i class="fa-solid fa-check"></i></div>
+            <div id="m4" class="num"><%= approvedCountSafe %></div>
+            <div class="label">Approved Today</div>
+          </div>
+        </section>
+
+        <section class="table-section" aria-labelledby="tblTitle">
+          <div id="tblTitle" class="table-title">✔ Outpasses Approved Today: <strong><%= approvedCountSafe %></strong></div>
+
+          <table role="table" aria-label="Approved outpasses">
+            <thead>
+              <tr>
+                <th style="width:20%;">Student ID</th>
+                <th style="width:35%;">Name</th>
+                <th style="width:15%;">Status</th>
+                <th style="width:30%; text-align:center;">Approved At</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% if (studentsSafe.length === 0) { %>
+                <tr>
+                  <td colspan="4" style="text-align:center; padding:20px;">No approved outpasses yet.</td>
+                </tr>
+              <% } else { %>
+                <% studentsSafe.forEach(s => { %>
+                  <tr>
+                    <td><%= s.student_id %></td>
+                    <td><%= s.name %></td>
+                    <td><%= s.status %></td>
+                    <td style="text-align:center;"><%= s.approved_at ? new Date(s.approved_at).toLocaleString() : '-' %></td>
+                  </tr>
+                <% }) %>
+              <% } %>
+            </tbody>
+          </table>
+        </section>
+      </main>
     </div>
-
-    <hr>
-    <h3>✅ Outpasses Approved Today: <strong><%= approvedCount %></strong></h3>
-
-    <h3>🎓 Students Whose Outpasses Were Approved</h3>
-    <table>
-      <thead>
-        <tr>
-          <th>Student ID</th>
-          <th>Name</th>
-          <th>Status</th>
-          <th>Approved At</th>
-        </tr>
-      </thead>
-      <tbody>
-        <% if (students.length === 0) { %>
-          <tr><td colspan="4">No outpasses approved yet.</td></tr>
-        <% } else { %>
-          <% students.forEach(stu => { %>
-            <tr>
-              <td><%= stu.student_id %></td>
-              <td><%= stu.name %></td>
-              <td><%= stu.status %></td>
-              <td><%= new Date(stu.approved_at).toLocaleString() %></td>
-            </tr>
-          <% }) %>
-        <% } %>
-      </tbody>
-    </table>
-
-    <a href="/logout" class="logout-btn">Logout</a>
   </div>
 
-  <%- include('../partials/footer') %>
+  <script>
+    // Sidebar toggle logic (robust)
+    (function(){
+      const sidebar = document.getElementById('sidebar');
+      const toggleBtn = document.getElementById('toggleBtn');
+      const toggleIcon = document.getElementById('toggleIcon');
+      const mq = window.matchMedia('(max-width:720px)');
+
+      function setInitial(){
+        if(mq.matches){
+          sidebar.classList.add('collapsed'); // mobile: collapsed (overlay)
+          // leave collapsed but hidden left via CSS on mobile unless user opens
+        }
+      }
+
+      // Toggle click
+      toggleBtn.addEventListener('click', () => {
+        const isCollapsed = sidebar.classList.toggle('collapsed');
+
+        // handle mobile open/close: when collapsed on mobile we want to open (so invert)
+        if(mq.matches){
+          if(sidebar.classList.contains('collapsed')){
+            // on small screens, toggling collapsed should open it (treat collapsed as 'open' flag)
+            sidebar.classList.toggle('open');
+          } else {
+            sidebar.classList.remove('open');
+          }
+        }
+
+        // toggle icon
+        toggleIcon.className = isCollapsed ? 'fas fa-arrow-right' : 'fas fa-bars';
+      });
+
+      // close sidebar on small screens when clicking outside (optional)
+      document.addEventListener('click', (e) => {
+        if(mq.matches){
+          if(!sidebar.contains(e.target) && !toggleBtn.contains(e.target)){
+            sidebar.classList.remove('open');
+            sidebar.classList.add('collapsed');
+            toggleIcon.className = 'fas fa-arrow-right';
+          }
+        }
+      });
+
+      setInitial();
+      window.addEventListener('resize', setInitial);
+    })();
+  </script>
 </body>
 </html>
