@@ -154,15 +154,44 @@ function getJoinYearFromRegId(regId) {
   return joinYear;
 }
 
-app.get("/uploads/*", (req, res) => {
-  const filePath = path.join(__dirname, req.path);
-  res.download(filePath, (err) => {
-    if (err) {
-      console.error("DOWNLOAD ERROR:", err);
-      res.status(404).send("File not found");
+// Serve downloads from the uploads directory (secure)
+const uploadsDir = path.join(__dirname, "uploads");
+
+app.get("/uploads/:file(*)", (req, res) => {
+  try {
+    // req.params.file contains the rest of the path after /uploads/
+    const requested = req.params.file || "";
+    // Normalize to remove any ../ attempts
+    const safePath = path.normalize(requested).replace(/^(\.\.(\/|\\|$))+/, "");
+
+    const absolute = path.join(uploadsDir, safePath);
+
+    // Security check: ensure the resolved path is still inside uploadsDir
+    if (!absolute.startsWith(uploadsDir + path.sep) && absolute !== uploadsDir) {
+      console.warn("Blocked suspicious download path:", requested);
+      return res.status(400).send("Invalid file path");
     }
-  });
+
+    // Optionally: check file existence first
+    fs.access(absolute, fs.constants.R_OK, (err) => {
+      if (err) {
+        console.error("DOWNLOAD ERROR: file not found or unreadable:", absolute, err);
+        return res.status(404).send("File not found");
+      }
+
+      res.download(absolute, (err) => {
+        if (err) {
+          console.error("DOWNLOAD ERROR:", err);
+          if (!res.headersSent) res.status(500).send("Download failed");
+        }
+      });
+    });
+  } catch (e) {
+    console.error("Unexpected error serving upload:", e);
+    res.status(500).send("Server error");
+  }
 });
+
 
 // ===== Middleware =====
 app.use(bodyParser.urlencoded({ extended: true }));
