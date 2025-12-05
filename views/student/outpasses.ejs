@@ -1,33 +1,216 @@
-
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Your Outpasses</title>
-    <link rel="stylesheet" href="/css/style.css">
-</head>
-<body>
-    <h2>Your Outpass Requests</h2>
-    <table border="1">
-        <tr>
-            <th>Period</th>
-            <th>Reason</th>
-            <th>Out Date</th>
-            <th>Return Date</th>
-            <th>Status</th>
-        </tr>
-        <% outpasses.forEach(op => { %>
-            <tr>
-                <td><%= op.period %></td>
-                <td><%= op.reason %></td>
-                <td><%= op.out_date.toISOString().split('T')[0] %></td>
-                <td><%= op.return_date.toISOString().split('T')[0] %></td>
-                <td><%= op.status %></td>
-            </tr>
-        <% }) %>
-    </table>
-    <a href="/student/dashboard">Back to Dashboard</a>
-    
+<meta charset="UTF-8">
+<title>Your Outpasses | Student Portal</title>
 
+<style>
+/* ========= DESIGN TOKENS ========= */
+:root {
+    --bg-dark: #020617;
+    --bg-surface: rgba(15, 23, 42, 0.92);
+    --bg-card: rgba(15, 23, 42, 0.75);
+    --text-main: #e5e7eb;
+    --text-muted: #9ca3af;
+    --gold: #fbbf24;
+
+    --status-approved: #22c55e;
+    --status-pending: #facc15;
+    --status-rejected: #ef4444;
+
+    --radius-lg: 14px;
+    --radius-md: 10px;
+
+    --shadow-soft: 0 18px 45px rgba(0,0,0,0.45);
+}
+
+/* ========= GLOBAL ========= */
+body {
+    margin: 0;
+    padding: 40px 16px;
+    background: radial-gradient(circle at top, #1f2937 0, #020617 55%);
+    font-family: "Poppins", sans-serif;
+    color: var(--text-main);
+}
+
+.container {
+    max-width: 1050px;
+    margin: 0 auto;
+}
+
+/* ========= PAGE TITLE ========= */
+h2 {
+    text-align: center;
+    font-size: 26px;
+    margin-bottom: 25px;
+    color: var(--gold);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 700;
+}
+
+/* ========= TABLE CARD ========= */
+.table-card {
+    background: var(--bg-surface);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-soft);
+    padding: 20px;
+    border: 1px solid rgba(255,255,255,0.1);
+}
+
+/* TABLE WRAPPER */
+.table-wrapper {
+    overflow-x: auto;
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.12);
+}
+
+/* TABLE */
+.outpass-table {
+    width: 100%;
+    border-collapse: collapse;
+    color: var(--text-main);
+    font-size: 14px;
+}
+
+.outpass-table th,
+.outpass-table td {
+    padding: 12px 14px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    white-space: nowrap;
+}
+
+.outpass-table th {
+    background: rgba(2, 6, 23, 0.8);
+    color: var(--gold);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 600;
+}
+
+.outpass-table tbody tr:nth-child(even) {
+    background: rgba(255,255,255,0.03);
+}
+
+.outpass-table tbody tr:hover {
+    background: rgba(255,255,255,0.07);
+}
+
+/* ========= STATUS BADGES ========= */
+.status-badge {
+    padding: 5px 12px;
+    border-radius: 999px;
+    font-weight: 600;
+    font-size: 12px;
+    text-transform: uppercase;
+}
+
+.status-APPROVED { background: rgba(34,197,94,0.2); color: var(--status-approved); }
+.status-PENDING { background: rgba(250,204,21,0.25); color: var(--status-pending); }
+.status-REJECTED { background: rgba(239,68,68,0.2); color: var(--status-rejected); }
+
+/* ========= MOBILE TABLE (CARDS) ========= */
+@media (max-width: 720px) {
+    .outpass-table {
+        border-collapse: separate;
+        border-spacing: 0 12px;
+        background: transparent;
+    }
+
+    .outpass-table thead {
+        display: none;
+    }
+
+    .outpass-table tbody tr {
+        display: block;
+        background: var(--bg-card);
+        border-radius: 12px;
+        padding: 10px 12px;
+        border: 1px solid rgba(255,255,255,0.12);
+        margin-bottom: 10px;
+    }
+
+    .outpass-table td {
+        display: flex;
+        justify-content: space-between;
+        border-bottom: none;
+        padding: 6px 4px;
+        font-size: 13px;
+        white-space: normal;
+    }
+
+    .outpass-table td::before {
+        content: attr(data-label);
+        font-weight: 600;
+        color: var(--text-muted);
+        margin-right: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+}
+
+/* ========= BACK BUTTON ========= */
+.back-btn {
+    display: block;
+    text-align: center;
+    width: 230px;
+    margin: 25px auto 0;
+    padding: 12px;
+    background: var(--gold);
+    color: black;
+    font-weight: 700;
+    text-decoration: none;
+    border-radius: var(--radius-md);
+    box-shadow: 0 10px 20px rgba(251,191,36,0.25);
+    transition: 0.2s;
+}
+
+.back-btn:hover {
+    background: #ffdd4d;
+    transform: translateY(-2px);
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+    <h2>Your Outpass Requests</h2>
+
+    <div class="table-card">
+        <div class="table-wrapper">
+            <table class="outpass-table">
+                <thead>
+                    <tr>
+                        <th>Period</th>
+                        <th>Reason</th>
+                        <th>Out Date</th>
+                        <th>Return Date</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                <% outpasses.forEach(op => { 
+                    const status = op.status ? op.status.toUpperCase() : "PENDING";
+                %>
+                    <tr>
+                        <td data-label="Period"><%= op.period %></td>
+                        <td data-label="Reason"><%= op.reason %></td>
+                        <td data-label="Out Date"><%= op.out_date.toISOString().split('T')[0] %></td>
+                        <td data-label="Return Date"><%= op.return_date.toISOString().split('T')[0] %></td>
+                        <td data-label="Status">
+                            <span class="status-badge status-<%= status %>">
+                                <%= status %>
+                            </span>
+                        </td>
+                    </tr>
+                <% }) %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <a href="/student/dashboard" class="back-btn">← Back to Dashboard</a>
+</div>
 </body>
 </html>
-
