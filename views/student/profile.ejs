@@ -612,39 +612,37 @@
     </div>
 
     <!-- AADHAAR & PROFILE PHOTO SECTIONS -->
-    <div class="sections-grid">
-      <!-- Aadhaar Upload -->
-      <div class="upload-section">
-        <h3>Aadhaar Upload</h3>
+    <!-- Aadhaar Upload -->
+<div class="upload-section">
+  <h3>Aadhaar Upload</h3>
 
-        <!-- Student Aadhaar Upload -->
-        <form action="/student/upload-aadhaar/student" method="POST" enctype="multipart/form-data">
-          <label>Student Aadhaar</label>
-          <input type="file" name="aadhaar" accept="image/*" required>
-          <button type="submit">Upload Student Aadhaar</button>
-        </form>
+  <!-- Single Correct Form for Both Aadhaar Files -->
+  <form action="/student/upload-aadhaar" method="POST" enctype="multipart/form-data">
+    
+    <label>Student Aadhaar</label>
+    <input type="file" name="student_aadhaar" accept="image/*">
 
-        <!-- Father Aadhaar Upload -->
-        <form action="/student/upload-aadhaar/father" method="POST" enctype="multipart/form-data">
-          <label>Father Aadhaar</label>
-          <input type="file" name="aadhaar" accept="image/*" required>
-          <button type="submit">Upload Father Aadhaar</button>
-        </form>
+    <label>Father Aadhaar</label>
+    <input type="file" name="father_aadhaar" accept="image/*">
 
-        <div class="uploaded-links">
-          <% if (student.student_aadhaar) { %>
-            <p>📘 Student Aadhaar:
-              <a href="/student/aadhaar/student/<%= student.student_id %>" target="_blank">View</a>
-            </p>
-          <% } %>
+    <button type="submit">Upload Aadhaar Files</button>
+  </form>
 
-          <% if (student.father_aadhaar) { %>
-            <p>📗 Father Aadhaar:
-              <a href="/student/aadhaar/father/<%= student.student_id %>" target="_blank">View</a>
-            </p>
-          <% } %>
-        </div>
-      </div>
+  <div class="uploaded-links">
+    <% if (student.student_aadhaar) { %>
+      <p>📘 Student Aadhaar:
+        <a href="/student/aadhaar/student/<%= student.student_id %>" target="_blank">View</a>
+      </p>
+    <% } %>
+
+    <% if (student.father_aadhaar) { %>
+      <p>📗 Father Aadhaar:
+        <a href="/student/aadhaar/father/<%= student.student_id %>" target="_blank">View</a>
+      </p>
+    <% } %>
+  </div>
+</div>
+
 
       <!-- Profile Photo Upload -->
       <div class="photo-upload-card">
