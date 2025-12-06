@@ -1,11 +1,9 @@
-
-// ================================
-// FILE UPLOAD CONFIGURATION
-// ================================
 const express = require("express");
+const app = express();   // <-- CREATE APP FIRST
 const mysql = require("mysql2");
 const session = require("express-session");
 const flash = require("connect-flash");
+const cookieParser = require("cookie-parser");
 const path = require("path");
 const bodyParser = require("body-parser");
 const nodemailer = require("nodemailer");
@@ -14,25 +12,55 @@ const { v4: uuidv4 } = require("uuid");
 const multer = require("multer");
 const xlsx = require("xlsx");
 const fs = require("fs");
-// ======================
-// MULTER CONFIG
-// ======================
-const receiptsDir = path.join(__dirname, "uploads/receipts");
-if (!fs.existsSync(receiptsDir)) {
-    fs.mkdirSync(receiptsDir, { recursive: true });
-}
 
+// ================================
+// MUST RUN BEFORE USING req.flash()
+// ================================
+// Body parsers
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
 
-const app = express();
-// ✅ Serve uploads folder publicly
+// Cookies
+app.use(cookieParser());
+
+// ⭐ SESSION MUST COME BEFORE FLASH ⭐
+app.use(
+  session({
+    secret: "hostel_management_secret_123",
+    resave: false,
+    saveUninitialized: false,
+    cookie: { maxAge: 1000 * 60 * 60 }, // 1 hour
+  })
+);
+app.use(flash());
+// ================================
+// FLASH → EXPOSE TO VIEWS
+// ================================
+// MUST BE BEFORE ANY ROUTES!
+app.use((req, res, next) => {
+  res.locals.flashSuccess = req.flash("success") || [];
+  res.locals.flashError = req.flash("error") || [];
+  res.locals.flashInfo = req.flash("info") || [];
+  res.locals.flashWarn = req.flash("warning") || [];
+  res.locals.cookieLogoutMsg = req.cookies?.flash_logout || null;
+  next();
+});
+
+// ================================
+// NO-CACHE HEADERS (BACK BUTTON FIX)
+// ================================
+app.use((req, res, next) => {
+  res.set("Cache-Control", "no-store, no-cache, must-revalidate, private");
+  res.set("Pragma", "no-cache");
+  res.set("Expires", "0");
+  next();
+});
+
+// ================================
+// STATIC UPLOADS
+// ================================
 const uploadsPath = path.join(__dirname, "uploads");
-console.log("📂 Static serving uploads from:", uploadsPath);
-
-if (!fs.existsSync(uploadsPath)) {
-  console.error("❌ uploads folder does not exist at:", uploadsPath);
-}
-
-
+app.use("/uploads", express.static(uploadsPath));
 
 const transporter = nodemailer.createTransport({
   service: "gmail",
@@ -41,8 +69,6 @@ const transporter = nodemailer.createTransport({
     pass: "bfllbazxsxinlheb",      // app password
   },
 });
-
-
 // ✅ serve the entire uploads folder publicly
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 // Serve profile images
@@ -50,8 +76,6 @@ app.use('/uploads/profile_images', express.static(path.join(__dirname, 'uploads/
 
 // Serve default images (like default-avatar.png)
 app.use('/images', express.static(path.join(__dirname, 'public/images')));
-
-app.use(flash());
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -141,10 +165,6 @@ const upload = multer({
 });
 
 module.exports = upload;
-
-
-
-
 function getJoinYearFromRegId(regId) {
   if (!regId || regId.length < 2) return null;
   const prefix = regId.substring(0, 2);
@@ -154,71 +174,21 @@ function getJoinYearFromRegId(regId) {
   return joinYear;
 }
 
-
-
-// Serve downloads from the uploads directory (secure)
-const uploadsDir = path.join(__dirname, "uploads");
-
-// Regex route — compatible with all Express/path-to-regexp versions
-app.get(/^\/uploads\/(.*)$/, (req, res) => {
-  try {
-    const requested = req.params[0] || ""; // captured group from (.*)
-
-    // Normalize and remove any leading ../ attempts
-    const safeRel = path.normalize(requested).replace(/^(\.\.(\/|\\|$))+/, "");
-
-    // Resolve absolute paths
-    const absolute = path.join(uploadsDir, safeRel);
-    const normalizedUploadsDir = path.resolve(uploadsDir) + path.sep;
-    const normalizedAbsolute = path.resolve(absolute);
-
-    // Ensure the file is within uploadsDir (prevent path traversal)
-    if (!normalizedAbsolute.startsWith(normalizedUploadsDir) && normalizedAbsolute !== path.resolve(uploadsDir)) {
-      console.warn("Blocked suspicious download attempt:", requested);
-      return res.status(400).send("Invalid file path");
+app.get("/uploads/*", (req, res) => {
+  const filePath = path.join(__dirname, req.path);
+  res.download(filePath, (err) => {
+    if (err) {
+      console.error("DOWNLOAD ERROR:", err);
+      res.status(404).send("File not found");
     }
-
-    // Check file exists & readable, then send as download
-    fs.access(absolute, fs.constants.R_OK, (err) => {
-      if (err) {
-        console.error("DOWNLOAD ERROR: file not found/unreadable:", absolute, err);
-        return res.status(404).send("File not found");
-      }
-
-      res.download(absolute, (err) => {
-        if (err) {
-          console.error("DOWNLOAD ERROR:", err);
-          if (!res.headersSent) res.status(500).send("Download failed");
-        }
-      });
-    });
-  } catch (e) {
-    console.error("Unexpected error serving upload:", e);
-    res.status(500).send("Server error");
-  }
+  });
 });
-
 
 // ===== Middleware =====
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, "public")));
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
-
-app.use(
-  session({
-    secret: "supersecret",
-    resave: false,
-    saveUninitialized: true,
-  })
-);
-
-app.use((req, res, next) => {
-  res.locals.session = req.session;
-  next();
-});
-
-
 // ===== MySQL Connection =====
 const db = mysql.createPool({
     host: 'tramway.proxy.rlwy.net',   // Railway host
@@ -248,13 +218,16 @@ app.get("/choose_login", (req, res) => {
   res.render("choose_login"); // make sure choose_login.ejs exists in views/
 });
 // Logout
-app.post("/logout", (req, res) => {
-  req.session.destroy((err) => {
-    if (err) {
-      console.error("Error destroying session:", err);
-      return res.send("Error logging out");
-    }
-    res.redirect("/"); // or redirect to login page
+// POST or GET depending on your current route
+app.get('/logout', (req, res) => {
+  res.cookie('flash_logout', 'Logged out successfully', {
+    maxAge: 5 * 1000,
+    httpOnly: false
+  });
+
+  req.session.destroy(err => {
+    res.clearCookie('connect.sid');
+    return res.redirect('/choose_login');
   });
 });
 
@@ -454,13 +427,10 @@ app.post("/register/student", async (req, res) => {
       joinYear
     ]);
 
-    res.send(`
-      ✅ Student registered successfully!<br>
-      📘 College ID: ${student_id}<br>
-      🆔 Unique ID: ${student_unique_id}<br>
-      🏠 Hostel ID: ${newHostelId}<br>
-      🎓 Year of Join: ${joinYear}
-    `);
+    // after successful registration in DB
+req.flash('success', 'Registration successful — please login.');
+req.session.save(() => res.redirect('/choose_login'));
+
   } catch (err) {
     console.error("Error in registration:", err);
     res.status(500).send("❌ Error registering student. Please try again later.");
@@ -473,24 +443,52 @@ app.post("/register/student", async (req, res) => {
 app.post("/login/student", (req, res) => {
   const { student_id, password } = req.body;
 
-  if (!student_id || !password) return res.send("Please provide student ID and password");
+  if (!student_id || !password) {
+    req.flash("error", "Please provide student ID and password");
+    return res.redirect("/login/student");
+  }
 
   const sql = "SELECT * FROM students WHERE student_id=?";
   db.query(sql, [student_id], (err, results) => {
-    if (err) return res.send("DB Error: " + err);
-    if (results.length === 0) return res.send("Invalid Credentials");
+    if (err) {
+      req.flash("error", "Database Error");
+      return res.redirect("/login/student");
+    }
+
+    if (results.length === 0) {
+      req.flash("error", "Invalid Credentials");
+      return res.redirect("/login/student");
+    }
 
     const student = results[0];
     const match = bcrypt.compareSync(password, student.password);
-    if (!match) return res.send("Invalid Credentials");
+
+    if (!match) {
+      req.flash("error", "Invalid Credentials");
+      return res.redirect("/login/student");
+    }
 
     // Save session
     req.session.user = student;
     req.session.role = "student";
 
-    res.redirect("/student/dashboard");
+    // Success message
+    req.flash("success", "Login successful — welcome back!");
+
+    req.session.save(() => {
+      return res.redirect("/student/dashboard");
+    });
   });
 });
+app.get("/testflash", (req, res) => {
+  req.flash("success", "Flash is working!");
+  res.redirect("/testshow");
+});
+
+app.get("/testshow", (req, res) => {
+  res.send(res.locals.flashSuccess);
+});
+
 
 
 app.get("/student/dashboard", async (req, res) => {
@@ -501,16 +499,20 @@ app.get("/student/dashboard", async (req, res) => {
   const student_id = req.session.user.student_id;
 
   try {
-    // Get student info
-    const [studentRows] = await db.promise().query("SELECT * FROM students WHERE student_id = ?", [student_id]);
+    const [studentRows] = await db.promise().query(
+      "SELECT * FROM students WHERE student_id = ?", 
+      [student_id]
+    );
+
     if (studentRows.length === 0) return res.send("Student not found");
     const student = studentRows[0];
 
-    // Get join year from reg ID (e.g., 23B81A46__)
     const joinYear = getJoinYearFromRegId(student.student_id);
 
-    // Get yearly fees and verified payments
-    const [yearFees] = await db.promise().query("SELECT * FROM yearly_fee ORDER BY year ASC");
+    const [yearFees] = await db.promise().query(
+      "SELECT * FROM yearly_fee ORDER BY year ASC"
+    );
+
     const [paidFees] = await db.promise().query(
       `SELECT year, SUM(amount_paid) AS total_paid
        FROM fee_receipts
@@ -520,7 +522,7 @@ app.get("/student/dashboard", async (req, res) => {
     );
 
     const paidMap = {};
-    paidFees.forEach((p) => (paidMap[p.year] = parseFloat(p.total_paid || 0)));
+    paidFees.forEach(p => paidMap[p.year] = parseFloat(p.total_paid || 0));
 
     const currentYear = new Date().getFullYear();
     const feeSummary = [];
@@ -530,22 +532,33 @@ app.get("/student/dashboard", async (req, res) => {
       if (yf.year >= joinYear && yf.year <= currentYear) {
         const paid = paidMap[yf.year] || 0;
         const due = parseFloat(yf.amount) - paid;
+
         if (due > 0) unpaidCount++;
+
         feeSummary.push({
           year: yf.year,
           total_fee: parseFloat(yf.amount),
           paid_amount: paid,
-          due_amount: due > 0 ? due : 0,
+          due_amount: Math.max(0, due)
         });
       }
     }
 
-    res.render("student/dashboard", { student, feeSummary, unpaidCount });
+    // ⭐⭐⭐ THIS WAS MISSING ⭐⭐⭐
+    res.render("student/dashboard", { 
+      student, 
+      feeSummary, 
+      unpaidCount,
+      flashSuccess: res.locals.flashSuccess,
+      flashError: res.locals.flashError
+    });
+
   } catch (err) {
     console.error(err);
     res.status(500).send("Error loading dashboard");
   }
 });
+
 
 
 
@@ -1311,7 +1324,10 @@ app.post("/register/warden", (req, res) => {
       [name, email, hash, hostel_id],
       (err) => {
         if (err) return res.send("Warden Registration Failed: " + err);
-        res.redirect("/login/warden");
+        // after successful registration in DB
+req.flash('success', 'Registration successful — please login.');
+req.session.save(() => res.redirect("/login/warden"));
+        
       }
     );
   });
@@ -1341,7 +1357,11 @@ app.post("/login/warden", (req, res) => {
       req.session.warden_id = wardenData.warden_id;
       req.session.warden_name = wardenData.name;
 
-      res.redirect("/warden/dashboard");
+      req.flash('success', 'Login successful — welcome back!');
+req.session.save(err => {
+  // redirect after session saved to persist flash
+  return res.redirect('/warden/dashboard'); // or appropriate route
+});
     });
   });
 });
@@ -2247,7 +2267,11 @@ app.post("/register/admin", (req, res) => {
       [name, email, hash],
       (err) => {
         if (err) return res.send("Registration Failed: " + err);
-        res.redirect("/login/admin");
+        // after successful registration in DB
+req.flash('success', 'Registration successful — please login.');
+req.session.save(() => res.redirect('/login/admin'));
+
+        
       }
     );
   });
@@ -2264,7 +2288,11 @@ app.post("/login/admin", (req, res) => {
       if (!match) return res.send("Invalid Credentials");
       req.session.user = rows[0];
       req.session.role = "admin";
-      res.redirect("/admin/dashboard");
+      req.flash('success', 'Login successful — welcome back!');
+req.session.save(err => {
+  // redirect after session saved to persist flash
+  return res.redirect('/admin/dashboard'); // or appropriate route
+});
     });
   });
 });
@@ -3126,7 +3154,11 @@ app.post("/register/security", (req, res) => {
           [name, email, hash, hostel_id],
           (err) => {
             if (err) return res.send("Security Registration Failed: " + err);
-            res.redirect("/login/security");
+            // after successful registration in DB
+req.flash('success', 'Registration successful — please login.');
+req.session.save(() => res.redirect('/login/security'));
+
+           
           }
         );
       }
@@ -3151,8 +3183,11 @@ app.post("/login/security", (req, res) => {
       req.session.user = rows[0];
       req.session.role = "security";
 
-      // Redirect to security dashboard
-      res.redirect("/security/dashboard");
+      req.flash('success', 'Login successful — welcome back!');
+req.session.save(err => {
+  // redirect after session saved to persist flash
+  return res.redirect('/security/dashboard'); // or appropriate route
+});
     });
   });
 });
