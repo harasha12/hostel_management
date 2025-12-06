@@ -1,53 +1,55 @@
 const express = require("express");
-const app = express();   // <-- CREATE APP FIRST
+const app = express();
 const mysql = require("mysql2");
 const session = require("express-session");
 const flash = require("connect-flash");
 const cookieParser = require("cookie-parser");
 const path = require("path");
-const bodyParser = require("body-parser");
 const nodemailer = require("nodemailer");
 const bcrypt = require("bcryptjs");
-const { v4: uuidv4 } = require("uuid");
 const multer = require("multer");
 const xlsx = require("xlsx");
 const fs = require("fs");
 
 // ================================
-// MUST RUN BEFORE USING req.flash()
+// BODY PARSERS
 // ================================
-// Body parsers
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
-// Cookies
+// ================================
+// COOKIE PARSER
+// ================================
 app.use(cookieParser());
 
-// ⭐ SESSION MUST COME BEFORE FLASH ⭐
+// ================================
+// SESSION → FLASH
+// ================================
 app.use(
   session({
     secret: "hostel_management_secret_123",
     resave: false,
     saveUninitialized: false,
-    cookie: { maxAge: 1000 * 60 * 60 }, // 1 hour
+    cookie: { maxAge: 1000 * 60 * 60 }
   })
 );
+
 app.use(flash());
+
 // ================================
 // FLASH → EXPOSE TO VIEWS
 // ================================
-// MUST BE BEFORE ANY ROUTES!
 app.use((req, res, next) => {
   res.locals.flashSuccess = req.flash("success") || [];
-  res.locals.flashError = req.flash("error") || [];
-  res.locals.flashInfo = req.flash("info") || [];
-  res.locals.flashWarn = req.flash("warning") || [];
+  res.locals.flashError   = req.flash("error")   || [];
+  res.locals.flashInfo    = req.flash("info")    || [];
+  res.locals.flashWarn    = req.flash("warning") || [];
   res.locals.cookieLogoutMsg = req.cookies?.flash_logout || null;
   next();
 });
 
 // ================================
-// NO-CACHE HEADERS (BACK BUTTON FIX)
+// DISABLE BROWSER CACHE
 // ================================
 app.use((req, res, next) => {
   res.set("Cache-Control", "no-store, no-cache, must-revalidate, private");
@@ -57,10 +59,12 @@ app.use((req, res, next) => {
 });
 
 // ================================
-// STATIC UPLOADS
+// STATIC FILES
 // ================================
-const uploadsPath = path.join(__dirname, "uploads");
-app.use("/uploads", express.static(uploadsPath));
+const uploadsDir = path.join(__dirname, "uploads");
+app.use("/uploads", express.static(uploadsDir));
+app.use("/images", express.static(path.join(__dirname, "public/images")));
+app.use(express.static(path.join(__dirname, "public")));
 
 const transporter = nodemailer.createTransport({
   service: "gmail",
@@ -69,148 +73,108 @@ const transporter = nodemailer.createTransport({
     pass: "bfllbazxsxinlheb",      // app password
   },
 });
-// ✅ serve the entire uploads folder publicly
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
-// Serve profile images
-app.use('/uploads/profile_images', express.static(path.join(__dirname, 'uploads/profile_images')));
 
-// Serve default images (like default-avatar.png)
-app.use('/images', express.static(path.join(__dirname, 'public/images')));
+// ================================
+// VIEW ENGINE
+// ================================
+app.set("view engine", "ejs");
+app.set("views", path.join(__dirname, "views"));
 
+// ================================
+// MULTER STORAGE
+// ================================
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     let dir;
 
     switch (file.fieldname) {
-
       case "receipt_pdf":
-        dir = path.join(__dirname, "uploads/receipts");
+      case "sbi_pdf":
+        dir = path.join(uploadsDir, "receipts");
         break;
 
       case "outpass_pdf":
-        dir = path.join(__dirname, "uploads/outpasses");
-        break;
-
-      case "sbi_pdf":
-        dir = path.join(__dirname, "uploads/receipts");
+        dir = path.join(uploadsDir, "outpasses");
         break;
 
       case "studentsFile":
-        dir = path.join(__dirname, "uploads/students");
+        dir = path.join(uploadsDir, "students");
         break;
 
       case "student_aadhaar":
       case "father_aadhaar":
-        dir = path.join(__dirname, "uploads/aadhaar"); // ✔ Corrected folder name
+        dir = path.join(uploadsDir, "aadhaar");
         break;
 
       case "profile_image":
-        dir = path.join(__dirname, "uploads/profile_images");
+        dir = path.join(uploadsDir, "profile_images");
         break;
 
       case "mess_bill_pdf":
-        dir = path.join(__dirname, "uploads/mess_bills");
+        dir = path.join(uploadsDir, "mess_bills");
         break;
 
       default:
-        dir = path.join(__dirname, "uploads");
+        dir = uploadsDir;
     }
 
     if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
     cb(null, dir);
   },
 
-filename: (req, file, cb) => {
-  const studentId = req.session?.user?.student_id || "unknown";
-  const ext = path.extname(file.originalname);
+  filename: (req, file, cb) => {
+    const studentId = req.session?.user?.student_id || "unknown";
+    const ext = path.extname(file.originalname);
 
-  // ---------- AADHAAR (student & father) ----------
-  if (file.fieldname === "student_aadhaar" || file.fieldname === "father_aadhaar") {
-    return cb(null, `${studentId}_${file.fieldname}${ext}`);
+    if (["student_aadhaar", "father_aadhaar"].includes(file.fieldname))
+      return cb(null, `${studentId}_${file.fieldname}${ext}`);
+
+    if (file.fieldname === "profile_image")
+      return cb(null, `${studentId}_profile${ext}`);
+
+    let safeName = file.originalname
+      .replace(/\s+/g, "_")
+      .replace(/[<>:"/\\|?*]+/g, "")
+      .trim();
+
+    return cb(null, Date.now() + "-" + safeName);
   }
-
-  // ---------- PROFILE IMAGE ----------
-  if (file.fieldname === "profile_image") {
-    return cb(null, `${studentId}_profile${ext}`);
-  }
-
-  // ---------- ALL OTHER FILES (SBI RECEIPTS, ETC.) ----------
-  // Replace spaces + all invalid characters with "_"
-  safeName = file.originalname
-  .replace(/\s+/g, "_")              // replace SPACES
-  .replace(/[<>:"/\\|?*]+/g, "")     // remove invalid characters
-  .trim();
-
-
-  return cb(null, Date.now() + "-" + safeName);
-}
 });
 
 const upload = multer({
   storage,
-  limits: { fileSize: 25 * 1024 * 1024 },
-  fileFilter: (req, file, cb) => {
-    const allowedPdfExcel = [".pdf", ".xls", ".xlsx", ".csv"];
-    const allowedImages = [".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp", ".tiff", ".svg"];
-    const ext = path.extname(file.originalname).toLowerCase();
-
-    // For Aadhaar or profile images
-    if (file.fieldname === "student_aadhaar" || file.fieldname === "father_aadhaar" || file.fieldname === "profile_image") {
-      if (!allowedImages.includes(ext)) return cb(new Error("Only image files are allowed"));
-    } else {
-      if (!allowedPdfExcel.includes(ext)) return cb(new Error("Only PDF/Excel files are allowed"));
-    }
-    cb(null, true);
-  }
+  limits: { fileSize: 25 * 1024 * 1024 }
 });
 
 module.exports = upload;
-function getJoinYearFromRegId(regId) {
-  if (!regId || regId.length < 2) return null;
-  const prefix = regId.substring(0, 2);
-  const joinYear = 2000 + parseInt(prefix);
-  const currentYear = new Date().getFullYear();
-  if (isNaN(joinYear) || joinYear > currentYear) return null;
-  return joinYear;
-}
 
+// ================================
+// SECURE FILE DOWNLOAD
+// ================================
 app.get(/^\/uploads\/(.*)$/, (req, res) => {
   try {
-    const requested = req.params[0] || ""; // captured group from (.*)
-
-    // Normalize and remove any leading ../ attempts
+    const requested = req.params[0] || "";
     const safeRel = path.normalize(requested).replace(/^(\.\.(\/|\\|$))+/, "");
 
-    // Resolve absolute paths
     const absolute = path.join(uploadsDir, safeRel);
-    const normalizedUploadsDir = path.resolve(uploadsDir) + path.sep;
-    const normalizedAbsolute = path.resolve(absolute);
+    const absoluteNorm = path.resolve(absolute);
+    const uploadsNorm = path.resolve(uploadsDir) + path.sep;
 
-    // Ensure the file is within uploadsDir (prevent path traversal)
-    if (!normalizedAbsolute.startsWith(normalizedUploadsDir) && normalizedAbsolute !== path.resolve(uploadsDir)) {
-      console.warn("Blocked suspicious download attempt:", requested);
+    if (!absoluteNorm.startsWith(uploadsNorm))
       return res.status(400).send("Invalid file path");
-    }
 
-    // Check file exists & readable, then send as download
     fs.access(absolute, fs.constants.R_OK, (err) => {
-      if (err) {
-        console.error("DOWNLOAD ERROR: file not found/unreadable:", absolute, err);
-        return res.status(404).send("File not found");
-      }
+      if (err) return res.status(404).send("File not found");
 
-      res.download(absolute, (err) => {
-        if (err) {
-          console.error("DOWNLOAD ERROR:", err);
-          if (!res.headersSent) res.status(500).send("Download failed");
-        }
-      });
+      res.download(absolute);
     });
-  } catch (e) {
-    console.error("Unexpected error serving upload:", e);
+
+  } catch (err) {
+    console.error("DOWNLOAD ERROR:", err);
     res.status(500).send("Server error");
   }
 });
+
 
 // ===== Middleware =====
 app.use(bodyParser.urlencoded({ extended: true }));
