@@ -5,11 +5,14 @@ const session = require("express-session");
 const flash = require("connect-flash");
 const cookieParser = require("cookie-parser");
 const path = require("path");
+const bodyParser = require("body-parser");   // ✅ ADD THIS BACK
 const nodemailer = require("nodemailer");
 const bcrypt = require("bcryptjs");
+const { v4: uuidv4 } = require("uuid");
 const multer = require("multer");
 const xlsx = require("xlsx");
 const fs = require("fs");
+
 
 // ================================
 // BODY PARSERS
