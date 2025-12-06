@@ -174,14 +174,42 @@ function getJoinYearFromRegId(regId) {
   return joinYear;
 }
 
-app.get("/uploads/*", (req, res) => {
-  const filePath = path.join(__dirname, req.path);
-  res.download(filePath, (err) => {
-    if (err) {
-      console.error("DOWNLOAD ERROR:", err);
-      res.status(404).send("File not found");
+app.get(/^\/uploads\/(.*)$/, (req, res) => {
+  try {
+    const requested = req.params[0] || ""; // captured group from (.*)
+
+    // Normalize and remove any leading ../ attempts
+    const safeRel = path.normalize(requested).replace(/^(\.\.(\/|\\|$))+/, "");
+
+    // Resolve absolute paths
+    const absolute = path.join(uploadsDir, safeRel);
+    const normalizedUploadsDir = path.resolve(uploadsDir) + path.sep;
+    const normalizedAbsolute = path.resolve(absolute);
+
+    // Ensure the file is within uploadsDir (prevent path traversal)
+    if (!normalizedAbsolute.startsWith(normalizedUploadsDir) && normalizedAbsolute !== path.resolve(uploadsDir)) {
+      console.warn("Blocked suspicious download attempt:", requested);
+      return res.status(400).send("Invalid file path");
     }
-  });
+
+    // Check file exists & readable, then send as download
+    fs.access(absolute, fs.constants.R_OK, (err) => {
+      if (err) {
+        console.error("DOWNLOAD ERROR: file not found/unreadable:", absolute, err);
+        return res.status(404).send("File not found");
+      }
+
+      res.download(absolute, (err) => {
+        if (err) {
+          console.error("DOWNLOAD ERROR:", err);
+          if (!res.headersSent) res.status(500).send("Download failed");
+        }
+      });
+    });
+  } catch (e) {
+    console.error("Unexpected error serving upload:", e);
+    res.status(500).send("Server error");
+  }
 });
 
 // ===== Middleware =====
