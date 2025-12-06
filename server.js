@@ -180,10 +180,20 @@ app.get(/^\/uploads\/(.*)$/, (req, res) => {
 
 
 // ===== Middleware =====
+// ===== Middleware =====
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, "public")));
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
+
+
+
+app.use((req, res, next) => {
+  res.locals.session = req.session;
+  next();
+});
+
+
 // ===== MySQL Connection =====
 const db = mysql.createPool({
     host: 'tramway.proxy.rlwy.net',   // Railway host
@@ -207,6 +217,7 @@ module.exports = db;
 app.get("/", (req, res) => {
   res.render("home");
 });
+
 
 // Show login choice page
 app.get("/choose_login", (req, res) => {
