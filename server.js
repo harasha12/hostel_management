@@ -101,24 +101,23 @@ filename: (req, file, cb) => {
 
   // ---------- AADHAAR (student & father) ----------
   if (file.fieldname === "student_aadhaar" || file.fieldname === "father_aadhaar") {
-    return cb(null, ${studentId}_${file.fieldname}${ext});
+    return cb(null, `${studentId}_${file.fieldname}${ext}`);
   }
 
   // ---------- PROFILE IMAGE ----------
   if (file.fieldname === "profile_image") {
-    return cb(null, ${studentId}_profile${ext});
+    return cb(null, `${studentId}_profile${ext}`);
   }
 
-  // ---------- ALL OTHER FILES (SBI RECEIPTS, ETC.) ----------
-  // Replace spaces + all invalid characters with "_"
-  safeName = file.originalname
-  .replace(/\s+/g, "_")              // replace SPACES
-  .replace(/[<>:"/\\|?*]+/g, "")     // remove invalid characters
-  .trim();
-
+  // ---------- OTHER FILES ----------
+  let safeName = file.originalname
+    .replace(/\s+/g, "_")
+    .replace(/[<>:"/\\|?*]+/g, "")
+    .trim();
 
   return cb(null, Date.now() + "-" + safeName);
 }
+
 });
 
 const upload = multer({
