@@ -1,10 +1,9 @@
-// ================================
-// FILE UPLOAD CONFIGURATION
-// ================================
 const express = require("express");
+const app = express();   // <-- CREATE APP FIRST
 const mysql = require("mysql2");
 const session = require("express-session");
 const flash = require("connect-flash");
+const cookieParser = require("cookie-parser");
 const path = require("path");
 const bodyParser = require("body-parser");
 const nodemailer = require("nodemailer");
@@ -13,13 +12,75 @@ const { v4: uuidv4 } = require("uuid");
 const multer = require("multer");
 const xlsx = require("xlsx");
 const fs = require("fs");
-// ======================
-// MULTER CONFIG
-// ======================
-const receiptsDir = path.join(__dirname, "uploads/receipts");
-if (!fs.existsSync(receiptsDir)) {
-    fs.mkdirSync(receiptsDir, { recursive: true });
-}
+
+// ================================
+// MUST RUN BEFORE USING req.flash()
+// ================================
+// Body parsers
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
+
+// Cookies
+app.use(cookieParser());
+
+// ⭐ SESSION MUST COME BEFORE FLASH ⭐
+app.use(
+  session({
+    secret: "hostel_management_secret_123",
+    resave: false,
+    saveUninitialized: false,
+    cookie: { maxAge: 1000 * 60 * 60 }, // 1 hour
+  })
+);
+app.use(flash());
+// ================================
+// FLASH → EXPOSE TO VIEWS
+// ================================
+// MUST BE BEFORE ANY ROUTES!
+app.use((req, res, next) => {
+  res.locals.flashSuccess = req.flash("success") || [];
+  res.locals.flashError = req.flash("error") || [];
+  res.locals.flashInfo = req.flash("info") || [];
+  res.locals.flashWarn = req.flash("warning") || [];
+  res.locals.cookieLogoutMsg = req.cookies?.flash_logout || null;
+  next();
+});
+
+// ================================
+// NO-CACHE HEADERS (BACK BUTTON FIX)
+// ================================
+app.use((req, res, next) => {
+  res.set("Cache-Control", "no-store, no-cache, must-revalidate, private");
+  res.set("Pragma", "no-cache");
+  res.set("Expires", "0");
+  next();
+});
+app.use((req, res, next) => {
+    let sql;
+
+    if (req.session?.user?.role === "Warden") {
+        // Warden sees only his hostel’s notices
+        sql = `SELECT * FROM notices WHERE hostel_id = ? OR posted_by = 'Admin' ORDER BY notice_id DESC LIMIT 5`;
+        db.query(sql, [req.session.user.hostel_id], (err, result) => {
+            res.locals.globalNotices = result || [];
+            next();
+        });
+    } else if (req.session?.user?.role === "Student") {
+        // Student sees all admin + their hostel notices
+        sql = `SELECT * FROM notices WHERE hostel_id = ? OR posted_by = 'Admin' ORDER BY notice_id DESC LIMIT 5`;
+        db.query(sql, [req.session.user.hostel_id], (err, result) => {
+            res.locals.globalNotices = result || [];
+            next();
+        });
+    } else {
+        // Admin sees all notices
+        sql = `SELECT * FROM notices ORDER BY notice_id DESC LIMIT 5`;
+        db.query(sql, (err, result) => {
+            res.locals.globalNotices = result || [];
+            next();
+        });
+    }
+});
 
 
 const app = express();
@@ -203,27 +264,15 @@ app.use(express.static(path.join(__dirname, "public")));
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 
-app.use(
-  session({
-    secret: "supersecret",
-    resave: false,
-    saveUninitialized: true,
-  })
-);
-
-app.use((req, res, next) => {
-  res.locals.session = req.session;
-  next();
-});
 
 
 // ===== MySQL Connection =====
 const db = mysql.createPool({
-    host: 'tramway.proxy.rlwy.net',   // Railway host
+    host: 'caboose.proxy.rlwy.net',   // Railway host
     user: 'root',                     // Railway username
-    password: 'PrSpzKuerkeTMsPHGgnrwXFuDwhPDQfC',     // Railway password
+    password: 'QwNRhgUsKFUtVGvYigvFqCsYuGulqmIm',     // Railway password
     database: 'railway',              // Railway database name
-    port: 50208,                      // Railway port
+    port: 48275,                      // Railway port
     waitForConnections: true,
     connectionLimit: 10,
     queueLimit: 0
