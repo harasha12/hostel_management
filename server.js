@@ -1,5 +1,5 @@
 const express = require("express");
-  // <-- CREATE APP FIRST
+  const app = express();// <-- CREATE APP FIRST
 const mysql = require("mysql2");
 const session = require("express-session");
 const flash = require("connect-flash");
@@ -83,7 +83,7 @@ app.use((req, res, next) => {
 });
 
 
-const app = express();
+
 // ✅ Serve uploads folder publicly
 const uploadsPath = path.join(__dirname, "uploads");
 console.log("📂 Static serving uploads from:", uploadsPath);
