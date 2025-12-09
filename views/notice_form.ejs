@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Create Notice</title>
+
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: url('/images/hostel-bg.jpg') center/cover no-repeat fixed;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      backdrop-filter: blur(3px);
+    }
+
+    .form-container {
+      width: 420px;
+      background: rgba(0, 0, 0, 0.6);
+      padding: 25px;
+      border-radius: 12px;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.5);
+      color: #fff;
+      text-align: center;
+      backdrop-filter: blur(4px);
+    }
+
+    h2 {
+      margin-bottom: 15px;
+      color: #ffd700;
+    }
+
+    label {
+      float: left;
+      margin-left: 5px;
+      margin-bottom: 4px;
+      font-size: 14px;
+      font-weight: bold;
+    }
+
+    input, textarea {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 15px;
+      border-radius: 8px;
+      border: none;
+      outline: none;
+      background: rgba(255, 255, 255, 0.15);
+      color: #fff;
+      font-size: 15px;
+    }
+
+    textarea {
+      height: 120px;
+      resize: none;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      background: #ffd700;
+      color: #222;
+      font-size: 16px;
+      font-weight: bold;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: 0.3s;
+      border: none;
+    }
+
+    button:hover {
+      background: #e6c000;
+    }
+
+    a.back {
+      display: block;
+      margin-top: 12px;
+      color: #ffd700;
+      font-size: 14px;
+      text-decoration: none;
+    }
+
+    a.back:hover {
+      text-decoration: underline;
+    }
+  </style>
+
+</head>
+<body>
+
+ <%- include('partials/header') %>
+
+  <div class="form-container">
+    <h2>Post Important Notice</h2>
+
+    <form action="/notice/create" method="POST">
+      <label>Title:</label>
+      <input type="text" name="title" required>
+
+      <label>Description:</label>
+      <textarea name="description" required></textarea>
+
+      <button type="submit">Post Notice</button>
+    </form>
+
+    <a href="javascript:history.back()" class="back">⬅ Back</a>
+  </div>
+
+<%- include('partials/footer') %>
+
+</body>
+</html>
