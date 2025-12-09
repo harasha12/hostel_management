@@ -1,133 +1,194 @@
-
-<header>
-    <div class="navbar">
-        <div class="logo">
-            <a href="/">🏠 Hostel Management</a>
+<header class="main-header">
+    <div class="header-inner">
+        <div class="header-left">
+            <i class="fa-solid fa-house" style="color:#ffd700; font-size:22px;"></i>
+            <span class="logo-text">Hostel Management</span>
         </div>
-<style>
-/* Header Container */
-header {
-  background: linear-gradient(135deg, #2e8b57, #1b5e20);
-  color: white;
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
-  position: sticky;
-  top: 0;
-  z-index: 1000;
-  border-bottom-left-radius: 12px;
-  border-bottom-right-radius: 12px;
-}
 
-.navbar {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 14px 25px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-}
+        <nav id="navMenu" class="header-right">
+            <% const user = locals.session || null; %>
 
-.logo a {
-  color: white;
-  text-decoration: none;
-  font-weight: 700;
-  font-size: 1.4rem;
-  transition: color 0.3s ease;
-}
+            <% if (user && user.role) { %>
 
-.logo a:hover {
-  color: #d4f5d4;
-}
-
-/* ===== Button Styling (Main Part You Wanted) ===== */
-nav a {
-  color: #fff;
-  text-decoration: none;
-  font-weight: 600;
-  padding: 8px 16px;
-  border-radius: 25px;
-  transition: all 0.3s ease;
-  background: rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(4px);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-}
-
-nav a:hover {
-  background: linear-gradient(135deg, #66bb6a, #43a047);
-  transform: translateY(-2px);
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
-}
-
-/* Special buttons */
-nav a[href="/logout"] {
-  background: #e53935;
-  border: none;
-  color: white;
-  font-weight: 600;
-}
-
-nav a[href="/logout"]:hover {
-  background: #c62828;
-  box-shadow: 0 3px 10px rgba(229, 57, 53, 0.3);
-}
-
-nav a[href="/choose_login"] {
-  background: #3498db;
-  border: none;
-}
-
-nav a[href="/choose_login"]:hover {
-  background: #1f78c1;
-  box-shadow: 0 3px 10px rgba(52, 152, 219, 0.3);
-}
-
-/* Spacing and responsiveness */
-nav {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-}
-
-@media (max-width: 768px) {
-  .navbar {
-    flex-direction: column;
-    text-align: center;
-    gap: 10px;
-  }
-
-  nav a {
-    font-size: 0.95rem;
-    padding: 7px 14px;
-  }
-}
-</style>
-
-        <nav>
-            <% if (session && session.role) { %>
-                <% if (session.role === 'student') { %>
+                <% if (user.role === 'student') { %>
                     <a href="/student/dashboard">Dashboard</a>
                     <a href="/student/profile">Profile</a>
                     <a href="/student/applyoutpass">Apply Outpass</a>
-                    <a href="/student/viewfees">View Fees</a>
-                    <a href="/student/uploadReceipt">Upload Receipt</a>
-                <% } else if (session.role === 'warden') { %>
+                <% } else if (user.role === 'warden') { %>
                     <a href="/warden/dashboard">Dashboard</a>
-                    <a href="/warden/markAttendance">Mark Attendance</a>
-                    <a href="/warden/approveOutpass">Approve Outpasses</a>
-                <% } else if (session.role === 'admin') { %>
+                    <a href="/warden/markAttendance">Attendance</a>
+                <% } else if (user.role === 'admin') { %>
                     <a href="/admin/dashboard">Dashboard</a>
-                    <a href="/admin/uploadSBI">Upload SBI PDF</a>
-                    <a href="/admin/acceptedReceipts">Pending Receipts</a>
-                    <a href="/admin/manageWardens">Manage Wardens</a>
-                <% } else if (session.role === 'security') { %>
+                    <a href="/notice/create">Create Notice</a>
+                <% } else if (user.role === 'security') { %>
                     <a href="/security/dashboard">Dashboard</a>
-                    <a href="/security/viewOutpasses">View Outpasses</a>
                 <% } %>
-                <a href="/logout">Logout</a>
+
+                <form action="/logout" method="POST" class="logoutForm">
+                    <button type="submit">Logout</button>
+                </form>
+
             <% } else { %>
-                <a href="/choose_login">Login</a>
+                <a href="/choose_login">Logout</a>
             <% } %>
         </nav>
     </div>
 </header>
 
+<style>
+/* FIXED HEADER */
+.main-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 70px;
+    background: rgba(0,0,0,0.55);
+    backdrop-filter: blur(8px);
+    display: flex;
+    justify-content: center;
+    z-index: 9999;
+    box-shadow: 0 4px 25px rgba(0,0,0,0.4);
+}
+
+.header-inner {
+    width: 90%;
+    max-width: 1300px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo-text {
+    font-size: 22px;
+    font-weight: 700;
+    color: #ffd700;
+    margin-left: 10px;
+}
+
+.header-right a {
+    margin-left: 20px;
+    color: #fff;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.header-right a:hover {
+    color: #ffd700;
+}
+
+.logoutForm button {
+    background: transparent;
+    color: #ffd700;
+    border: none;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+@media (max-width: 768px) {
+    .header-right {
+        display: none;
+    }
+}
+</style>
+
+
+
+<!-- toast root -->
+<div id="toast-root" aria-live="polite" aria-atomic="true" style="position:fixed; top:18px; right:18px; z-index:12000; pointer-events:none;"></div>
+
+<style>
+/* (kept your navbar + toast CSS; truncated here for brevity in this paste)
+   ... copy your nav CSS and the .toast CSS from previous file ...
+*/
+.toast { display:flex; align-items:center; gap:12px; min-width:240px; max-width:420px; padding:12px 14px; border-radius:10px; pointer-events:auto; box-shadow:0 8px 28px rgba(2,6,23,0.18); opacity:0; transform: translateY(-8px) scale(.98); transition: transform .18s ease, opacity .18s ease; margin-bottom:10px; font-weight:600; background:#fff; }
+.toast.show { opacity:1; transform: translateY(0) scale(1); }
+.toast .icon { width:36px; height:36px; border-radius:8px; display:flex; align-items:center; justify-content:center; color:#fff; font-weight:700; flex:0 0 36px; }
+.toast .content { flex:1; color:#042022; font-size:14px; }
+.toast .close-btn { background:transparent; border:none; cursor:pointer; color:rgba(0,0,0,0.45); padding:6px; border-radius:6px; }
+.toast.success .icon { background:linear-gradient(135deg,#34d399,#10b981); }
+.toast.error   .icon { background:linear-gradient(135deg,#fb7185,#ef4444); }
+.toast.info    .icon { background:linear-gradient(135deg,#60a5fa,#3b82f6); }
+.toast.warn    .icon { background:linear-gradient(135deg,#fbbf24,#f59e0b); }
+</style>
+
+<%
+// SERVER-SIDE HELPER (runs during EJS render)
+// Ensure these variables exist and produce safe JSON strings with '<' escaped
+var __fs = typeof flashSuccess !== 'undefined' ? flashSuccess : [];
+var __fe = typeof flashError   !== 'undefined' ? flashError   : [];
+var __fi = typeof flashInfo    !== 'undefined' ? flashInfo    : [];
+var __fw = typeof flashWarn    !== 'undefined' ? flashWarn    : [];
+var __ck = typeof cookieLogoutMsg !== 'undefined' ? cookieLogoutMsg : null;
+
+// safeJson: stringify and escape '<' to avoid breaking script tags
+function safeJson(v){
+  try {
+    return JSON.stringify(v).replace(/</g, '\\u003c');
+  } catch(e) {
+    return 'null';
+  }
+}
+%>
+
+<script>
+(function () {
+  // defensive: if toast root missing, bail out
+  const root = document.getElementById('toast-root');
+  if (!root) return;
+
+  // parse server-provided JSONs (safeJson produced a valid JSON string)
+  let flashSuccess = [];
+  let flashError = [];
+  let flashInfo = [];
+  let flashWarn = [];
+  let cookieLogout = null;
+
+  try { flashSuccess = JSON.parse('<%- safeJson(__fs) %>'); } catch(e){ flashSuccess = []; }
+  try { flashError   = JSON.parse('<%- safeJson(__fe) %>'); } catch(e){ flashError = []; }
+  try { flashInfo    = JSON.parse('<%- safeJson(__fi) %>'); } catch(e){ flashInfo = []; }
+  try { flashWarn    = JSON.parse('<%- safeJson(__fw) %>'); } catch(e){ flashWarn = []; }
+  try { cookieLogout = JSON.parse('<%- safeJson(__ck) %>'); } catch(e){ cookieLogout = null; }
+
+  function makeToast(type, message, ttl = 4500) {
+    const el = document.createElement('div');
+    el.className = `toast ${type}`;
+    const icon = document.createElement('div'); icon.className = 'icon';
+    icon.textContent = type === 'success' ? '✓' : (type === 'error' ? '✕' : (type === 'info' ? 'i' : '!'));
+    const content = document.createElement('div'); content.className = 'content'; content.textContent = message;
+    const closeBtn = document.createElement('button'); closeBtn.className = 'close-btn'; closeBtn.innerHTML = '×';
+    closeBtn.onclick = () => removeToast(el);
+    el.appendChild(icon); el.appendChild(content); el.appendChild(closeBtn);
+    root.appendChild(el);
+    // show animation
+    void el.offsetWidth;
+    el.classList.add('show');
+    const t = setTimeout(() => removeToast(el), ttl);
+    function removeToast(node) {
+      clearTimeout(t);
+      node.classList.remove('show');
+      setTimeout(()=> node.remove(), 220);
+    }
+  }
+
+  // render all flashes
+  if (Array.isArray(flashSuccess)) flashSuccess.forEach(m => makeToast('success', m));
+  if (Array.isArray(flashError))   flashError.forEach(m => makeToast('error', m));
+  if (Array.isArray(flashInfo))    flashInfo.forEach(m => makeToast('info', m));
+  if (Array.isArray(flashWarn))    flashWarn.forEach(m => makeToast('warn', m));
+
+  if (cookieLogout) {
+    // cookieLogout usually a string, show and then clear cookie (best effort)
+    try {
+      makeToast('success', cookieLogout, 3500);
+      document.cookie = 'flash_logout=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+    } catch (e) { /* ignore */ }
+  }
+})();
+</script>
+
+<script>
+function toggleMenu() {
+    document.getElementById("navMenu").classList.toggle("active");
+}
+</script>
