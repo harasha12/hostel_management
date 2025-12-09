@@ -524,9 +524,10 @@ req.session.save(() => res.redirect('/choose_login'));
 app.post("/login/student", (req, res) => {
   const { student_id, password } = req.body;
 
+  // ---- Inline validation error ----
   if (!student_id || !password) {
     return res.render("login_student", {
-      message: "Please provide student ID and password",
+      message: "Please provide Student ID and Password",
       messageType: "error"
     });
   }
@@ -557,15 +558,19 @@ app.post("/login/student", (req, res) => {
       });
     }
 
-    // Save session
+    // -------- SUCCESS LOGIN --------
     req.session.user = student;
     req.session.role = "student";
 
-    req.session.save(() => {
-      return res.redirect("/student/dashboard");
+    // 🔥 Flash toast for success
+    req.flash("success", "Login successful — welcome back!");
+
+    return req.session.save(() => {
+      res.redirect("/student/dashboard");
     });
   });
 });
+
 app.get("/testflash", (req, res) => {
   req.flash("success", "Flash is working!");
   res.redirect("/testshow");
