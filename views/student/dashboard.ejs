@@ -299,6 +299,11 @@
       margin-bottom: 15px;
       text-decoration: underline;
     }
+    html, body {
+  height: 100%;
+  overflow: hidden !important;
+}
+
     /* ===== Profile Card Layout ===== */
 .profile-card {
   display: flex;
@@ -358,7 +363,40 @@
       .sidebar.collapsed { width: 65px; }
       .page-content { margin-left: 210px; }
       .sidebar.collapsed ~ .page-content { margin-left: 80px; }
-    }
+    }.toast-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  background: #fff;
+  color: #333;
+  padding: 12px 16px;
+  border-radius: 18px;
+
+  font-size: 16px;
+  font-weight: 600;
+
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+
+  opacity: 0;
+  transform: translateY(20px);
+  transition: all 0.4s ease;
+}
+
+.toast-show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.toast-success  { border-left: 6px solid #4CAF50; }
+.toast-error    { border-left: 6px solid #FF4747; }
+.toast-info     { border-left: 6px solid #1E90FF; }
+.toast-warn     { border-left: 6px solid #FFB300; }
+
+.toast-icon {
+  font-size: 22px;
+}
+
   </style>
 
   <script>
@@ -381,10 +419,31 @@
           document.getElementById('mainContent').innerHTML = "<p>⚠ Page not found.</p>";
         });
     }
+    
   </script>
 </head>
 
 <body>
+  
+  <!-- Toast Container -->
+<div id="toast-root" aria-live="polite" aria-atomic="true"
+     style="position:fixed; top:18px; right:18px; z-index:12000; pointer-events:none;"></div>
+
+<!-- Flash JSON -->
+<script id="__flash_data" type="application/json">
+  <%- JSON.stringify({
+        success: flashSuccess || [],
+        error: flashError || [],
+        info: flashInfo || [],
+        warn: flashWarn || [],
+        cookieLogout: cookieLogoutMsg || null
+  }) %>
+</script>
+
+<!-- Toast Script -->
+<%- include('../partials/toast') %>
+
+
   <!-- College Header -->
   <div class="college-header">
     <img src="/images/college_logo.png" alt="College Logo" />
@@ -451,6 +510,32 @@
       <p><strong>Course:</strong> <%= student.course || "N/A" %> |
          <strong>Year:</strong> <%= student.year || "N/A" %></p>
     </div>
+   
+<% if (globalNotices && globalNotices.length > 0) { %>
+<div style="margin-bottom: 20px;">
+    <% globalNotices.forEach(n => { %>
+        <div style="
+            background: rgba(255, 204, 0, 0.9);
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            color: #333;
+            font-weight: bold;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        ">
+            📢 <%= n.title %>  
+            <br>
+            <span style="font-weight: normal;"><%= n.description %></span>
+            <br>
+            <small style="color: #222;">
+                Posted by: <%= n.posted_by %>
+                | <%= new Date(n.created_at).toLocaleString() %>
+            </small>
+        </div>
+    <% }) %>
+</div>
+<% } %>
+
   </div>
 </div>
 
