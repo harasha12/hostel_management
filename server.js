@@ -297,17 +297,20 @@ app.get("/choose_login", (req, res) => {
 });
 // Logout
 // POST or GET depending on your current route
-app.get('/logout', (req, res) => {
-  res.cookie('flash_logout', 'Logged out successfully', {
-    maxAge: 5 * 1000,
-    httpOnly: false
+app.get("/logout", (req, res) => {
+  // Set logout message (readable by frontend script)
+  res.cookie("flash_logout", "Logged out successfully", {
+    maxAge: 3000,   // 3 seconds
+    httpOnly: false // must be false so JS can read it
   });
 
+  // Destroy session
   req.session.destroy(err => {
-    res.clearCookie('connect.sid');
-    return res.redirect('/choose_login');
+    res.clearCookie("connect.sid");
+    return res.redirect("/choose_login");
   });
 });
+
 
 
 // ===== Landing Page =====
@@ -443,7 +446,16 @@ app.get('/download/:type/:filename', (req, res) => {
 // =====================================
 // STUDENT ROUTES
 // =====================================
-app.get("/login/student", (req, res) => res.render("login_student"));
+app.get("/login/student", (req, res) => {
+    const errorMsg = req.flash("error");
+    const successMsg = req.flash("success");
+
+    res.render("login_student", {
+        message: errorMsg[0] || successMsg[0] || null,
+        messageType: errorMsg[0] ? "error" : "success"
+    });
+});
+
 app.get("/register/student", (req, res) => res.render("register_student"));
 
 // Register student
