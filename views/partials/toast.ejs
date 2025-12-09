@@ -1,0 +1,124 @@
+<!-- ===========================
+     BEAUTIFUL GLASS POPUP
+=========================== -->
+<style>
+#popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.45);
+  backdrop-filter: blur(6px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 12000;
+}
+
+/* Popup Box */
+.popup-box {
+  background: rgba(255,255,255,0.15);
+  padding: 30px;
+  width: 360px;
+  border-radius: 18px;
+  text-align: center;
+  color: white;
+  border: 2px solid rgba(255,255,255,0.25);
+  box-shadow: 0 10px 35px rgba(0,0,0,0.4);
+  backdrop-filter: blur(15px);
+  transform: scale(0.5);
+  opacity: 0;
+  transition: 0.35s ease-in-out;
+  animation: glow 2s infinite alternate ease-in-out;
+}
+
+/* Glow animation */
+@keyframes glow {
+  from { box-shadow: 0 0 15px rgba(255,215,0,0.3); }
+  to   { box-shadow: 0 0 30px rgba(255,215,0,0.6); }
+}
+
+.popup-show {
+  transform: scale(1);
+  opacity: 1;
+}
+
+/* Icon */
+.popup-icon {
+  font-size: 55px;
+  margin-bottom: 12px;
+  animation: popIcon 0.4s ease-out;
+}
+
+/* Icon pop animation */
+@keyframes popIcon {
+  0%   { transform: scale(0); opacity: 0; }
+  70%  { transform: scale(1.2); opacity: 1; }
+  100% { transform: scale(1); }
+}
+
+/* Message text */
+#popup-message {
+  font-size: 1.2rem;
+  margin-top: 8px;
+  font-weight: 500;
+  color: #fff;
+}
+</style>
+
+<div id="popup-overlay">
+  <div id="popup-box" class="popup-box">
+    <div id="popup-icon" class="popup-icon">✔️</div>
+    <div id="popup-message">Message</div>
+  </div>
+</div>
+
+<script id="__flash_data" type="application/json">
+  <%- JSON.stringify({
+        success: flashSuccess || [],
+        error: flashError || [],
+        info: flashInfo || [],
+        warn: flashWarn || [],
+        cookieLogout: cookieLogoutMsg || null
+  }) %>
+</script>
+
+<script>
+(function () {
+  let data = { success: [], error: [], info: [], warn: [], cookieLogout: null };
+
+  try {
+    const el = document.getElementById('__flash_data');
+    if (el && el.textContent.trim()) data = JSON.parse(el.textContent);
+  } catch (e) {}
+
+  function showCenterPopup(type, msg) {
+    const overlay = document.getElementById("popup-overlay");
+    const box = document.getElementById("popup-box");
+    const icon = document.getElementById("popup-icon");
+    const message = document.getElementById("popup-message");
+
+    // Fancy emojis
+    if (type === "success") icon.innerHTML = "🎉";
+    if (type === "error")   icon.innerHTML = "❌";
+    if (type === "info")    icon.innerHTML = "ℹ️";
+    if (type === "warn")    icon.innerHTML = "⚠️";
+
+    message.innerHTML = msg;
+    overlay.style.display = "flex";
+
+    setTimeout(() => box.classList.add("popup-show"), 50);
+
+    setTimeout(() => {
+      box.classList.remove("popup-show");
+      setTimeout(() => overlay.style.display = "none", 300);
+    }, 2600);
+  }
+
+  data.success.forEach(m => showCenterPopup("success", m));
+  data.error.forEach(m => showCenterPopup("error", m));
+  if (data.cookieLogout) showCenterPopup("success", data.cookieLogout);
+
+})();
+</script>
