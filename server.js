@@ -522,36 +522,41 @@ app.post("/login/student", (req, res) => {
   const { student_id, password } = req.body;
 
   if (!student_id || !password) {
-    req.flash("error", "Please provide student ID and password");
-    return res.redirect("/login/student");
+    return res.render("login_student", {
+      message: "Please provide student ID and password",
+      messageType: "error"
+    });
   }
 
   const sql = "SELECT * FROM students WHERE student_id=?";
   db.query(sql, [student_id], (err, results) => {
     if (err) {
-      req.flash("error", "Database Error");
-      return res.redirect("/login/student");
+      return res.render("login_student", {
+        message: "Database Error",
+        messageType: "error"
+      });
     }
 
     if (results.length === 0) {
-      req.flash("error", "Invalid Credentials");
-      return res.redirect("/login/student");
+      return res.render("login_student", {
+        message: "Invalid Credentials",
+        messageType: "error"
+      });
     }
 
     const student = results[0];
     const match = bcrypt.compareSync(password, student.password);
 
     if (!match) {
-      req.flash("error", "Invalid Credentials");
-      return res.redirect("/login/student");
+      return res.render("login_student", {
+        message: "Invalid Credentials",
+        messageType: "error"
+      });
     }
 
     // Save session
     req.session.user = student;
     req.session.role = "student";
-
-    // Success message
-    req.flash("success", "Login successful — welcome back!");
 
     req.session.save(() => {
       return res.redirect("/student/dashboard");
