@@ -281,6 +281,8 @@
   </style>
 </head>
 <body>
+  <%- include('../partials/toast') %>
+
   <div class="overlay">
     <!-- header -->
     <header class="college-header">
@@ -315,7 +317,19 @@
           <a href="/warden/uploadSBI"><i class="fas fa-file-invoice"></i><span class="label">Upload SBI File</span></a>
           <a href="/warden/uploadMessBill"><i class="fas fa-receipt"></i><span class="label">Upload Mess Bill</span></a>
           <a href="/warden/viewReceipts"><i class="fas fa-receipt"></i><span class="label"> View Paid Receipts</span></a>
-    
+    <div style="
+  background:#ffd700;
+  padding:12px;
+  border-radius:8px;
+  margin-bottom:20px;
+  text-align:center;
+  font-weight:bold;
+">
+  <a href="/notice/create" style="text-decoration:none; color:#000;">
+      📝 Post Important Notice
+  </a>
+</div>
+
         </div>
 
         <div class="logout">
@@ -388,6 +402,30 @@
       </main>
     </div>
   </div>
+<% if (globalNotices && globalNotices.length > 0) { %>
+<div style="margin-bottom: 20px;">
+    <% globalNotices.forEach(n => { %>
+        <div style="
+            background: rgba(255, 204, 0, 0.9);
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            color: #333;
+            font-weight: bold;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        ">
+            📢 <%= n.title %>  
+            <br>
+            <span style="font-weight: normal;"><%= n.description %></span>
+            <br>
+            <small style="color: #222;">
+                Posted by: <%= n.posted_by %>
+                | <%= new Date(n.created_at).toLocaleString() %>
+            </small>
+        </div>
+    <% }) %>
+</div>
+<% } %>
 
   <script>
     // Sidebar toggle logic (robust)
