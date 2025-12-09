@@ -446,16 +446,7 @@ app.get('/download/:type/:filename', (req, res) => {
 // =====================================
 // STUDENT ROUTES
 // =====================================
-app.get("/login/student", (req, res) => {
-    const errorMsg = req.flash("error");
-    const successMsg = req.flash("success");
-
-    res.render("login_student", {
-        message: errorMsg[0] || successMsg[0] || null,
-        messageType: errorMsg[0] ? "error" : "success"
-    });
-});
-
+app.get("/login/student", (req, res) => res.render("login_student"));
 app.get("/register/student", (req, res) => res.render("register_student"));
 
 // Register student
