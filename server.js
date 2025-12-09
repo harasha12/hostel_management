@@ -3407,6 +3407,35 @@ app.get("/security/emergencyOutpasses", async (req, res) => {
   );
   res.render("security/emergencyOutpasses", { outpasses: rows });
 });
+// Show notice form
+app.get("/notice/create", (req, res) => {
+    res.render("notice_form");
+});
+
+// Save notice
+app.post("/notice/create", (req, res) => {
+    const { title, description } = req.body;
+
+    // Detect user role (Admin/Warden)
+    const role = req.session?.user?.role || "Admin";
+    const hostelId = req.session?.user?.hostel_id || null;
+
+    const sql = `
+        INSERT INTO notices (title, description, posted_by, hostel_id)
+        VALUES (?, ?, ?, ?)
+    `;
+
+    db.query(sql, [title, description, role, hostelId], (err) => {
+        if (err) {
+            console.log("Notice Insert Error:", err);
+            req.flash("error", "Failed to post notice.");
+            return res.redirect("back");
+        }
+
+        req.flash("success", "Notice posted successfully!");
+        res.redirect("back");
+    });
+});
 
 // =====================================
 // START SERVER
