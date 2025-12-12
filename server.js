@@ -2405,22 +2405,28 @@ req.session.save(err => {
 // ======================
 // ADMIN DASHBOARD
 // ======================
-app.get("/admin/dashboard", (req, res) => {
+app.get("/admin/dashboard", async (req, res) => {
     if (!req.session.user || req.session.role !== "admin") {
         return res.redirect("/choose_login");
     }
-    res.render("admin/dashboard", { user: req.session.user, session: req.session });
-});
-app.get('/admin/complaints', (req, res) => {
-  if (!req.session.user || req.session.role !== 'admin') {
-    return res.redirect('/login/admin');
-  }
 
-  const query = "SELECT * FROM complaints ORDER BY complaint_id DESC";
-  db.query(query, (err, results) => {
-    if (err) return res.send("Error fetching complaints: " + err);
-    res.render('admin/admin_complaints', { complaints: results });
-  });
+    // 🔔 FETCH LATEST NOTICE
+    let latestNotice = null;
+    try {
+        const [rows] = await db.promise().query(
+            "SELECT * FROM notices ORDER BY created_at DESC LIMIT 1"
+        );
+        latestNotice = rows.length > 0 ? rows[0] : null;
+    } catch (err) {
+        console.error("Error fetching notice:", err);
+    }
+
+    // 👌 Render page with notice
+    res.render("admin/dashboard", {
+        user: req.session.user,
+        session: req.session,
+        latestNotice   // <-- sending it to EJS
+    });
 });
 
 app.post('/admin/complaints/:id/reply', (req, res) => {
