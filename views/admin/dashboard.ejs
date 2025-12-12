@@ -1,3 +1,20 @@
+<%
+  // SAFE FALLBACKS FOR NOTICE
+  const noticeData = latestNotice ? latestNotice : null;
+
+  let showNotice = false;
+  let noticeTime = null;
+  let isNew = false;
+
+  if (noticeData) {
+      noticeTime = new Date(noticeData.created_at);
+      const now = new Date();
+      const hoursDiff = Math.abs(now - noticeTime) / 36e5;
+      isNew = hoursDiff <= 24;
+      showNotice = true;
+  }
+%>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -11,7 +28,7 @@
   />
   <link rel="stylesheet" href="/css/style.css" />
 
-  <style>
+    <style>
     :root {
       --sidebar-width: 250px;
       --sidebar-compressed-width: 70px;
@@ -281,6 +298,32 @@
     .logout-btn:hover {
       background: #c9302c;
     }
+    .notification-banner {
+  width: 100%;
+  background: linear-gradient(90deg, rgba(255,214,0,0.9), rgba(255,214,0,0.8));
+  color: #000;
+  padding: 10px 0;
+  font-weight: bold;
+  text-align: center;
+  overflow: hidden;
+  border-bottom: 2px solid rgba(0,0,0,0.3);
+  white-space: nowrap;
+  position: relative;
+}
+
+.scrolling-text {
+  display: inline-block;
+  padding-left: 100%; /* Start from right */
+  animation: scroll-notice 15s linear infinite;
+  white-space: nowrap;
+}
+
+/* Animation */
+@keyframes scroll-notice {
+  0% { transform: translateX(0%); }
+  100% { transform: translateX(-100%); }
+}
+
   </style>
 </head>
 
@@ -288,17 +331,39 @@
   <%- include('../partials/toast') %>
 
   <div class="overlay">
-    <div class="college-header">
-      <img src="/images/college_logo.png" alt="College Logo" />
-      <div class="header-text">
-          <h2>SIR C R REDDY COLLEGE OF ENGINEERING - BOYS HOSTEL (<span class="autonomous">AUTONOMOUS</span>)</h2>
-          <p>Approved by AICTE & Permanently Affiliated to JNTUk, Kakinada, NAAC-A<br>
-          Accredited by NBA (CSE, IT, EEE, Mech, ECE, Civil)<br>
-          Vatluru, Eluru, Eluru District, AP - 534007</p>
-        </div>
-    </div>
 
-    <div class="dashboard" id="dashboard">
+  <div class="college-header">
+    <img src="/images/college_logo.png" alt="College Logo" />
+    <div class="header-text">
+        <h2>SIR C R REDDY COLLEGE OF ENGINEERING - BOYS HOSTEL 
+           (<span class="autonomous">AUTONOMOUS</span>)
+        </h2>
+        <p>
+          Approved by AICTE & Permanently Affiliated to JNTUk, Kakinada, NAAC-A <br>
+          Accredited by NBA (CSE, IT, EEE, Mech, ECE, Civil) <br>
+          Vatluru, Eluru, Eluru District, AP - 534007
+        </p>
+    </div>
+  </div>
+
+  <!-- 🔔 Notice Banner placed correctly below header -->
+  <% if (showNotice) { %>
+  <div class="notification-banner">
+    <div class="scrolling-text">
+
+      <% if (isNew) { %> 
+        🆕 <strong style="color:red;">NEW</strong> | 
+      <% } %>
+
+      📢 <%= noticeData.title %> — <%= noticeData.description %> |
+      ⏱ <span style="font-weight:bold;"><%= noticeTime.toLocaleString() %></span>
+
+    </div>
+  </div>
+  <% } %>
+
+  <div class="dashboard" id="dashboard">
+
       <div class="sidebar" id="sidebar">
         <div class="toggle-container">
           <button class="toggle-btn" id="toggleBtn">
@@ -345,30 +410,9 @@
       </div>
     </div>
   </div>
-<% if (globalNotices && globalNotices.length > 0) { %>
-<div style="margin-bottom: 20px;">
-    <% globalNotices.forEach(n => { %>
-        <div style="
-            background: rgba(255, 204, 0, 0.9);
-            padding: 12px;
-            border-radius: 6px;
-            margin-bottom: 10px;
-            color: #333;
-            font-weight: bold;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-        ">
-            📢 <%= n.title %>  
-            <br>
-            <span style="font-weight: normal;"><%= n.description %></span>
-            <br>
-            <small style="color: #222;">
-                Posted by: <%= n.posted_by %>
-                | <%= new Date(n.created_at).toLocaleString() %>
-            </small>
-        </div>
-    <% }) %>
-</div>
-<% } %>
+
+
+
 
   <script>
     const toggleBtn = document.getElementById("toggleBtn");
