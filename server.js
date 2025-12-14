@@ -12,7 +12,12 @@ const { v4: uuidv4 } = require("uuid");
 const multer = require("multer");
 const xlsx = require("xlsx");
 const fs = require("fs");
+const receiptsDir = path.join(__dirname, "uploads", "receipts");
 
+// 🔥 ensure directory exists (important for Render + localhost)
+if (!fs.existsSync(receiptsDir)) {
+  fs.mkdirSync(receiptsDir, { recursive: true });
+}
 // ================================
 // MUST RUN BEFORE USING req.flash()
 // ================================
@@ -111,41 +116,35 @@ app.use('/uploads/profile_images', express.static(path.join(__dirname, 'uploads/
 // Serve default images (like default-avatar.png)
 app.use('/images', express.static(path.join(__dirname, 'public/images')));
 
-app.use(flash());
-
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     let dir;
 
     switch (file.fieldname) {
-
       case "receipt_pdf":
-        dir = path.join(__dirname, "uploads/receipts");
+      case "sbi_pdf":
+        dir = path.join(__dirname, "uploads", "receipts");
         break;
 
       case "outpass_pdf":
-        dir = path.join(__dirname, "uploads/outpasses");
-        break;
-
-      case "sbi_pdf":
-        dir = path.join(__dirname, "uploads/receipts");
+        dir = path.join(__dirname, "uploads", "outpasses");
         break;
 
       case "studentsFile":
-        dir = path.join(__dirname, "uploads/students");
+        dir = path.join(__dirname, "uploads", "students");
         break;
 
       case "student_aadhaar":
       case "father_aadhaar":
-        dir = path.join(__dirname, "uploads/aadhaar"); // ✔ Corrected folder name
+        dir = path.join(__dirname, "uploads", "aadhaar");
         break;
 
       case "profile_image":
-        dir = path.join(__dirname, "uploads/profile_images");
+        dir = path.join(__dirname, "uploads", "profile_images");
         break;
 
       case "mess_bill_pdf":
-        dir = path.join(__dirname, "uploads/mess_bills");
+        dir = path.join(__dirname, "uploads", "mess_bills");
         break;
 
       default:
@@ -156,30 +155,35 @@ const storage = multer.diskStorage({
     cb(null, dir);
   },
 
-filename: (req, file, cb) => {
-  const studentId = req.session?.user?.student_id || "unknown";
-  const ext = path.extname(file.originalname);
+  filename: (req, file, cb) => {
+    const studentId =
+      req.session && req.session.user && req.session.user.student_id
+        ? req.session.user.student_id
+        : "unknown";
 
-  // ---------- AADHAAR (student & father) ----------
-  if (file.fieldname === "student_aadhaar" || file.fieldname === "father_aadhaar") {
-    return cb(null, `${studentId}_${file.fieldname}${ext}`);
+    const ext = path.extname(file.originalname);
+
+    // Aadhaar
+    if (file.fieldname === "student_aadhaar" || file.fieldname === "father_aadhaar") {
+      return cb(null, `${studentId}_${file.fieldname}${ext}`);
+    }
+
+    // Profile image
+    if (file.fieldname === "profile_image") {
+      return cb(null, `${studentId}_profile${ext}`);
+    }
+
+    // All other files
+    const safeName = file.originalname
+      .replace(/\s+/g, "_")
+      .replace(/[<>:"/\\|?*]+/g, "")
+      .trim();
+
+    cb(null, Date.now() + "-" + safeName);
   }
-
-  // ---------- PROFILE IMAGE ----------
-  if (file.fieldname === "profile_image") {
-    return cb(null, `${studentId}_profile${ext}`);
-  }
-
-  // ---------- OTHER FILES ----------
-  let safeName = file.originalname
-    .replace(/\s+/g, "_")
-    .replace(/[<>:"/\\|?*]+/g, "")
-    .trim();
-
-  return cb(null, Date.now() + "-" + safeName);
-}
-
 });
+
+
 
 const upload = multer({
   storage,
@@ -935,108 +939,127 @@ app.post("/student/profile", async (req, res) => {
 
 // Student Fees
 app.get('/student/viewfees', async (req, res) => {
-    if (req.session.role !== 'student') return res.redirect('/choose_login');
-    const student_id = req.session.user.student_id;
+  if (req.session.role !== 'student') return res.redirect('/choose_login');
 
-    try {
-        // Fetch student info
-        const [[student]] = await db.promise().query(
-            "SELECT * FROM students WHERE student_id = ?",
-            [student_id]
-        );
-        if (!student) return res.send("Student not found");
+  const student_id = req.session.user.student_id;
 
-        // Fetch yearly fees
-        const [yearlyFees] = await db.promise().query(
-            "SELECT * FROM yearly_fee ORDER BY year ASC"
-        );
+  try {
+    /* ---------------- STUDENT ---------------- */
+    const [[student]] = await db.promise().query(
+      "SELECT * FROM students WHERE student_id = ?",
+      [student_id]
+    );
+    if (!student) return res.send("Student not found");
 
-        // Fetch verified receipts
-        const [receipts] = await db.promise().query(
-    "SELECT ref_id, year, amount_paid, remarks, status, created_at FROM fee_receipts WHERE student_id=? AND status='Verified' ORDER BY created_at DESC",
-    [student_id]
-);
+    const studentYear = Number(student.year || 0); // ✅ SAFE FIX
 
-        
+    /* ---------------- YEARLY FEES ---------------- */
+    const [yearlyFees] = await db.promise().query(
+      "SELECT * FROM yearly_fee ORDER BY year ASC"
+    );
 
-        // Map receipts by year & component
-        const paymentMap = {};
-        receipts.forEach(r => {
-            const yr = r.year;
-            if (!paymentMap[yr]) paymentMap[yr] = { 'Room Rent':0, 'Mess Bill1':0, 'Mess Bill2':0, 'Others':0 };
-            
-            let key = r.remarks.trim().toLowerCase();
-            if(key === 'room rent') key = 'Room Rent';
-            else if(key === 'mess bill1') key = 'Mess Bill1';
-            else if(key === 'mess bill2') key = 'Mess Bill2';
-            else key = 'Others';
+    /* ---------------- ALL RECEIPTS (SHOW TO STUDENT) ---------------- */
+    const [receipts] = await db.promise().query(
+      `SELECT ref_id, year, amount_paid, remarks, status, created_at
+       FROM fee_receipts
+       WHERE student_id = ?
+       ORDER BY created_at DESC`,
+      [student_id]
+    );
 
-            paymentMap[yr][key] = (paymentMap[yr][key] || 0) + parseFloat(r.amount_paid || 0);
-        });
+    /* ---------------- ONLY VERIFIED FOR CALCULATION ---------------- */
+    const verifiedReceipts = receipts.filter(r => r.status === 'Verified');
 
-        // Build fee summary per year
-        const feeSummary = yearlyFees
-            .filter(f => f.year <= student.year)
-            .map(f => {
-                const paid = paymentMap[f.year] || {};
-                const room_rent_paid = paid['Room Rent'] || 0;
-                const mess_bill1_paid = paid['Mess Bill1'] || 0;
-                const mess_bill2_paid = paid['Mess Bill2'] || 0;
+    /* ---------------- MAP PAYMENTS ---------------- */
+    const paymentMap = {};
 
-                // Use Number(...) and default 0 to avoid NaN
-                const room_rent = Number(f.room_rent || 0);
-                const mess_bill1 = Number(f.mess_bill1 || 0);
-                const mess_bill2 = Number(f.mess_bill2 || 0);
+    verifiedReceipts.forEach(r => {
+      const yr = Number(r.year);
+      if (!yr) return;
 
-                const room_rent_due = Math.max(room_rent - room_rent_paid, 0);
-                const mess_bill1_due = Math.max(mess_bill1 - mess_bill1_paid, 0);
-                const mess_bill2_due = Math.max(mess_bill2 - mess_bill2_paid, 0);
+      if (!paymentMap[yr]) {
+        paymentMap[yr] = {
+          'Room Rent': 0,
+          'Mess Bill1': 0,
+          'Mess Bill2': 0,
+          'Others': 0
+        };
+      }
 
-                const total_fee = room_rent + mess_bill1 + mess_bill2;
-                const total_paid = room_rent_paid + mess_bill1_paid + mess_bill2_paid;
+      let raw = (r.remarks || "").replace(/[_\s]/g, "").toLowerCase();
+      let key = "Others";
 
-                let status = "Not Paid";
-                if (room_rent_paid >= room_rent &&
-                    mess_bill1_paid >= mess_bill1 &&
-                    mess_bill2_paid >= mess_bill2) {
-                    status = "Paid";
-                } else if (room_rent_paid > 0 || mess_bill1_paid > 0 || mess_bill2_paid > 0) {
-                    status = "Partial";
-                }
+      if (raw.includes("room")) key = "Room Rent";
+      else if (raw.includes("messbill1")) key = "Mess Bill1";
+      else if (raw.includes("messbill2")) key = "Mess Bill2";
 
-                return {
-                    year: f.year,
-                    room_rent_paid: room_rent_paid.toFixed(2),
-                    room_rent_due: room_rent_due.toFixed(2),
-                    mess_bill1_paid: mess_bill1_paid.toFixed(2),
-                    mess_bill1_due: mess_bill1_due.toFixed(2),
-                    mess_bill2_paid: mess_bill2_paid.toFixed(2),
-                    mess_bill2_due: mess_bill2_due.toFixed(2),
-                    total_fee: total_fee.toFixed(2),
-                    total_paid: total_paid.toFixed(2),
-                    total_due: (total_fee - total_paid).toFixed(2),
-                    status
-                };
-            });
+      paymentMap[yr][key] += Number(r.amount_paid || 0);
+    });
 
-        // Calculate totals
-        const total_paid = feeSummary.reduce((sum, f) => sum + parseFloat(f.total_paid), 0);
-        const total_fee = feeSummary.reduce((sum, f) => sum + parseFloat(f.total_fee), 0);
-        const remaining_due = total_fee - total_paid;
+    /* ---------------- BUILD SUMMARY ---------------- */
+    const feeSummary = yearlyFees
+      .filter(f => Number(f.year) <= studentYear)
+      .map(f => {
+        const paid = paymentMap[f.year] || {};
 
-        res.render('student/viewfees', { 
-            student, 
-            feeSummary, 
-            total_paid: total_paid.toFixed(2), 
-            remaining_due: remaining_due.toFixed(2),
-            receipts
-        });
+        const room_rent = Number(f.room_rent || 0);
+        const mess_bill1 = Number(f.mess_bill1 || 0);
+        const mess_bill2 = Number(f.mess_bill2 || 0);
 
-    } catch (err) {
-        console.error("❌ Error loading fee details:", err);
-        res.status(500).send("Error loading fee details.");
-    }
+        const room_rent_paid = paid['Room Rent'] || 0;
+        const mess_bill1_paid = paid['Mess Bill1'] || 0;
+        const mess_bill2_paid = paid['Mess Bill2'] || 0;
+
+        const total_fee = room_rent + mess_bill1 + mess_bill2;
+        const total_paid = room_rent_paid + mess_bill1_paid + mess_bill2_paid;
+
+        let status = "Not Paid";
+        if (
+          room_rent_paid >= room_rent &&
+          mess_bill1_paid >= mess_bill1 &&
+          mess_bill2_paid >= mess_bill2
+        ) {
+          status = "Paid";
+        } else if (total_paid > 0) {
+          status = "Partial";
+        }
+
+        return {
+          year: f.year,
+          room_rent_paid: room_rent_paid.toFixed(2),
+          room_rent_due: Math.max(room_rent - room_rent_paid, 0).toFixed(2),
+          mess_bill1_paid: mess_bill1_paid.toFixed(2),
+          mess_bill1_due: Math.max(mess_bill1 - mess_bill1_paid, 0).toFixed(2),
+          mess_bill2_paid: mess_bill2_paid.toFixed(2),
+          mess_bill2_due: Math.max(mess_bill2 - mess_bill2_paid, 0).toFixed(2),
+          total_fee: total_fee.toFixed(2),
+          total_paid: total_paid.toFixed(2),
+          total_due: (total_fee - total_paid).toFixed(2),
+          status
+        };
+      });
+
+    /* ---------------- TOTALS ---------------- */
+    const total_paid = feeSummary.reduce((s, f) => s + Number(f.total_paid), 0);
+    const total_fee = feeSummary.reduce((s, f) => s + Number(f.total_fee), 0);
+    const remaining_due = total_fee - total_paid;
+
+    /* ---------------- RENDER ---------------- */
+    res.render('student/viewfees', {
+      student,
+      feeSummary,
+      receipts,               // ✅ includes Pending + Verified
+      total_paid: total_paid.toFixed(2),
+      remaining_due: remaining_due.toFixed(2)
+    });
+
+  } catch (err) {
+    console.error("❌ Error loading fee details:", err);
+    res.status(500).send("Error loading fee details.");
+  }
 });
+
+
 
 
 app.post("/student/upload-aadhaar", upload.fields([
@@ -1118,7 +1141,9 @@ app.post('/student/uploadReceipt', upload.single("sbi_pdf"), async (req, res) =>
   try {
     if (req.session.role !== 'student') return res.redirect('/choose_login');
 
-    const student_id = req.session.user.student_id;
+    const student_id =
+      req.session.user.student_id || req.session.user.id;
+
     let { student_unique_id, ref_id, amount_paid, year, remarks } = req.body;
 
     if (!student_unique_id || !ref_id || !amount_paid || !year || !remarks)
@@ -1129,83 +1154,60 @@ app.post('/student/uploadReceipt', upload.single("sbi_pdf"), async (req, res) =>
     amount_paid = parseFloat(amount_paid);
     year = parseInt(year);
 
-    // Validate student exists
-    const [[student]] = await db.promise().query(
-      "SELECT * FROM students WHERE student_id = ?",
-      [student_id]
-    );
-    if (!student) return res.send("❌ Student not found.");
-
     if (!req.file) return res.send("❌ No PDF uploaded.");
 
-    // 🔥🔥 FIX #1: SAVE ALL RECEIPTS INTO uploads/receipts/
-    const pdf_path = `uploads/receipts/${req.file.filename}`;
+    const pdf_path = path.join("uploads", "receipts", req.file.filename);
 
     conn = await db.promise().getConnection();
     await conn.beginTransaction();
 
-    // Check SBI transactions
     const [[txn]] = await conn.query(
       `SELECT * FROM sbi_transactions 
-       WHERE TRIM(ref_id)=? 
-         AND CAST(amount AS DECIMAL)=? 
+       WHERE TRIM(ref_id)=?
+         AND CAST(amount AS DECIMAL)=?
          AND status='Pending'`,
       [ref_id, amount_paid]
     );
 
-    // Save receipt as Pending if no matching SBI txn
-    let status = txn ? 'Verified' : 'Pending';
+    const status = txn ? "Verified" : "Pending";
 
     await conn.query(
       `INSERT INTO fee_receipts
-       (student_id, student_unique_id, ref_id, amount_paid, pdf_path, year, status, created_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, NOW())`,
-      [student_id, student_unique_id, ref_id, amount_paid, pdf_path, year, status]
+       (student_id, student_unique_id, ref_id, amount_paid, pdf_path, year, status, remarks, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())`,
+      [
+        student_id,
+        student_unique_id,
+        ref_id,
+        amount_paid,
+        pdf_path,
+        year,
+        status,
+        remarks
+      ]
     );
 
-    // If verified, update related fee fields
-    if (status === 'Verified') {
-      let colToUpdate;
-
-      switch (remarks.toLowerCase()) {
-        case 'room rent': colToUpdate = 'room_rent_paid'; break;
-        case 'mess bill1': colToUpdate = 'mess_bill1_paid'; break;
-        case 'mess bill2': colToUpdate = 'mess_bill2_paid'; break;
-        default: colToUpdate = null;
-      }
-
-      if (colToUpdate) {
-        await conn.query(
-          `UPDATE students SET 
-             ${colToUpdate} = IFNULL(${colToUpdate},0) + ?,
-             total_paid = IFNULL(total_paid,0) + ?,
-             remaining_fee = total_fee - (IFNULL(total_paid,0) + ?) 
-           WHERE student_id = ?`,
-          [amount_paid, amount_paid, amount_paid, student_id]
-        );
-      }
-
-      // Mark SBI txn as verified
-      await conn.query("UPDATE sbi_transactions SET status='Verified' WHERE ref_id=?", [ref_id]);
+    if (status === "Verified") {
+      await conn.query(
+        "UPDATE sbi_transactions SET status='Verified' WHERE ref_id=?",
+        [ref_id]
+      );
     }
 
     await conn.commit();
 
-    res.send(`
-      ${status === 'Verified' ? '✅ Receipt verified successfully' : '⚠️ Receipt uploaded pending verification'}<br>
-      <b>Academic Year:</b> ${year}<br>
-      <b>Amount Paid:</b> ₹${amount_paid.toFixed(2)}<br>
-      <b>Component Updated:</b> ${remarks}
-    `);
+    // 🔥 REDIRECT — THIS WAS MISSING
+    return res.redirect("/student/viewfees");
 
   } catch (err) {
     if (conn) await conn.rollback();
-    console.error("❌ Error verifying student receipt:", err);
-    res.status(500).send("Error verifying receipt: " + err.message);
+    console.error("❌ uploadReceipt error:", err);
+    res.status(500).send(err.message);
   } finally {
     if (conn) conn.release();
   }
 });
+
 app.get('/warden/acceptedReceipts', async (req, res) => {
   if (req.session.role !== 'admin') return res.redirect('/choose_login');
 
