@@ -1,64 +1,251 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>My Complaints</title>
-    <link rel="stylesheet" href="/css/style.css">
+    <title>My Complaints | Student Portal</title>
+
     <style>
-        body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
-        h2 { text-align: center; margin-bottom: 20px; }
+        :root {
+            --bg-dark: #020617;
+            --bg-surface: rgba(15, 23, 42, 0.92);
+            --bg-card: rgba(15, 23, 42, 0.85);
+
+            --text-main: #e5e7eb;
+            --text-muted: #94a3b8;
+
+            --gold: #fbbf24;
+
+            --table-header-bg: #0f172a;
+            --table-row-alt: #111827;
+            --table-border: rgba(255,255,255,0.08);
+
+            --status-pending: #facc15;
+            --status-resolved: #22c55e;
+            --status-rejected: #ef4444;
+
+            --radius-lg: 16px;
+            --radius-md: 10px;
+
+            --shadow-soft: 0 20px 45px rgba(0,0,0,0.55);
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            padding: 38px 16px 26px;
+            font-family: "Poppins", sans-serif;
+            background: radial-gradient(circle at top, #1f2937 0, #020617 55%);
+            color: var(--text-main);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1050px;
+            margin: 0 auto;
+        }
+
+        /* ========== HEADINGS ========== */
+        h2 {
+            text-align: center;
+            margin: 0 0 10px;
+            font-size: 26px;
+            font-weight: 700;
+            color: var(--gold);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 13px;
+            margin-bottom: 26px;
+        }
+
+        /* ========== TABLE CARD ========== */
+        .table-card {
+            background: var(--bg-card);
+            padding: 20px;
+            border-radius: var(--radius-lg);
+            border: 1px solid rgba(148,163,184,0.25);
+            box-shadow: var(--shadow-soft);
+            backdrop-filter: blur(10px);
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--table-border);
+        }
+
         table {
             width: 100%;
-            max-width: 900px;
-            margin: 0 auto;
             border-collapse: collapse;
-            background: #fff;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-            border-radius: 10px;
-            overflow: hidden;
+            font-size: 14px;
+            background: var(--bg-surface);
         }
-        th, td {
+
+        th {
+            background: var(--table-header-bg);
+            color: var(--text-muted);
             padding: 12px;
             text-align: left;
-            border-bottom: 1px solid #ddd;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            border-bottom: 1px solid var(--table-border);
         }
-        th { background-color: #007BFF; color: white; }
-        tr:hover { background-color: #f1f1f1; }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid var(--table-border);
+            vertical-align: top;
+            max-width: 260px;
+        }
+
+        tbody tr:nth-child(even) {
+            background: var(--table-row-alt);
+        }
+
+        tbody tr:hover {
+            background: #020617;
+            transition: 0.2s ease;
+        }
+
+        /* ========== STATUS BADGES ========== */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .status-PENDING {
+            background: rgba(250, 204, 21, 0.18);
+            color: var(--status-pending);
+        }
+        .status-PENDING .status-dot {
+            background: var(--status-pending);
+        }
+
+        .status-RESOLVED {
+            background: rgba(34, 197, 94, 0.18);
+            color: var(--status-resolved);
+        }
+        .status-RESOLVED .status-dot {
+            background: var(--status-resolved);
+        }
+
+        .status-REJECTED {
+            background: rgba(239, 68, 68, 0.18);
+            color: var(--status-rejected);
+        }
+        .status-REJECTED .status-dot {
+            background: var(--status-rejected);
+        }
+
+        /* ========== BACK LINK ========== */
         .back-link {
             display: block;
+            width: 250px;
+            margin: 26px auto 0;
             text-align: center;
-            margin-top: 20px;
+            padding: 11px;
             text-decoration: none;
-            color: #555;
+            border-radius: var(--radius-md);
+            background: var(--gold);
+            color: #111827;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            box-shadow: 0 12px 26px rgba(251,191,36,0.3);
+            transition: 0.2s ease;
         }
-        .back-link:hover { text-decoration: underline; }
+
+        .back-link:hover {
+            background: #ffe36e;
+            transform: translateY(-2px);
+        }
+
+        /* ========== MOBILE ========== */
+        @media (max-width: 720px) {
+            h2 { font-size: 22px; }
+            td { max-width: 180px; }
+            .back-link { width: 90%; }
+        }
     </style>
 </head>
 <body>
 
-<h2>My Complaints</h2>
-<table>
-    <tr>
-        <th>Subject</th>
-        <th>Description</th>
-        <th>Status</th>
-        <th>Reply</th>
-        <th>Submitted On</th>
-    </tr>
-    <% complaints.forEach(c => { %>
-    <tr>
-        <td><%= c.subject %></td>
-        <td><%= c.description %></td>
-        <td><%= c.status %></td>
-        <td><%= c.reply || "-" %></td>
-        <td><%= new Date(c.created_at).toLocaleString() %></td>
-    </tr>
-    <% }) %>
-</table>
+<div class="container">
+    <h2>My Complaints</h2>
+    <div class="subtitle">Track all your submitted complaints and view responses from the hostel authorities.</div>
 
-<a href="/student/dashboard" class="back-link">⬅ Back to Dashboard</a>
+    <div class="table-card">
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Subject</th>
+                        <th>Description</th>
+                        <th>Status</th>
+                        <th>Reply</th>
+                        <th>Submitted On</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <% complaints.forEach(c => { 
+                        const status = c.status ? c.status.toUpperCase() : "PENDING";
+                    %>
+                    <tr>
+                        <td><%= c.subject %></td>
+                        <td><%= c.description %></td>
+
+                        <td>
+                            <span class="status-badge status-<%= status %>">
+                                <span class="status-dot"></span>
+                                <%= status %>
+                            </span>
+                        </td>
+
+                        <td><%= c.reply || "-" %></td>
+
+                        <td>
+                            <%= new Date(c.created_at).toLocaleString("en-IN", {
+                                dateStyle: "medium",
+                                timeStyle: "short"
+                            }) %>
+                        </td>
+                    </tr>
+                    <% }) %>
+
+                    <% if (complaints.length === 0) { %>
+                    <tr>
+                        <td colspan="5" style="text-align:center; padding:20px; color:var(--text-muted);">
+                            No complaints submitted yet.
+                        </td>
+                    </tr>
+                    <% } %>
+
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <a href="/student/dashboard" class="back-link">⬅ Back to Dashboard</a>
+</div>
 
 </body>
 </html>
-
