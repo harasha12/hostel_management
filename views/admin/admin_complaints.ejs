@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,15 +6,33 @@
   <link rel="stylesheet" href="/css/style.css">
 
   <style>
-    /* ===== General Page Style ===== */
-    body {
-      font-family: 'Poppins', 'Segoe UI', Arial, sans-serif;
+    
+    
+body {
       margin: 0;
-      padding: 0;
-      background: #f6f7fb;
-      color: #1b2430;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background: url("/images/hostel-bg.jpg") no-repeat center center fixed;
+      background-size: cover;
+      color: #fff;
+      overflow-x: hidden;
     }
+    .header-container {
+    text-align: center; /* Center the h2 wrapper */
+    margin-bottom: 25px; /* Spacing below the heading */
+}
 
+.header-container h2 {
+    font-weight: 800;
+    font-size: 1.9em;
+    color: #222;
+    letter-spacing: 0.8px;
+    margin: 0; /* Remove default margin from h2 */
+    display: inline-block;
+    border-bottom: 3px solid #ffd700;
+    background: linear-gradient(90deg, #8E8EED 60%, #EBD483 100%);
+    border-radius: 6px;
+    padding: 8px 16px;
+}
     /* ===== Container ===== */
     .container {
       max-width: 1150px;
@@ -24,49 +41,46 @@
       padding: 35px 40px;
       border-radius: 16px;
       border: 3px solid #ffd700;
-      box-shadow: 0 10px 35px rgba(0, 0, 0, 0.08), 0 2px 6px rgba(0, 0, 0, 0.1);
-    }
-
-    h2 {
-      text-align: center;
-      font-size: 2em;
-      font-weight: 700;
+      box-shadow: 0 10px 35px rgba(0, 0, 0, 0.08),
+                  0 2px 6px rgba(0, 0, 0, 0.1);
       color: #222;
-      margin-bottom: 25px;
-      display: inline-block;
-      border-bottom: 3px solid #ffd700;
-      background: linear-gradient(90deg, #8E8EED 60%, #EBD483 100%);
-      border-radius: 6px;
-      padding: 10px 18px;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
     }
 
-    /* ===== Table ===== */
+    /* ===== TABLE SCROLL FIX ===== */
+    .table-scroll {
+      width: 100%;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
     table {
       width: 100%;
+      min-width: 900px; /* forces scroll instead of breaking */
       border-collapse: collapse;
-      background: #fff;
       border-radius: 12px;
-      overflow: hidden;
       box-shadow: 0 4px 18px rgba(0, 0, 0, 0.05);
     }
 
-    /* ===== Table Header Row (th) ===== */
     th {
-      background: linear-gradient(135deg, #e6c36a 0%, #d9b75a 50%, #c2a45a 100%);
+      background: linear-gradient(135deg, #e6c36a, #c2a45a);
       color: #222;
-      text-transform: uppercase;
       padding: 14px;
       font-size: 0.97em;
       font-weight: 700;
+        overflow: visible;   /* allow row expansion */
       letter-spacing: 0.4px;
       border-bottom: 2px solid #b59a52;
+      text-transform: uppercase;
     }
 
     td {
       padding: 14px;
-      border-bottom: 1px solid #eee;
-      text-align: left;
+      border-bottom: 1px solid #adaaaa;
       font-size: 0.95em;
+      text-align: left;
+      white-space: nowrap;
+      
     }
 
     tr:hover {
@@ -74,29 +88,29 @@
       transition: 0.2s ease-in-out;
     }
 
-    /* ===== Status Row Background Colors ===== */
+    /* ===== Status Row Colors ===== */
     tr.status-Pending {
-      background: #ffffff; /* White */
+      background: #ffffff;
       color: #333;
     }
 
     tr.status-Replied {
-     background: #e3f2fd; /* Light blue */
-      color: #0d47a1; /* Deep blue */
+      background: #e3f2fd;
+      color: #0d47a1;
     }
 
     tr.status-Resolved {
-       background: #e8f5e9; /* Light green */
-      color: #1b5e20; /* Dark green */
+      background: #e8f5e9;
+      color: #1b5e20;
     }
 
-    /* ===== Form Styling ===== */
+    /* ===== Form ===== */
     form {
       display: flex;
       flex-wrap: wrap;
-      align-items: center;
-      justify-content: center;
       gap: 6px;
+      justify-content: center;
+      align-items: center;
     }
 
     form input[type="text"],
@@ -105,96 +119,521 @@
       border-radius: 6px;
       border: 1px solid #ccc;
       font-size: 0.9em;
-      outline: none;
-      transition: border 0.2s;
     }
 
-    form input[type="text"]:focus,
+    form input:focus,
     form select:focus {
+      outline: none;
       border-color: #007bff;
     }
 
     form button {
       padding: 7px 12px;
       background: linear-gradient(135deg, #007bff, #0056b3);
-      color: white;
+      color: #fff;
       border: none;
       border-radius: 6px;
       font-weight: 600;
       cursor: pointer;
-      transition: transform 0.2s, background 0.2s;
     }
+form button:hover {
+  background: linear-gradient(135deg, #1e90ff, #004b9a); /* brighter blue */
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(0, 123, 255, 0.35);
+}
 
-    form button:hover {
-      background: linear-gradient(135deg, #1e90ff, #004b9a);
-      transform: translateY(-1px);
-    }
+/* ===== SEARCH & FILTER BAR ===== */
+.filter-bar {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 18px;
+  align-items: center;
+  flex-wrap: wrap;
+}
 
-    /* ===== Back Link ===== */
-    .back-link {
-      display: block;
-      text-align: center;
-      margin-top: 30px;
-      text-decoration: none;
-      font-weight: 700;
-      color: #fff;
-      font-size: 1em;
-      background: linear-gradient(90deg, #d4af37, #ffdd00);
-      width: fit-content;
-      margin-left: auto;
-      margin-right: auto;
-      padding: 12px 24px;
-      border-radius: 50px;
-      box-shadow: 0 4px 12px rgba(212, 175, 55, 0.4);
-      transition: 0.25s;
-    }
+.filter-bar input,
+.filter-bar select {
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 0.9rem;
+}
 
-    .back-link:hover {
-      background: linear-gradient(90deg, #ffdd00, #ffe382);
-      color: #1b243b;
-      transform: scale(1.05);
-      box-shadow: 0 0 18px rgba(255, 228, 130, 0.7);
-    }
+.filter-bar input {
+  flex: 1;
+  min-width: 220px;
+}
+
+.filter-bar select {
+  min-width: 160px;
+}
+
+.filter-bar input:focus,
+.filter-bar select:focus {
+  outline: none;
+  border-color: #007bff;
+}
+/* ===== SEARCH HIGHLIGHT ===== */
+.highlight {
+  background: #fff3cd;
+  color: #856404;
+  padding: 0 2px;
+  border-radius: 3px;
+}
+
+   /* ===== COLLAPSIBLE TEXT CELLS ===== */
+   
+.collapsible-cell {
+  max-width: 220px;              /* FIXED WIDTH */
+  position: relative;
+  font-size: 0.9em;
+}
+/* ===== COLLAPSIBLE TEXT CELLS (FINAL FIX) ===== */
+
+/* ===== COLLAPSIBLE TEXT CELLS (FINAL + STANDARD) ===== */
+
+.collapsible-cell {
+  max-width: 220px;
+  white-space: normal;
+  position: relative;
+  font-size: 0.9em;
+}
+
+/* Preview (3 lines) */
+.collapsible-text {
+  display: -webkit-box;
+  display: box;              /* fallback */
+  
+  -webkit-box-orient: vertical;
+  box-orient: vertical;
+
+  -webkit-line-clamp: 3;     /* Chrome / Edge */
+  line-clamp: 3;             /* ✅ STANDARD PROPERTY */
+
+  overflow: hidden;
+  line-height: 1.4;
+  max-height: 4.2em;         /* fallback for Firefox */
+}
+
+/* Expanded view */
+.collapsible-text.expanded {
+  -webkit-line-clamp: initial;
+  line-clamp: initial;
+
+  max-height: 140px;
+  overflow-y: auto;
+  padding-right: 6px;
+}
+
+
+/* Down arrow button */
+.toggle-arrow {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #007bff;
+  font-size: 0.9rem;
+  padding: 2px;
+  margin-top: 4px;
+}
+
+.toggle-arrow:hover {
+  color: #0056b3;
+}
+
+/* Mobile adjustments */
+@media (max-width: 768px) {
+  .collapsible-cell {
+    max-width: 160px;
+    font-size: 0.85em;
+  }
+
+  .collapsible-text.expanded {
+    max-height: 120px;
+  }
+}
+/* ===== FLOATING TEXT CONTAINER ===== */
+/* ===== FLOATING TEXT CONTAINER (FIXED) ===== */
+.floating-container {
+  position: fixed;
+  z-index: 2147483647;
+
+  background: #ffffff;
+  color: #222;
+
+  width: 320px;
+  max-height: 220px;
+  padding: 14px 16px;
+
+  border-radius: 12px;
+  border: 2px solid #ffd700;
+  box-shadow: 0 12px 30px rgba(0,0,0,0.25);
+
+  /* 🔥 KEY FIXES */
+  white-space: normal !important;
+  word-break: break-word !important;
+  overflow-wrap: anywhere !important;
+
+  overflow-y: auto;     /* ✅ vertical scroll */
+  overflow-x: hidden;   /* ❌ kill horizontal scroll */
+
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+
+/* Close button */
+.floating-close {
+  text-align: right;
+  font-weight: bold;
+  cursor: pointer;
+  color: #d32f2f;
+  margin-bottom: 6px;
+}
+
+/* Mobile */
+
+.floating-container {
+  position: fixed;
+  z-index: 2147483647; /* MAX SAFE Z-INDEX */
+}
+.floating-container {
+  white-space: normal;          /* ✅ allow normal line breaks */
+  word-break: break-word;       /* ✅ break long words */
+  overflow-wrap: break-word;    /* ✅ wrap safely */
+}
+.floating-container div {
+  line-height: 1.5;
+}
+/* ===== MOBILE FILTER UX ===== */
+@media (max-width: 768px) {
+  .filter-bar {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .filter-bar input,
+  .filter-bar select {
+    width: 100%;
+    font-size: 0.95rem;
+    padding: 10px 12px;
+  }
+}
+/* ===== MOBILE LABEL TEXT ===== */
+.mobile-label {
+  font-weight: 600;
+}
+/* Hide mobile labels on desktop */
+.mobile-label {
+  display: none;
+}
+@media (max-width: 768px) {
+  .mobile-label {
+    display: inline;
+  }
+}
+
+/* ================= FINAL MOBILE CARD FIX ================= */
+@media (max-width: 768px) {
+
+  /* Remove table behavior completely */
+  .table-scroll {
+    overflow-x: hidden;
+  }
+
+  table {
+    min-width: unset;
+    border: none;
+    box-shadow: none;
+  }
+
+  table, tbody {
+    display: block;
+    width: 100%;
+  }
+
+  tr {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+
+    background: #ffffff;
+    margin-bottom: 16px;
+    padding: 14px 14px 16px;
+
+    border-radius: 16px;
+    border: 1px solid #e6e6e6;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+  }
+
+  th {
+    display: none;
+  }
+
+  td {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+
+    padding: 0;
+    border: none;
+    white-space: normal;
+    font-size: 0.85rem;
+  }
+
+  /* Name */
+  td:first-child {
+    font-size: 0.95rem;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+
+  /* Label */
+  .mobile-label {
+    font-weight: 600;
+    flex-shrink: 0;
+  }
+
+  /* One-line text with ... */
+  .collapsible-text {
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* ▼ button */
+  .toggle-arrow {
+    font-size: 0.75rem;
+    padding: 2px 4px;
+  }
+
+  /* Status row */
+  td:nth-child(4) {
+    font-weight: 600;
+  }
+
+  /* Action */
+  td:last-child {
+    margin-top: 8px;
+  }
+
+  form {
+    width: 100%;
+    gap: 6px;
+  }
+
+  form input,
+  form select,
+  form button {
+    width: 100%;
+    font-size: 0.8rem;
+  }
+
+  form button {
+    padding: 9px;
+    font-weight: 600;
+  }
+}
+.floating-container {
+  animation: fadeIn 0.15s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
   </style>
 </head>
 
 <body>
   <div class="container">
-    <h2>All Complaints</h2>
+   <div class="header-container">
+        <h2>All Complaints</h2>
+    </div>
+<!-- ===== FILTER BAR ===== -->
+<div class="filter-bar">
+  <input
+    type="text"
+    id="searchInput"
+    placeholder="Search complaints..."
+  />
+  <!-- ===== RESULT COUNT ===== -->
+<div id="resultCount" style="margin-bottom:10px; font-size:0.85rem; color:#555;"></div>
 
-    <table>
-      <tr>
-        <th>Student</th>
-        <th>Subject</th>
-        <th>Description</th>
-        <th>Status</th>
-        <th>Reply</th>
-        <th>Action</th>
-      </tr>
+  <select id="statusFilter">
+    <option value="">All Status</option>
+    <option value="Pending">Pending</option>
+    <option value="Replied">Replied</option>
+    <option value="Resolved">Resolved</option>
+  </select>
+</div>
 
-      <% complaints.forEach(c => { %>
-        <tr class="status-<%= c.status %>">
-          <td><%= c.student_name %></td>
-          <td><%= c.subject %></td>
-          <td><%= c.description %></td>
-          <td><%= c.status %></td>
-          <td><%= c.reply || "-" %></td>
-          <td>
-            <form action="/admin/complaints/<%= c.complaint_id %>/reply" method="POST">
-              <input type="text" name="reply" placeholder="Reply" required>
-              <select name="status">
-                <option value="Replied" <%= c.status === 'Replied' ? 'selected' : '' %>>Replied</option>
-                <option value="Resolved" <%= c.status === 'Resolved' ? 'selected' : '' %>>Resolved</option>
-              </select>
-              <button type="submit">Send</button>
-            </form>
-          </td>
+    <!-- ✅ SCROLLABLE TABLE WRAPPER -->
+    <div class="table-scroll">
+      <table>
+        <tr>
+          <th>Student</th>
+          <th>Subject</th>
+          <th>Description</th>
+          <th>Status</th>
+          <th>Reply</th>
+          <th>Action</th>
         </tr>
-      <% }) %>
-    </table>
 
-    <a href="/admin/dashboard" class="back-link">⬅ Back to Dashboard</a>
+        <% complaints.forEach(c => { %>
+          <tr
+  class="status-<%= c.status %>"
+  data-status="<%= c.status %>">
+
+            <td><%= c.student_name %></td>
+           <td class="collapsible-cell">
+  <span class="mobile-label">Subject:</span>
+  <div class="collapsible-text"><%= c.subject %></div>
+  <button class="toggle-arrow"
+          type="button"
+          data-fulltext="<%= c.subject.replace(/"/g, '&quot;') %>">▼</button>
+</td>
+
+
+<td class="collapsible-cell">
+  <span class="mobile-label">Description:</span>
+  <div class="collapsible-text"><%= c.description %></div>
+  <button class="toggle-arrow"
+          type="button"
+          data-fulltext="<%= c.description.replace(/"/g, '&quot;') %>">▼</button>
+</td>
+
+
+
+           <td>
+  <span class="mobile-label">Status:</span> <%= c.status %>
+</td>
+
+            <td class="collapsible-cell">
+  <span class="mobile-label">Reply:</span>
+  <div class="collapsible-text">
+    <%= c.reply ? c.reply : "-" %>
   </div>
-</body>
 
+  <% if (c.reply) { %>
+    <button
+      class="toggle-arrow"
+      type="button"
+      data-fulltext="<%= c.reply.replace(/"/g, '&quot;') %>">
+      ▼
+    </button>
+  <% } %>
+</td>
+
+
+        
+            <td>
+  <span class="mobile-label">Action:</span>
+  <form action="/admin/complaints/<%= c.complaint_id %>/reply" method="POST">
+    <input type="text" name="reply" placeholder="Reply" required>
+    <select name="status">
+      <option value="Replied" <%= c.status === 'Replied' ? 'selected' : '' %>>Replied</option>
+      <option value="Resolved" <%= c.status === 'Resolved' ? 'selected' : '' %>>Resolved</option>
+    </select>
+    <button type="submit">Send</button>
+  </form>
+</td>
+
+          </tr>
+        <% }) %>
+      </table>
+    </div>
+
+    
+  </div>
+<script>
+let activeBox = null;
+
+document.addEventListener("click", function (e) {
+
+  // Close if clicking outside
+  if (
+    activeBox &&
+    !e.target.closest(".floating-container") &&
+    !e.target.classList.contains("toggle-arrow")
+  ) {
+    activeBox.remove();
+    activeBox = null;
+  }
+
+  if (!e.target.classList.contains("toggle-arrow")) return;
+
+  if (activeBox) {
+    activeBox.remove();
+    activeBox = null;
+  }
+
+  const fullText = e.target.dataset.fulltext;
+  const rect = e.target.getBoundingClientRect();
+
+  const box = document.createElement("div");
+  box.className = "floating-container";
+  box.innerHTML = `<div class="floating-close">✖</div>`;
+
+  const contentDiv = document.createElement("div");
+  contentDiv.textContent = fullText;
+  box.appendChild(contentDiv);
+
+  document.body.appendChild(box);
+
+  // ⏱ wait for browser to paint before measuring
+  requestAnimationFrame(() => {
+
+    const popupWidth = box.offsetWidth;
+    const popupHeight = box.offsetHeight;
+    const margin = 10;
+
+    const spaceAbove = rect.top;
+    const spaceBelow = window.innerHeight - rect.bottom;
+
+    let top;
+    if (spaceAbove > popupHeight + margin) {
+      top = rect.top - popupHeight - 6; // ABOVE
+    } else {
+      top = rect.bottom + 6;            // BELOW
+    }
+
+    let left = rect.left + rect.width / 2 - popupWidth / 2;
+
+    if (left < margin) left = margin;
+    if (left + popupWidth > window.innerWidth - margin) {
+      left = window.innerWidth - popupWidth - margin;
+    }
+
+    box.style.top = Math.max(top, margin) + "px";
+    box.style.left = left + "px";
+
+    // Very small screens → center horizontally
+    if (window.innerWidth < 360) {
+      box.style.left = "50%";
+      box.style.transform = "translateX(-50%)";
+    }
+  });
+
+  box.querySelector(".floating-close").onclick = () => {
+    box.remove();
+    activeBox = null;
+  };
+
+  activeBox = box;
+});
+</script>
+
+
+
+
+</body>
 </html>
