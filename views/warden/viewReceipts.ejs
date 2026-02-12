@@ -1,0 +1,253 @@
+<style>
+  html, body {
+  height: 100%;
+  margin: 0;
+  overflow: hidden;   /* 🔥 prevents full page scroll */
+}
+
+:root {
+  --primary: #182235;
+  --accent: #ffc107;
+  --success: #28a745;
+  --danger: #dc3545;
+  --shadow: 0 12px 40px rgba(0,0,0,0.15);
+  --bg-body: #f4f7f6;
+}
+
+body {
+  background-color: var(--bg-body);
+  margin: 0;
+  padding: 0; /* Removed padding to allow container to breath */
+  font-family: 'Segoe UI', sans-serif;
+  overflow-x: hidden;
+}
+
+.receipts-wrapper {
+  width: 98%;
+  max-width: 1400px;
+  margin: 15px auto;
+  background: #fff;
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: var(--shadow);
+  box-sizing: border-box;
+
+  display: flex;
+  flex-direction: column;
+
+  height: calc(100vh - 30px);  /* 🔥 important */
+  overflow: hidden;
+}
+
+
+.receipts-heading {
+  text-align: center;
+  font-size: 1.4rem;
+  font-weight: 900;
+  color: white;
+  border-bottom: 3px solid var(--accent);
+  padding: 18px 10px;
+  margin-bottom: 15px;
+  background: linear-gradient(90deg, #182235 0%, #22304c 100%);
+  border-radius: 12px;
+  flex-shrink: 0;
+}
+
+/* Scrollable area inside the container */
+.table-wrap {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  min-height: 0;
+}
+
+
+/* Custom Scrollbar */
+.table-wrap::-webkit-scrollbar {
+  width: 6px;
+}
+.table-wrap::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+.table-wrap::-webkit-scrollbar-thumb {
+  background: var(--primary);
+  border-radius: 10px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+thead th {
+  background: #182235;
+  color: var(--accent);
+  padding: 15px;
+  text-align: center;
+  font-size: 0.95rem;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+/* MOBILE VIEW CSS */
+@media screen and (max-width: 768px) {
+
+  thead {
+    display: none;
+  }
+
+  tbody tr {
+    display: block;
+    margin-bottom: 18px;
+    border: 1px solid #e0e0e0;
+    border-radius: 14px;
+    padding: 15px;
+    background: #fff;
+  }
+
+ tbody td {
+  display: block;
+  padding: 12px 6px;
+  border-bottom: 1px solid #f0f0f0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #1a1a1a !important;
+  background: #ffffff;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+  .receipts-wrapper {
+  color: #1a1a1a;
+}
+
+
+  tbody td:last-child {
+    border-bottom: none;
+  }
+
+  tbody td::before {
+    content: attr(data-label);
+    display: block;               /* 🔥 label separate line */
+    font-weight: 800;
+    font-size: 0.8rem;
+    margin-bottom: 4px;
+    text-transform: uppercase;
+  }
+}
+
+
+.badge {
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-weight: 800;
+  font-size: 0.75rem;
+}
+.Verified { background: #d4edda !important; color: #155724 !important; }
+.Pending { background: #fff3cd !important; color: #856404 !important; }
+.Rejected { background: #f8d7da !important; color: #721c24 !important; }
+
+.download-btn {
+  background: var(--accent);
+  color: #000 !important;
+  padding: 8px 15px;
+  border-radius: 10px;
+  font-weight: 700;
+  text-decoration: none;
+  font-size: 0.85rem;
+  transition: transform 0.2s ease;
+}
+
+.download-btn:active {
+  transform: scale(0.95);
+}
+
+.back-link {
+  display: block;
+  margin: 15px auto 5px;
+  width: 95%;
+  max-width: 280px;
+  text-align: center;
+  padding: 14px;
+  font-weight: 800;
+  background: var(--primary);
+  color: var(--accent);
+  border-radius: 50px;
+  text-decoration: none;
+  flex-shrink: 0;
+  box-shadow: 0 4px 15px rgba(24, 34, 53, 0.2);
+}
+</style>
+
+<div class="receipts-wrapper">
+  <h2 class="receipts-heading">🧾 All Uploaded Receipts</h2>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Student Details</th>
+          <th>Year/Room</th>
+          <th>Ref ID</th>
+          <th>Amount</th>
+          <th>Status</th>
+          <th>PDF</th>
+          <th>Date</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% if (receipts.length === 0) { %>
+          <tr><td colspan="7" style="text-align:center; padding: 30px; color: #777;">No receipts found</td></tr>
+        <% } %>
+
+        <% receipts.forEach(r => { %>
+          <tr>
+            <td data-label="Student">
+  <strong><%= r.student_id %></strong><br>
+  <span style="font-size: 0.85rem;"><%= r.name %></span>
+</td>
+
+            
+            <td data-label="Course/Year">
+  <%= r.course %> - <%= r.year %> Yr<br>
+  <span style="font-size: 0.85rem;">(Room: <%= r.room_no %>)</span>
+</td>
+
+
+            <td data-label="Ref ID" style="font-family: monospace; font-size: 1rem;"><%= r.ref_id %></td>
+            
+            <td data-label="Amount">
+              <span style="font-weight: 800; color: #000; font-size: 1.05rem;">₹ <%= Number(r.amount_paid).toFixed(2) %></span>
+            </td>
+
+            <td data-label="Status">
+              <span class="badge <%= r.status %>"><%= r.status %></span>
+            </td>
+
+            <td data-label="PDF">
+              <% if (r.pdf_path) { %>
+                <a href="/<%= r.pdf_path %>" class="download-btn" download>
+                   <i class="fas fa-download"></i> Download
+                </a>
+              <% } else { %>
+                <span style="color: #999;">N/A</span>
+              <% } %>
+            </td>
+
+            <td data-label="Date" style="color: #555;">
+              <%= new Date(r.created_at).toLocaleDateString('en-IN') %>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+
+  <a href="/warden/dashboard" class="back-link">⬅ Back to Dashboard</a>
+</div>
+
+<script>
+  // Initial smooth scroll to top
+
+</script>
