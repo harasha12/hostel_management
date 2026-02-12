@@ -4,7 +4,14 @@
 <head>
   <meta charset="UTF-8">
   <title>CRR Boys Hostel | Student Dashboard</title>
+ 
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CRR Boys Hostel | Student Dashboard</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+
+  
 
   <style>
     /* ========== GENERAL ========== */
@@ -299,10 +306,8 @@
       margin-bottom: 15px;
       text-decoration: underline;
     }
-    html, body {
-  height: 100%;
-  overflow: hidden !important;
-}
+ 
+
 
     /* ===== Profile Card Layout ===== */
 .profile-card {
@@ -396,31 +401,145 @@
 .toast-icon {
   font-size: 22px;
 }
+/* ========== MOBILE ONLY FIX ========== */
+@media (max-width: 768px) {
+
+  html, body {
+    overflow-y: auto !important;
+  }
+
+  /* Compact header */
+  .college-header {
+    padding: 12px 8px;
+  }
+
+  .college-header .header-text h2 {
+    font-size: 1rem;
+  }
+
+  .college-header .header-text p {
+    font-size: 0.7rem;
+  }
+
+  /* Sidebar slide */
+  .sidebar {
+    left: -100%;
+    width: 75%;
+    top: 140px;
+    height: calc(100vh - 140px);
+    transition: left 0.35s ease;
+  }
+
+  .sidebar.collapsed {
+    left: 0;
+  }
+
+  /* Page content full width */
+  .page-content {
+    margin-left: 0 !important;
+    margin-top: 220px;
+    padding-bottom: 90px;
+  }
+
+  /* Profile layout */
+  .profile-content {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .profile-photo img {
+    width: 140px;
+  }
+}
+@media (max-width: 768px) {
+  
+  .sidebar.collapsed a span {
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
+@media (max-width: 768px) {
+
+  /* Icon + text vertical */
+  .nav-links a {
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 12px 10px;
+    gap: 6px;
+  }
+
+  .nav-links a i {
+    font-size: 20px;
+    width: auto;
+  }
+
+  .nav-links a span {
+    font-size: 11px;
+    opacity: 1;
+    pointer-events: auto;
+    text-align: center;
+    line-height: 1.2;
+  }
+
+}
+
 
   </style>
 
   <script>
-    function toggleSidebar() {
-      const sidebar = document.querySelector('.sidebar');
-      const toggleBtn = document.querySelector('.toggle-btn');
-      sidebar.classList.toggle('collapsed');
-      toggleBtn.classList.toggle('active');
-    }
+function toggleSidebar() {
+  const sidebar = document.querySelector('.sidebar');
+  const isMobile = window.innerWidth <= 768;
 
-    function loadPage(page, btn) {
-      document.querySelectorAll('.nav-links a').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      fetch('/student/partial/' + page)
-        .then(res => res.text())
-        .then(html => {
-          document.getElementById('mainContent').innerHTML = html;
-        })
-        .catch(() => {
-          document.getElementById('mainContent').innerHTML = "<p>⚠ Page not found.</p>";
-        });
+  if (isMobile) {
+    sidebar.classList.toggle('collapsed'); // slide in/out
+  } else {
+    sidebar.classList.toggle('collapsed'); // shrink/expand
+  }
+}
+
+
+function loadPage(page, btn) {
+  document.querySelectorAll('.nav-links a')
+    .forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+
+  document.getElementById('mainContent').innerHTML =
+    "<div class='card'>⏳ Loading...</div>";
+
+  fetch('/student/' + page, {
+    headers: { "X-Requested-With": "XMLHttpRequest" }
+  })
+  .then(res => res.text())
+  .then(html => {
+    document.getElementById('mainContent').innerHTML = html;
+    history.pushState({}, "", "#" + page);
+    /* ✅ AUTO CLOSE SIDEBAR ON MOBILE */
+    if (window.innerWidth <= 768) {
+      const sidebar = document.querySelector('.sidebar');
+      sidebar.classList.remove('collapsed');
     }
-    
-  </script>
+  })
+  
+  .catch(() => {
+    document.getElementById('mainContent').innerHTML =
+      "<div class='card'>⚠ Page not found</div>";
+  });
+}
+
+
+// browser back button support
+window.onpopstate = () => {
+  const page = location.hash.replace("#", "") || "profile";
+  loadPage(page);
+ 
+};
+
+
+
+</script>
+
 </head>
 
 <body>
@@ -456,11 +575,35 @@
   </div>
 
   <!-- 🔔 Notification Bar -->
-  <div class="notification-banner">
+  <!-- 🔔 Dynamic Notice Banner -->
+<% if (latestNotice) {  
+     const noticeTime = new Date(latestNotice.created_at);
+     const now = new Date();
+     const hoursDiff = Math.abs(now - noticeTime) / 36e5;
+     const isNew = hoursDiff <= 24;
+%>
+
+<div class="notification-banner">
     <div class="scrolling-text">
-      ⚠ Important Notice: Hostel gate will close at 9:00 PM daily | Submit your fee receipts before 5th Nov | Contact warden for any issues.
+
+        <% if (isNew) { %>
+            🆕 <strong style="color:red;">NEW</strong> |
+        <% } %>
+
+        📢 <%= latestNotice.title %> — 
+        <%= latestNotice.description %>  
+        &nbsp;&nbsp;|&nbsp;&nbsp;
+
+        ⏱ Posted At: 
+        <span style="color:#000; font-weight:bold;">
+            <%= noticeTime.toLocaleString() %>
+        </span>
+
     </div>
-  </div>
+</div>
+
+<% } %>
+
 
   <!-- Sidebar Toggle Button -->
   <div class="toggle-btn" onclick="toggleSidebar()">
@@ -470,15 +613,78 @@
   <!-- Sidebar -->
   <div class="sidebar">
     <ul class="nav-links">
-      <li><a href="/student/profile" class="active"><i class="fa-regular fa-user"></i><span>Profile</span></a></li>
-      <li><a href="/student/applyoutpass"><i class="fa-regular fa-id-card"></i><span>Apply Outpass</span></a></li>
-      <li><a href="/student/viewattendance"><i class="fa-regular fa-calendar-check"></i><span>View Attendance</span></a></li>
-      <li><a href="/student/outpasses"><i class="fa-regular fa-file-lines"></i><span>My Outpasses</span></a></li>
-      <li><a href="/student/applyEmergencyOutpass"><i class="fa-regular fa-file-lines"></i><span>Apply Emergency Outpasses</span></a></li>
-      <li><a href="/student/viewfees"><i class="fa-solid fa-indian-rupee-sign"></i><span>View Fees</span></a></li>
-      <li><a href="/student/uploadReceipt"><i class="fa-solid fa-cloud-arrow-up"></i><span>Upload Receipt</span></a></li>
-      <li><a href="/student/complaint"><i class="fa-regular fa-comment-dots"></i><span>Complaint</span></a></li>
-      <li><a href="/student/viewComplaints"><i class="fa-regular fa-folder-open"></i><span>My Complaints</span></a></li>
+      <li>
+  <a href="javascript:void(0)" class="active"
+     onclick="loadPage('profile', this)">
+    <i class="fa-regular fa-user"></i>
+    <span>Profile</span>
+  </a>
+</li>
+
+<li>
+  <a href="javascript:void(0)"
+     onclick="loadPage('applyoutpass', this)">
+    <i class="fa-regular fa-id-card"></i>
+    <span>Apply Outpass</span>
+  </a>
+</li>
+
+<li>
+  <a href="javascript:void(0)"
+     onclick="loadPage('viewattendance', this)">
+    <i class="fa-regular fa-calendar-check"></i>
+    <span>View Attendance</span>
+  </a>
+</li>
+
+<li>
+  <a href="javascript:void(0)"
+     onclick="loadPage('outpasses', this)">
+    <i class="fa-regular fa-file-lines"></i>
+    <span>My Outpasses</span>
+  </a>
+</li>
+
+<li>
+  <a href="javascript:void(0)"
+     onclick="loadPage('applyEmergencyOutpass', this)">
+    <i class="fa-regular fa-file-lines"></i>
+    <span>Apply Emergency Outpasses</span>
+  </a>
+</li>
+
+<li>
+  <a href="javascript:void(0)"
+     onclick="loadPage('viewfees', this)">
+    <i class="fa-solid fa-indian-rupee-sign"></i>
+    <span>View receipt status</span>
+  </a>
+</li>
+
+<li>
+  <a href="javascript:void(0)"
+     onclick="loadPage('uploadReceipt', this)">
+    <i class="fa-solid fa-cloud-arrow-up"></i>
+    <span>Upload Receipt</span>
+  </a>
+</li>
+
+<li>
+  <a href="javascript:void(0)"
+     onclick="loadPage('complaint', this)">
+    <i class="fa-regular fa-comment-dots"></i>
+    <span>Complaint</span>
+  </a>
+</li>
+
+<li>
+  <a href="javascript:void(0)"
+     onclick="loadPage('viewComplaints', this)">
+    <i class="fa-regular fa-folder-open"></i>
+    <span>My Complaints</span>
+  </a>
+</li>
+
     </ul>
 
     <div class="logout-section">
@@ -511,35 +717,10 @@
          <strong>Year:</strong> <%= student.year || "N/A" %></p>
     </div>
    
-<% if (globalNotices && globalNotices.length > 0) { %>
-<div style="margin-bottom: 20px;">
-    <% globalNotices.forEach(n => { %>
-        <div style="
-            background: rgba(255, 204, 0, 0.9);
-            padding: 12px;
-            border-radius: 6px;
-            margin-bottom: 10px;
-            color: #333;
-            font-weight: bold;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-        ">
-            📢 <%= n.title %>  
-            <br>
-            <span style="font-weight: normal;"><%= n.description %></span>
-            <br>
-            <small style="color: #222;">
-                Posted by: <%= n.posted_by %>
-                | <%= new Date(n.created_at).toLocaleString() %>
-            </small>
-        </div>
-    <% }) %>
-</div>
-<% } %>
-
   </div>
 </div>
 
-  </div>
+  
 </body>
 
 </html>
