@@ -1,677 +1,682 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Student Profile & Yearly Fee Summary</title>
-  <link rel="stylesheet" href="/css/style.css">
+<div class="student-profile-page">
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700&display=swap');
+
     :root {
-      --bg-dark: #020617;
-      --bg-surface: rgba(15, 23, 42, 0.95);
-      --bg-card: rgba(15, 23, 42, 0.9);
-      --bg-soft: rgba(15, 23, 42, 0.85);
-
-      --accent-gold: #fbbf24;
-      --accent-green: #22c55e;
-
-      --text-main: #e5e7eb;
-      --text-muted: #9ca3af;
-
-      --border-subtle: rgba(148, 163, 184, 0.3);
-
-      --radius-lg: 18px;
-      --radius-md: 12px;
-
-      --shadow-strong: 0 20px 50px rgba(0, 0, 0, 0.6);
-      --shadow-soft: 0 14px 36px rgba(15, 23, 42, 0.7);
+      --accent: #6366f1;
+      --accent-soft: rgba(99, 102, 241, 0.1);
+      --glass: rgba(255, 255, 255, 0.8);
+      --glass-border: rgba(255, 255, 255, 0.5);
+      --text-dark: #0f172a;
+      --text-light: #64748b;
+      --card-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 10px 10px -5px rgba(0, 0, 0, 0.02);
     }
 
-    * {
-      box-sizing: border-box;
-    }
-
-    body {
-      margin: 0;
-      padding: 32px 16px 28px;
-      font-family: "Poppins", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: radial-gradient(circle at top, #1f2937 0, #020617 55%);
-      color: var(--text-main);
+    .student-profile-page {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: radial-gradient(at top left, #e2e8f0, #ffffff), 
+                  radial-gradient(at bottom right, #e0e7ff, #ffffff);
       min-height: 100vh;
+      padding: 40px 20px;
+      color: var(--text-dark);
     }
 
     .container {
-      max-width: 1100px;
-      margin: 0 auto;
-      background: var(--bg-surface);
-      border-radius: 22px;
-      padding: 26px 24px 30px;
-      box-shadow: var(--shadow-strong);
-      border: 1px solid var(--border-subtle);
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+/* MOBILE — dashboard mode */
+@media (max-width: 768px) {
+  .page-content .container {
+    max-width: 100%;
+    margin: 0;
+    padding: 0;
+  }
+}
+
+    /* --- PROFILE HEADER SECTION --- */
+    .profile-hero {
+      background: var(--glass);
       backdrop-filter: blur(12px);
-    }
-
-    /* ========= PROFILE HEADER ========= */
-    .profile-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      gap: 24px;
-      padding-bottom: 20px;
-      border-bottom: 1px solid rgba(148, 163, 184, 0.4);
-      flex-wrap: wrap;
-    }
-
-    .profile-left {
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--glass-border);
+      border-radius: 24px;
+      padding: 40px;
       display: flex;
       align-items: center;
-      gap: 22px;
-      flex-wrap: wrap;
+      gap: 40px;
+      margin-bottom: 30px;
+      box-shadow: var(--card-shadow);
+      position: relative;
+      overflow: hidden;
     }
 
-    .profile-img-wrapper {
-      position: relative;
-      width: 130px;
-      height: 130px;
+    /* Decorative Circle */
+    .profile-hero::before {
+      content: '';
+      position: absolute;
+      top: -50px;
+      right: -50px;
+      width: 150px;
+      height: 150px;
+      background: var(--accent-soft);
       border-radius: 50%;
-      padding: 4px;
-      background: radial-gradient(circle at top, #22c55e, #0f172a);
-      box-shadow: 0 10px 25px rgba(34, 197, 94, 0.45);
+      z-index: 0;
+    }
+
+    .profile-img-container {
+      position: relative;
+      z-index: 1;
     }
 
     .profile-img {
-      width: 100%;
-      height: 100%;
-      border-radius: 50%;
+      width: 160px;
+      height: 160px;
+      border-radius: 22%; /* Squircle Shape */
       object-fit: cover;
-      border: 3px solid #020617;
-      transition: transform 0.2s ease;
+      box-shadow: 0 10px 30px rgba(99, 102, 241, 0.3);
+      border: 4px solid #fff;
     }
 
-    .profile-img-wrapper:hover .profile-img {
-      transform: scale(1.02);
+    .profile-details { z-index: 1; flex-grow: 1; }
+
+    .profile-details h1 {
+      font-size: 32px;
+      font-weight: 800;
+      color:rgba(71, 68, 68, 0.862);
+      margin: 0 0 15px 0;
+      letter-spacing: -1px;
     }
 
-    .edit-photo-btn {
-      position: absolute;
-      bottom: 5px;
-      right: 5px;
-      width: 34px;
-      height: 34px;
-      border-radius: 999px;
-      border: none;
-      background: rgba(15, 23, 42, 0.9);
-      color: var(--accent-gold);
+    .meta-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .tag {
+      background: #fff;
+      padding: 6px 14px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-light);
+      border: 1px solid #f1f5f9;
       display: flex;
       align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      font-size: 16px;
-      box-shadow: 0 8px 18px rgba(0, 0, 0, 0.7);
-      opacity: 0;
-      transition: opacity 0.2s ease, transform 0.15s ease;
+      gap: 6px;
     }
 
-    .profile-img-wrapper:hover .edit-photo-btn {
-      opacity: 1;
+    /* --- DATA CARDS (STATS) --- */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
     }
 
-    .edit-photo-btn:hover {
-      transform: translateY(-1px);
+    .stat-card {
+      background: var(--glass);
+      padding: 24px;
+      border-radius: 20px;
+      border: 1px solid var(--glass-border);
+      box-shadow: var(--card-shadow);
+      transition: transform 0.3s ease;
     }
 
-    .profile-info h2 {
-      margin: 0 0 6px;
-      font-size: 24px;
+    .stat-card:hover { transform: translateY(-5px); }
+
+    .stat-card small { color: var(--text-light); font-weight: 600; text-transform: uppercase; font-size: 11px; letter-spacing: 1px; }
+    .stat-card h3 { margin: 8px 0 0 0; font-size: 22px; }
+
+    /* --- TABLE SECTION --- */
+    .table-wrapper {
+      background: var(--glass);
+      backdrop-filter: blur(10px);
+      border-radius: 24px;
+      border: 1px solid var(--glass-border);
+      box-shadow: var(--card-shadow);
+      padding: 10px;
+      margin-bottom: 30px;
+      overflow: hidden;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+    }
+
+    th {
+      text-align: left;
+      padding: 20px;
+      color: var(--text-light);
+      font-size: 13px;
       font-weight: 700;
-      color: var(--accent-gold);
-      letter-spacing: 0.03em;
-    }
-
-    .profile-details {
-      font-size: 14px;
-      color: var(--text-muted);
-    }
-
-    .profile-details p {
-      margin: 3px 0;
-    }
-
-    .profile-details b {
-      color: var(--text-main);
-      font-weight: 600;
-    }
-
-    .profile-right {
-      min-width: 210px;
-      background: var(--bg-soft);
-      border-radius: var(--radius-md);
-      padding: 12px 14px;
-      border: 1px solid rgba(148,163,184,0.35);
-      font-size: 13px;
-      color: var(--text-muted);
-    }
-
-    .profile-right h4 {
-      margin: 0 0 6px;
-      font-size: 13px;
       text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: var(--accent-gold);
     }
 
-    .profile-right p {
-      margin: 2px 0;
+    td {
+      padding: 20px;
+      background: rgba(255,255,255,0.4);
+      border-top: 1px solid #f1f5f9;
     }
 
-    /* ========= MESS BILL CARD ========= */
-    .mess-bill-section {
-      margin-top: 22px;
-      background: var(--bg-soft);
-      border-radius: var(--radius-lg);
-      padding: 18px 18px 16px;
-      border: 1px solid rgba(34,197,94,0.4);
-      box-shadow: var(--shadow-soft);
+    .status-pill {
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 700;
     }
 
-    .mess-bill-header {
+    .paid-pill { background: #dcfce7; color: #15803d; }
+    .due-pill { background: #fee2e2; color: #b91c1c; }
+
+    /* --- UPLOAD FORMS --- */
+    .upload-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 25px;
+    }
+
+    .glass-form {
+      background: var(--glass);
+      padding: 30px;
+      border-radius: 24px;
+      border: 1px solid var(--glass-border);
+      box-shadow: var(--card-shadow);
+    }
+
+    .form-title {
+      font-weight: 700;
+      font-size: 18px;
+      margin-bottom: 20px;
       display: flex;
-      justify-content: space-between;
       align-items: center;
       gap: 10px;
-      margin-bottom: 8px;
-      flex-wrap: wrap;
     }
 
-    .mess-bill-header h3 {
-      margin: 0;
-      font-size: 18px;
-      color: var(--accent-green);
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
+    .file-input-group {
+      position: relative;
+      margin-bottom: 20px;
     }
 
-    .mess-tag {
-      padding: 4px 10px;
-      border-radius: 999px;
-      border: 1px solid rgba(148,163,184,0.5);
-      font-size: 11px;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      letter-spacing: 0.09em;
+    input[type="file"] {
+      width: 100%;
+      padding: 12px;
+      background: #fff;
+      border-radius: 12px;
+      border: 2px dashed #cbd5e1;
+      cursor: pointer;
     }
 
-    .mess-amount {
-      font-size: 24px;
+    .btn-gradient {
+      background: linear-gradient(135deg, #6366f1 0%, #4338ca 100%);
+      color: white;
+      border: none;
+      padding: 14px 24px;
+      border-radius: 12px;
       font-weight: 700;
-      color: #bbf7d0;
-      margin: 4px 0;
-    }
-
-    .mess-note {
-      font-size: 13px;
-      color: var(--text-muted);
-      font-style: italic;
-    }
-
-    .no-bill {
-      font-size: 14px;
-      color: var(--text-muted);
-    }
-
-    /* ========= SECTION TITLES ========= */
-    h3.section-title {
-      margin: 28px 0 10px;
-      font-size: 18px;
-      font-weight: 600;
-      color: var(--accent-gold);
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-    }
-
-    h3.section-title::after {
-      content: "";
-      display: inline-block;
-      width: 70px;
-      height: 2px;
-      border-radius: 999px;
-      background: linear-gradient(90deg, var(--accent-gold), transparent);
-    }
-
-    /* ========= FEE TABLE ========= */
-    .fee-table-wrapper {
-      margin-top: 8px;
-      border-radius: var(--radius-md);
-      border: 1px solid rgba(148, 163, 184, 0.35);
-      overflow-x: auto;
-    }
-
-    table.fee-table {
       width: 100%;
-      border-collapse: collapse;
-      font-size: 13px;
-      background: #020617;
-    }
-
-    .fee-table thead {
-      background: #020617;
-    }
-
-    .fee-table th,
-    .fee-table td {
-      padding: 10px 12px;
-      text-align: center;
-      border-bottom: 1px solid rgba(55, 65, 81, 0.85);
-      white-space: nowrap;
-    }
-
-    .fee-table thead {
-    background: linear-gradient(
-        135deg,
-        rgba(251, 191, 36, 0.25),
-        rgba(251, 191, 36, 0.08)
-    );
-    backdrop-filter: blur(6px);
-}
-
-.fee-table th {
-    padding: 12px 14px;
-    font-size: 12px;
-    font-weight: 700;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: #fef9c3; /* softer gold */
-    border-bottom: 1px solid rgba(251, 191, 36, 0.25);
-}
-
-/* Add header glow */
-.fee-table th:hover {
-    color: #fde047;
-    text-shadow: 0 0 6px rgba(251, 191, 36, 0.55);
-    transition: 0.2s ease;
-}
-
-/* Improve row hover color */
-.fee-table tbody tr:hover {
-    background: rgba(55, 65, 81, 0.4) !important;
-    backdrop-filter: blur(4px);
-    transition: 0.18s ease-in-out;
-}
-
-
-    .fee-table tbody tr:nth-child(even) {
-      background: #0b1120;
-    }
-
-    .fee-table tbody tr:hover {
-      background: #020617;
-      transition: background-color 0.16s ease;
-    }
-
-    td.paid {
-      color: #22c55e;
-      font-weight: 600;
-    }
-
-    td.due {
-      color: #ef4444;
-      font-weight: 600;
-    }
-
-    td.partial {
-      color: #f97316;
-      font-weight: 600;
-    }
-
-    /* ========= AADHAAR & PROFILE PHOTO SECTIONS ========= */
-    .sections-grid {
-      display: grid;
-      grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
-      gap: 22px;
-      margin-top: 24px;
-      flex-wrap: wrap;
-    }
-
-    .upload-section {
-      background: var(--bg-soft);
-      border-radius: var(--radius-lg);
-      padding: 18px 18px 16px;
-      border: 1px solid var(--border-subtle);
-      box-shadow: var(--shadow-soft);
-    }
-
-    .upload-section h3 {
-      margin: 0 0 10px;
-      font-size: 16px;
-      color: var(--accent-gold);
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-    }
-
-    .upload-section label {
-      display: block;
-      font-size: 13px;
-      font-weight: 500;
-      color: var(--text-muted);
-      margin: 10px 0 4px;
-      text-transform: uppercase;
-      letter-spacing: 0.07em;
-    }
-
-    .upload-section input[type="file"] {
-      width: 100%;
-      padding: 8px 10px;
-      border-radius: var(--radius-md);
-      border: 1px solid #374151;
-      background: #020617;
-      color: var(--text-main);
-      font-size: 13px;
-      margin-bottom: 8px;
-    }
-
-    .upload-section button {
-      margin-top: 4px;
-      background: linear-gradient(135deg, #22c55e, #16a34a);
-      color: #ecfdf5;
-      border: none;
-      border-radius: 999px;
-      padding: 8px 14px;
-      font-size: 13px;
-      font-weight: 600;
       cursor: pointer;
-      box-shadow: 0 10px 24px rgba(22, 163, 74, 0.6);
-      transition: 0.2s ease;
+      box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.3);
+      transition: 0.3s;
     }
 
-    .upload-section button:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 14px 32px rgba(22, 163, 74, 0.7);
+    .btn-gradient:hover {
+      transform: scale(1.02);
+      box-shadow: 0 15px 20px -3px rgba(99, 102, 241, 0.4);
     }
 
-    .uploaded-links p {
-      margin: 8px 0 4px;
-      font-size: 13px;
-      color: var(--text-muted);
+    /* --- RESPONSIVE DESIGN --- */
+
+    /* Tablet (768px - 1024px) */
+    @media (max-width: 1024px) {
+      .profile-hero { padding: 30px; gap: 25px; }
+      .profile-img { width: 130px; height: 130px; }
     }
 
-    .uploaded-links a {
-      color: var(--accent-gold);
-      text-decoration: none;
-      font-weight: 600;
-    }
-
-    .uploaded-links a:hover {
-      text-decoration: underline;
-    }
-
-    /* PROFILE PHOTO UPLOAD CARD */
-    .photo-upload-card {
-      background: var(--bg-soft);
-      border-radius: var(--radius-lg);
-      padding: 18px 18px 16px;
-      border: 1px solid var(--border-subtle);
-      box-shadow: var(--shadow-soft);
-    }
-
-    .photo-upload-card h3 {
-      margin: 0 0 10px;
-      font-size: 16px;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: var(--accent-gold);
-    }
-
-    .photo-upload-card input[type="file"] {
-      width: 100%;
-      padding: 8px 10px;
-      border-radius: var(--radius-md);
-      border: 1px solid #374151;
-      background: #020617;
-      color: var(--text-main);
-      font-size: 13px;
-      margin-bottom: 10px;
-    }
-
-    .photo-upload-card button {
-      width: 100%;
-      padding: 9px;
-      border-radius: 999px;
-      border: none;
-      background: linear-gradient(135deg, #3b82f6, #2563eb);
-      color: #eff6ff;
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-      box-shadow: 0 10px 26px rgba(37,99,235,0.5);
-      transition: 0.2s ease;
-    }
-
-    .photo-upload-card button:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 14px 32px rgba(37,99,235,0.7);
-    }
-
-    /* ========= BACK LINK ========= */
-    .back-link {
-      display: block;
-      margin-top: 28px;
-      text-align: center;
-      font-size: 14px;
-      font-weight: 600;
-      color: var(--accent-gold);
-      text-decoration: none;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-    }
-
-    .back-link:hover {
-      text-decoration: underline;
-    }
-
-    /* ========= RESPONSIVE ========= */
-    @media (max-width: 900px) {
-      .profile-header {
+    /* Mobile (Under 768px) */
+    @media (max-width: 768px) {
+      .profile-hero {
         flex-direction: column;
+        text-align: center;
       }
-      .profile-left {
-        width: 100%;
-        justify-content: flex-start;
-      }
-      .profile-right {
-        width: 100%;
-      }
-    }
+      .meta-tags { justify-content: center; }
+      .upload-grid { grid-template-columns: 1fr; }
+      .stats-row { grid-template-columns: 1fr 1fr; }
+      .table-wrapper { overflow-x: auto; }
+      th, td { padding: 12px; font-size: 12px; }
+    }/* ======================================================
+   EXTRA COMPACT MOBILE UI ENHANCEMENTS (SAFE OVERRIDES)
+====================================================== */
 
-    @media (max-width: 720px) {
-      body {
-        padding: 22px 10px 20px;
-      }
+/* Small Mobile Devices (≤ 480px) */
+@media (max-width: 480px) {
 
-      .container {
-        padding: 18px 14px 22px;
-        border-radius: 18px;
-      }
+  .student-profile-page {
+    padding: 20px 12px;
+  }
 
-      .profile-left {
-        flex-direction: row;
-        align-items: center;
-      }
+  .container {
+    max-width: 100%;
+  }
 
-      .profile-info h2 {
-        font-size: 21px;
-      }
+  /* --- PROFILE HERO --- */
+  .profile-hero {
+    padding: 20px 16px;
+    gap: 18px;
+    border-radius: 18px;
+  }
 
-      .sections-grid {
-        grid-template-columns: 1fr;
-      }
+  .profile-img {
+    width: 95px;
+    height: 95px;
+    border-radius: 18%;
+  }
 
-      .fee-table {
-        font-size: 12px;
-      }
-    }
+  .profile-details h1 {
+    font-size: 20px;
+    margin-bottom: 10px;
+  }
+
+  .meta-tags {
+    gap: 6px;
+  }
+
+  .tag {
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 8px;
+  }
+
+  /* --- STATS CARDS --- */
+  .stats-row {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .stat-card {
+    padding: 16px;
+    border-radius: 16px;
+  }
+
+  .stat-card small {
+    font-size: 10px;
+  }
+
+  .stat-card h3 {
+    font-size: 18px;
+  }
+
+  /* --- TABLE --- */
+  .table-wrapper {
+    padding: 6px;
+    border-radius: 18px;
+  }
+
+  th {
+    font-size: 11px;
+    padding: 10px;
+  }
+
+  td {
+    font-size: 11px;
+    padding: 10px;
+  }
+
+  .status-pill {
+    padding: 4px 8px;
+    font-size: 10px;
+    border-radius: 6px;
+  }
+
+  /* --- UPLOAD FORMS --- */
+  .upload-grid {
+    gap: 16px;
+  }
+
+  .glass-form {
+    padding: 18px;
+    border-radius: 18px;
+  }
+
+  .form-title {
+    font-size: 15px;
+    margin-bottom: 14px;
+  }
+
+  .file-input-group {
+    margin-bottom: 14px;
+  }
+
+  input[type="file"] {
+    padding: 8px;
+    font-size: 12px;
+    border-radius: 10px;
+  }
+
+  /* --- BUTTONS --- */
+  .btn-gradient {
+    padding: 10px 16px;
+    font-size: 13px;
+    border-radius: 10px;
+  }
+}
+
+/* Ultra Small Devices (≤ 360px) */
+@media (max-width: 360px) {
+
+  .profile-img {
+    width: 80px;
+    height: 80px;
+  }
+
+  .profile-details h1 {
+    font-size: 18px;
+  }
+
+  .btn-gradient {
+    font-size: 12px;
+    padding: 9px 14px;
+  }
+}
+/* ===== DASHBOARD MODE (MOBILE FIX) ===== */
+@media (max-width: 768px) {
+
+  .student-profile-page {
+    padding: 0; /* dashboard already adds padding */
+  }
+
+  .profile-hero,
+  .stats-row,
+  .table-wrapper,
+  .upload-grid {
+    width: 100%;
+  }
+}
+/* =====================================================
+   ✅ FINAL MOBILE POLISH – PROFILE PAGE
+   Clean • Compact • Safe Wrapping
+===================================================== */
+@media (max-width: 768px) {
+
+  /* ---------- PAGE ---------- */
+  .student-profile-page {
+    padding: 12px !important;
+  }
+
+  .container {
+    padding: 0 !important;
+  }
+
+  /* ---------- PROFILE HERO ---------- */
+  .profile-hero {
+    padding: 16px !important;
+    gap: 14px !important;
+    border-radius: 16px !important;
+  }
+
+  .profile-details h1 {
+    font-size: 18px !important;
+    line-height: 1.25;
+    word-break: break-word;
+  }
+
+  /* ---------- TAGS (EMAIL, ROOM, COURSE) ---------- */
+  .meta-tags {
+    justify-content: center;
+    gap: 6px;
+  }
+
+  .tag {
+    max-width: 100%;
+    font-size: 11px;
+    padding: 5px 8px;
+    border-radius: 8px;
+
+    /* 🔑 SAFETY */
+    word-break: break-word;
+    overflow-wrap: anywhere;
+    white-space: normal;
+  }
+
+  /* ---------- STATS ---------- */
+  .stats-row {
+    grid-template-columns: 1fr !important;
+    gap: 12px;
+  }
+
+  .stat-card {
+    padding: 14px;
+    border-radius: 14px;
+  }
+
+  .stat-card h3 {
+    font-size: 16px;
+  }
+
+  /* ---------- TABLE ---------- */
+  .table-wrapper {
+    border-radius: 16px;
+    padding: 6px;
+    overflow-x: auto;
+  }
+
+  table {
+    min-width: 520px; /* controlled scroll, not overflow */
+  }
+
+  th, td {
+    font-size: 11px;
+    padding: 8px;
+    white-space: nowrap;
+  }
+
+  /* ---------- UPLOAD FORMS ---------- */
+  .upload-grid {
+    grid-template-columns: 1fr !important;
+    gap: 14px;
+  }
+
+  .glass-form {
+    padding: 16px;
+    border-radius: 16px;
+  }
+
+  .form-title {
+    font-size: 14px;
+  }
+
+  input[type="file"] {
+    font-size: 11px;
+    padding: 8px;
+  }
+
+  .btn-gradient {
+    padding: 10px;
+    font-size: 12px;
+    border-radius: 10px;
+  }
+
+}
+/* =====================================================
+   🔒 FIX: PROFILE HERO CONTAINMENT (MOBILE ONLY)
+   Fixes container overflow issue
+===================================================== */
+@media (max-width: 768px) {
+
+  /* Ensure container truly owns width */
+  .student-profile-page .container {
+    width: 100%;
+    max-width: 100%;
+    padding: 0 10px;
+    box-sizing: border-box;
+  }
+
+  /* 🔑 MAIN FIX — profile hero stays inside container */
+  .profile-hero {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+
+    padding: 16px;          /* reduced but clean */
+    margin: 0 auto 18px;    /* centered */
+    overflow: hidden;       /* safety */
+  }
+}
+/* =====================================================
+   🔒 FIX: FEE CONTAINER CONTAINMENT (MOBILE ONLY)
+===================================================== */
+@media (max-width: 768px) {
+
+  /* Fee container must stay inside main container */
+  .table-wrapper {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+
+    padding: 8px;
+    margin: 0 auto 18px;
+    overflow-x: auto;   /* allow table scroll */
+    overflow-y: hidden;
+  }
+
+  /* Prevent table from forcing overflow */
+  .table-wrapper table {
+    width: 100%;
+    min-width: 520px;   /* controlled scroll, not overflow */
+    box-sizing: border-box;
+  }
+}
+
+/* ---------- EXTRA SAFETY (ALL SCREENS) ---------- */
+.profile-details,
+.tag,
+.stat-card,
+.glass-form,
+td {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
   </style>
-</head>
-<body>
-
-  <%- include('../partials/header') %>
 
   <div class="container">
-
-    <!-- PROFILE HEADER -->
-    <div class="profile-header">
-      <div class="profile-left">
-        <div class="profile-img-wrapper">
-          <% if(student.profile_image){ %>
-            <img class="profile-img" src="/uploads/profile_images/<%= student.profile_image %>" alt="Profile Photo">
-          <% } else { %>
-            <img class="profile-img" src="/images/pr.png" alt="Profile Photo">
-          <% } %>
-          <button class="edit-photo-btn" type="button" onclick="document.getElementById('photoUpload').click()">
-            <i class="fa fa-edit"></i>
-          </button>
-        </div>
-
-        <div class="profile-info">
-          <h2><%= student.name %></h2>
-          <div class="profile-details">
-            <p><b>Email:</b> <%= student.email %></p>
-            <p><b>Room No:</b> <%= student.room_no || 'N/A' %></p>
-            <p><b>Course:</b> <%= student.course || 'N/A' %></p>
-            <p><b>Year:</b> <%= student.year || 'N/A' %></p>
-          </div>
-        </div>
+    
+    <div class="profile-hero">
+      <div class="profile-img-container">
+        <% if(student.profile_image){ %>
+          <img class="profile-img" src="/uploads/profile_images/<%= student.profile_image %>" id="previewImg">
+        <% } else { %>
+          <img class="profile-img" src="/images/pr.png" id="previewImg">
+        <% } %>
       </div>
 
-      <div class="profile-right">
-        <h4>Account Snapshot</h4>
-        <p>Student ID: <b><%= student.student_id %></b></p>
-        <p>Unique ID: <b><%= student.student_unique_id || 'N/A' %></b></p>
-        <p>Joined: <b><%= student.joined_on ? new Date(student.joined_on).toLocaleDateString('en-IN') : 'N/A' %></b></p>
+      <div class="profile-details">
+        <small style="color: var(--accent); font-weight: 800; text-transform: uppercase;">Student Profile</small>
+        <h1><%= student.name %></h1>
+        
+        <div class="meta-tags">
+          <div class="tag"><i class="fa fa-envelope"></i> <%= student.email %></div>
+          <div class="tag"><i class="fa fa-door-open"></i> Room <%= student.room_no %></div>
+          <div class="tag"><i class="fa fa-graduation-cap"></i> <%= student.course %></div>
+          <div class="tag"><i class="fa fa-calendar-alt"></i> Year <%= student.year %></div>
+        </div>
       </div>
     </div>
 
-    <!-- MESS BILL SECTION -->
-    <div class="mess-bill-section">
-      <div class="mess-bill-header">
-        <h3>💰 Current Month Mess Bill</h3>
-        <span class="mess-tag">
-          <%= new Date().toLocaleString('default', { month: 'long', year: 'numeric' }) %>
-        </span>
+    <div class="stats-row">
+      <div class="stat-card">
+        <small>Current Status</small>
+        <h3 style="color: var(--accent);">Active</h3>
       </div>
-
-      <% if (student.current_mess_bill && student.current_mess_bill > 0) { %>
-        <p class="mess-amount">₹ <%= student.current_mess_bill %></p>
-        <p class="mess-note">This is the current mess bill amount recorded for this month.</p>
-      <% } else { %>
-        <p class="no-bill">No mess bill has been uploaded for the current month.</p>
-      <% } %>
+      <div class="stat-card">
+        <small>Overall Fees</small>
+        <h3>Partially Paid</h3>
+      </div>
+      <div class="stat-card">
+        <small>Documents</small>
+        <h3 style="color: #10b981;">Verified</h3>
+      </div>
     </div>
 
-    <!-- FEE SUMMARY -->
-    <h3 class="section-title">Year-wise Fee Summary</h3>
-
-    <div class="fee-table-wrapper">
-      <table class="fee-table">
+    <div class="table-wrapper">
+      <table>
         <thead>
           <tr>
-            <th>Year</th>
-            <th>Room Rent Paid / Due</th>
-            <th>Mess Bill 1 Paid / Due</th>
-            <th>Mess Bill 2 Paid / Due</th>
+            <th>Academic Year</th>
+            <th>Room Rent</th>
+            <th>Mess Bill (I)</th>
+            <th>Mess Bill (II)</th>
             <th>Status</th>
           </tr>
         </thead>
         <tbody>
-          <% if(feeSummary.length === 0){ %>
-            <tr><td colspan="5">No fee data available</td></tr>
-          <% } else { %>
-            <% feeSummary.forEach(f => { 
-              const roomClass = f.room_rent_due > 0 ? (f.room_rent_paid > 0 ? 'partial' : 'due') : 'paid';
-              const mess1Class = f.mess_bill1_due > 0 ? (f.mess_bill1_paid > 0 ? 'partial' : 'due') : 'paid';
-              const mess2Class = f.mess_bill2_due > 0 ? (f.mess_bill2_paid > 0 ? 'partial' : 'due') : 'paid';
-              const totalPaid = Number(f.total_paid);
-              const totalFee = Number(f.total_fee);
-              let status = 'Not Paid';
-              if(totalPaid >= totalFee) status = 'Paid';
-              else if(totalPaid > 0) status = 'Partial';
-            %>
+          <% feeSummary.forEach(f => { %>
             <tr>
-              <td><%= f.year %></td>
-              <td class="<%= roomClass %>">₹<%= f.room_rent_paid %> / ₹<%= f.room_rent_due %></td>
-              <td class="<%= mess1Class %>">₹<%= f.mess_bill1_paid %> / ₹<%= f.mess_bill1_due %></td>
-              <td class="<%= mess2Class %>">₹<%= f.mess_bill2_paid %> / ₹<%= f.mess_bill2_due %></td>
-              <td class="<%= status === 'Paid' ? 'paid' : status === 'Partial' ? 'partial' : 'due' %>"><%= status %></td>
+              <td><strong><%= f.year %></strong></td>
+              <td>₹<%= f.room_rent_paid %> / <span style="color: var(--text-light); font-size: 11px;">₹<%= f.room_rent_due %></span></td>
+              <td>₹<%= f.mess_bill1_paid %></td>
+              <td>₹<%= f.mess_bill2_paid %></td>
+              <td>
+                <span class="status-pill <%= f.total_paid >= f.total_fee ? 'paid-pill' : 'due-pill' %>">
+                  <%= f.total_paid >= f.total_fee ? 'COMPLETED' : 'PENDING' %>
+                </span>
+              </td>
             </tr>
-            <% }) %>
-          <% } %>
+          <% }) %>
         </tbody>
       </table>
     </div>
 
-    <!-- AADHAAR & PROFILE PHOTO SECTIONS -->
-    <!-- Aadhaar Upload -->
-<div class="upload-section">
-  <h3>Aadhaar Upload</h3>
+    <div class="upload-grid">
+      <div class="glass-form">
+        <div class="form-title"><i class="fa fa-fingerprint" style="color: var(--accent);"></i> KYC Documents</div>
+        
+        <form action="/student/upload-aadhaar/student" method="POST" enctype="multipart/form-data">
+          <div class="file-input-group">
+            <label style="display: block; margin-bottom: 8px; font-size: 12px; font-weight: 700;">Student's Aadhaar</label>
+            <input type="file" name="aadhaar" required>
+          </div>
+          <button class="btn-gradient" style="margin-bottom: 20px;">Upload Student ID</button>
+        </form>
 
-  <!-- Single Correct Form for Both Aadhaar Files -->
-  <form action="/student/upload-aadhaar" method="POST" enctype="multipart/form-data">
-    
-    <label>Student Aadhaar</label>
-    <input type="file" name="student_aadhaar" accept="image/*">
+        <form action="/student/upload-aadhaar/father" method="POST" enctype="multipart/form-data">
+          <div class="file-input-group">
+            <label style="display: block; margin-bottom: 8px; font-size: 12px; font-weight: 700;">Father's Aadhaar</label>
+            <input type="file" name="aadhaar" required>
+          </div>
+          <button class="btn-gradient">Upload Parent ID</button>
+        </form>
+      </div>
 
-    <label>Father Aadhaar</label>
-    <input type="file" name="father_aadhaar" accept="image/*">
-
-    <button type="submit">Upload Aadhaar Files</button>
-  </form>
-
-  <div class="uploaded-links">
-    <% if (student.student_aadhaar) { %>
-      <p>📘 Student Aadhaar:
-        <a href="/student/aadhaar/student/<%= student.student_id %>" target="_blank">View</a>
-      </p>
-    <% } %>
-
-    <% if (student.father_aadhaar) { %>
-      <p>📗 Father Aadhaar:
-        <a href="/student/aadhaar/father/<%= student.student_id %>" target="_blank">View</a>
-      </p>
-    <% } %>
-  </div>
-</div>
-
-
-      <!-- Profile Photo Upload -->
-      <div class="photo-upload-card">
-        <h3>Profile Photo</h3>
-        <form id="photoForm" action="/student/upload-profile" method="POST" enctype="multipart/form-data" class="upload-form">
-          <input
-            type="file"
-            id="photoUpload"
-            name="profile_image"
-            accept="image/*"
-            onchange="previewImage(event)"
-          >
-          <button type="submit">Save New Photo</button>
+      <div class="glass-form">
+        <div class="form-title"><i class="fa fa-user-circle" style="color: var(--accent);"></i> Profile Visuals</div>
+        <p style="font-size: 13px; color: var(--text-light); line-height: 1.6;">
+          Ensure your profile photo is clear and front-facing. This photo will be used for your Digital ID card.
+        </p>
+        <form action="/student/upload-profile" method="POST" enctype="multipart/form-data">
+          <div class="file-input-group">
+            <input type="file" id="photoUpload" name="profile_image" accept="image/*" onchange="previewImage(event)">
+          </div>
+          <button class="btn-gradient">Update Profile Picture</button>
         </form>
       </div>
     </div>
 
-    <a class="back-link" href="/student/dashboard">← Back to Dashboard</a>
   </div>
 
-  <%- include('../partials/footer') %>
-  <script src="https://kit.fontawesome.com/a2e0f1a6d3.js" crossorigin="anonymous"></script>
   <script>
-    function previewImage(event) {
-      const img = document.querySelector('.profile-img');
-      if (event.target.files && event.target.files[0]) {
-        img.src = URL.createObjectURL(event.target.files[0]);
+    function previewImage(e) {
+      const img = document.getElementById('previewImg');
+      if (e.target.files[0]) {
+        img.src = URL.createObjectURL(e.target.files[0]);
+        img.style.animation = "pulse 1s infinite alternate";
       }
     }
   </script>
-</body>
-</html>
+</div>
