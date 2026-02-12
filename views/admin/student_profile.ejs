@@ -1,6 +1,5 @@
 
 
-<%- include('../partials/header') %>
 
 <div class="container">
     <h2>Student Profile (Admin View)</h2>
@@ -8,6 +7,7 @@
     <!-- Student Information -->
     <table class="profile-table">
         <tr><th>Name</th><td><%= student.name %></td></tr>
+        <tr><th>Father Name</th><td><%= student.father_name || '-' %></td></tr>
         <tr><th>Student ID</th><td><%= student.student_id %></td></tr>
         <tr><th>Unique ID</th><td><%= student.student_unique_id || '-' %></td></tr>
         <tr><th>Email</th><td><%= student.email %></td></tr>
@@ -61,31 +61,53 @@
             </tr>
         </thead>
         <tbody>
-            <% if (!feeSummary || feeSummary.length === 0) { %>
-                <tr><td colspan="8" style="color:#666; padding:16px;">No payments yet</td></tr>
-            <% } else { %>
-                <% feeSummary.forEach(function(fee) { %>
-                    <tr>
-                        <td><%= fee.academic_year %></td>
-                        <td>₹<%= (parseFloat(fee.room_rent) || 0).toFixed(2) %></td>
-                        <td>₹<%= (parseFloat(fee.mess_bill1) || 0).toFixed(2) %></td>
-                        <td>₹<%= (parseFloat(fee.mess_bill2) || 0).toFixed(2) %></td>
-                        <td>₹<%= (parseFloat(fee.total_fee) || 0).toFixed(2) %></td>
-                        <td class="paid">₹<%= (parseFloat(fee.paid_amount) || 0).toFixed(2) %></td>
-                        <td class="due">₹<%= (parseFloat(fee.due_amount) || 0).toFixed(2) %></td>
-                        <td>
-                            <% if (parseFloat(fee.due_amount) === 0) { %>
-                                ✅ Fully Paid
-                            <% } else if (parseFloat(fee.paid_amount) > 0) { %>
-                                🕐 Partially Paid
-                            <% } else { %>
-                                ⚠️ Pending
-                            <% } %>
-                        </td>
-                    </tr>
-                <% }); %>
-            <% } %>
-        </tbody>
+  <% if (!feeSummary || feeSummary.length === 0) { %>
+    <tr>
+      <td colspan="8" style="color:#666; padding:16px;">No payments yet</td>
+    </tr>
+  <% } else { %>
+    <% feeSummary.forEach(function(fee) { %>
+      <tr>
+        <td data-label="Academic Year"><%= fee.academic_year %></td>
+
+        <td data-label="Room Rent">
+          ₹<%= (parseFloat(fee.room_rent) || 0).toFixed(2) %>
+        </td>
+
+        <td data-label="Mess Bill 1">
+          ₹<%= (parseFloat(fee.mess_bill1) || 0).toFixed(2) %>
+        </td>
+
+        <td data-label="Mess Bill 2">
+          ₹<%= (parseFloat(fee.mess_bill2) || 0).toFixed(2) %>
+        </td>
+
+        <td data-label="Total Fee">
+          ₹<%= (parseFloat(fee.total_fee) || 0).toFixed(2) %>
+        </td>
+
+        <td data-label="Paid Amount" class="paid">
+          ₹<%= (parseFloat(fee.paid_amount) || 0).toFixed(2) %>
+        </td>
+
+        <td data-label="Due Amount" class="due">
+          ₹<%= (parseFloat(fee.due_amount) || 0).toFixed(2) %>
+        </td>
+
+        <td data-label="Status">
+          <% if (parseFloat(fee.due_amount) === 0) { %>
+            ✅ Fully Paid
+          <% } else if (parseFloat(fee.paid_amount) > 0) { %>
+            🕐 Partially Paid
+          <% } else { %>
+            ⚠️ Pending
+          <% } %>
+        </td>
+      </tr>
+    <% }) %>
+  <% } %>
+</tbody>
+
     </table>
 
     <a class="back-link" href="/admin/dashboard">⬅ Back to Dashboard</a>
@@ -138,5 +160,111 @@ button { margin-left:10px; padding:4px 8px; font-size:13px; cursor:pointer; bord
 button:hover { background:#0056b3; }
 .back-link { display:block; text-align:center; margin:25px auto; font-weight:700; color:#007bff; text-decoration:none; }
 .back-link:hover { text-decoration:underline; }
-</style>
+/* ================= MOBILE UI ================= */
+@media (max-width: 768px) {
 
+  .container {
+    padding: 12px;
+  }
+
+  h2, h3 {
+    font-size: 1.2rem;
+  }
+
+  /* ===== PROFILE TABLE → STACK ===== */
+  .profile-table,
+  .profile-table tbody,
+  .profile-table tr,
+  .profile-table th,
+  .profile-table td {
+    display: block;
+    width: 100%;
+  }
+
+  .profile-table {
+    box-shadow: none;
+    background: transparent;
+  }
+
+  .profile-table tr {
+    background: #fff;
+    margin-bottom: 12px;
+    border-radius: 10px;
+    padding: 12px;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+  }
+
+  .profile-table th {
+    background: none;
+    padding: 0;
+    font-weight: 700;
+    color: #555;
+    margin-bottom: 4px;
+  }
+
+  .profile-table td {
+    padding: 0;
+    font-size: 0.95rem;
+    color: #111;
+  }
+
+  /* ===== FEE TABLE → CARDS ===== */
+  .fee-table {
+    display: block;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  .fee-table thead {
+    display: none;
+  }
+
+  .fee-table tbody,
+  .fee-table tr {
+    display: block;
+  }
+
+  .fee-table tr {
+    background: #fff;
+    margin-bottom: 14px;
+    padding: 14px;
+    border-radius: 12px;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+  }
+
+  .fee-table td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0;
+    border: none;
+    font-size: 0.9rem;
+    text-align: left;
+  }
+
+  .fee-table td::before {
+    content: attr(data-label);
+    font-weight: 700;
+    color: #555;
+    font-size: 0.85rem;
+  }
+
+  /* ===== BUTTONS ===== */
+  button {
+    margin-top: 6px;
+    margin-left: 0;
+    font-size: 0.85rem;
+  }
+
+  /* ===== AADHAAR MODAL ===== */
+  #aadhaarModal img {
+    width: 100%;
+    max-width: 300px;
+  }
+
+  .back-link {
+    font-size: 0.95rem;
+  }
+}
+
+</style>
