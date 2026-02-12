@@ -1,6 +1,67 @@
 <%- include('../partials/header') %>
 
-<h2 style="text-align:center;margin:20px;">All Paid Receipts</h2>
+<style>
+/* ================= BASE ================= */
+body{
+  background:#f3f4f6;
+}
+
+h2{
+  text-align:center;
+  margin:20px;
+}
+
+/* ================= MOBILE UI ================= */
+@media (max-width: 768px){
+
+  table{
+    border:none;
+    background:transparent;
+  }
+
+  table tr:first-child{
+    display:none; /* table header hide */
+  }
+
+  table, tbody, tr, td{
+    display:block;
+    width:100%;
+  }
+
+  tr{
+    background:#fff;
+    margin-bottom:14px;
+    border-radius:14px;
+    padding:14px;
+    box-shadow:0 8px 25px rgba(0,0,0,0.12);
+  }
+
+  td{
+    border:none;
+    padding:6px 0;
+    text-align:left;
+    font-size:14px;
+  }
+
+  td::before{
+    content: attr(data-label);
+    font-weight:700;
+    color:#1f2937;
+    display:block;
+    font-size:12px;
+    margin-bottom:2px;
+  }
+
+  a{
+    display:inline-block;
+    margin-top:6px;
+    font-weight:600;
+    color:#2563eb;
+  }
+}
+</style>
+
+<h2>All Paid Receipts</h2>
 
 <table border="1" cellspacing="0" cellpadding="10" style="width:100%;background:white;">
   <tr style="background:#007bff;color:white;">
@@ -18,24 +79,24 @@
 
   <% receipts.forEach(r => { %>
     <tr>
-      <td><%= r.student_id %></td>
-      <td><%= r.name %></td>
-      <td><%= r.course %></td>
-      <td><%= r.year %></td>
-      <td><%= r.room_no %></td>
-      <td><%= r.ref_id %></td>
-      <td>₹<%= r.amount_paid %></td>
-      <td><%= r.status %></td>
+      <td data-label="Student ID"><%= r.student_id %></td>
+      <td data-label="Name"><%= r.name %></td>
+      <td data-label="Course"><%= r.course %></td>
+      <td data-label="Year"><%= r.year %></td>
+      <td data-label="Room"><%= r.room_no %></td>
+      <td data-label="Ref ID"><%= r.ref_id %></td>
+      <td data-label="Amount">₹<%= r.amount_paid %></td>
+      <td data-label="Status"><%= r.status %></td>
 
-      <td>
-       <a href="/<%= r.pdf_path %>" download>Download</a>
-
+      <td data-label="Receipt PDF">
+        <a href="/<%= r.pdf_path %>" download>Download</a>
       </td>
 
-      <td><%= r.created_at.toLocaleString() %></td>
+      <td data-label="Uploaded At">
+        <%= r.created_at.toLocaleString() %>
+      </td>
     </tr>
   <% }) %>
-
 </table>
 
 <%- include('../partials/footer') %>
