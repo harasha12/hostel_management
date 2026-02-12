@@ -1,120 +1,202 @@
-
-<div class="sbipdf-container">
-  <h2 class="sbipdf-heading">Upload SBI Collect PDF</h2>
-  <form action="/warden/uploadSBI" method="POST" enctype="multipart/form-data" class="sbipdf-form">
-    <label for="sbi_pdf" class="sbipdf-label">Select SBI PDF:</label>
-    <input type="file" name="sbi_pdf" id="sbi_pdf" accept="application/pdf" required class="sbipdf-input">
-    <button type="submit" class="sbipdf-upload-btn">Upload</button>
-  </form>
-  <a href="/warden/dashboard" class="back-link">⬅ Back to Dashboard</a>
-</div>
-
 <style>
-.sbipdf-container {
-  max-width: 480px;
-  margin: 65px auto 32px auto;
-  background: #f8f9fa;
-  border-radius: 14px;
-  box-shadow: 0 12px 36px #22304c22, 0 1.5px 3px #0001;
-  padding: 38px 28px 34px 28px;
-   border: 3px solid #ffd700; /* Gold border on all 4 sides */
+:root {
+  --gold: #ffc107;
+  --gold-dark: #ffd700;
+  --success: #28bb75;
+  --danger: #db3159;
+  --shadow: 0 10px 30px rgba(0,0,0,0.15);
+  --bg-color: #f0f2f5; /* Light grey background for contrast */
 }
+
+/* Base Body adjustment for mobile */
+body {
+  margin: 0;
+  padding: 10px;
+  background-color: var(--bg-color);
+  font-family: 'Segoe UI', Roboto, sans-serif;
+}
+
+/* message box */
+#message-container {
+  position: fixed;
+  top: 15px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+  width: 90%;
+  max-width: 400px;
+}
+
+.message {
+  padding: 12px 15px;
+  border-radius: 8px;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 10px;
+  font-size: 0.9rem;
+  text-align: center;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+  animation: fade 4s forwards;
+}
+
+.success { background: var(--success); }
+.error { background: var(--danger); }
+
+@keyframes fade {
+  0% { opacity: 0; transform: translateY(-20px); }
+  10%, 90% { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(-20px); }
+}
+
+/* Container - Mobile Responsive Fix */
+.sbipdf-container {
+  width: 95%; /* Take most of the screen on mobile */
+  max-width: 450px; /* Limit on Desktop */
+  margin: 40px auto; 
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+  padding: 25px 20px; /* Balanced padding */
+  border: 2px solid var(--gold);
+  box-sizing: border-box; /* Crucial: padding won't increase width */
+}
+
 .sbipdf-heading {
   text-align: center;
-  font-family: 'Montserrat', 'Georgia', serif;
-  font-size: 1.62em;
-  font-weight: 900;
+  font-size: 1.3rem;
+  font-weight: 800;
   color: #1b243b;
-  letter-spacing: .7px;
-  border-bottom: 3px solid #ffc107;
-  padding-bottom: 7px;
-  margin-bottom: 24px;
-  background: linear-gradient(90deg, #8E8EED 65%, #EBD483 100%);
-  border-radius: 8px 8px 0 0;
+  padding: 12px;
+  margin-bottom: 25px;
+  background: linear-gradient(135deg, #fdfcfb 0%, #e2d1c3 100%);
+  border-bottom: 3px solid var(--gold);
+  border-radius: 10px;
 }
+
 .sbipdf-form {
   display: flex;
   flex-direction: column;
-  gap: 19px;
-  margin-bottom: 14px;
+  gap: 20px;
 }
+
 .sbipdf-label {
   font-weight: 700;
-  font-family: 'Montserrat', sans-serif;
-  color: #22304c;
-  margin-bottom: 7px;
-  font-size: 1.09em;
-  letter-spacing: 0.4px;
+  color: #444;
+  font-size: 0.95rem;
+  margin-left: 5px;
 }
-.sbipdf-input[type="file"] {
-  padding: 10px 7px;
-  border-radius: 7px;
-  border: 2px solid #bdc3c7;
+
+.sbipdf-input {
+  width: 100%; /* Full width within container */
+  padding: 12px;
+  border-radius: 8px;
+  border: 2px solid #ddd;
+  background: #fafafa;
+  font-size: 16px; /* Prevents auto-zoom on iPhones */
+  box-sizing: border-box;
+}
+
+.sbipdf-input:focus {
+  border-color: var(--gold);
   background: #fff;
-  font-size: 1em;
-  box-shadow: 0 1px 7px #22304c10;
-  color: #222;
-  transition: border-color 0.18s;
-}
-.sbipdf-input[type="file"]:focus {
-  border-color: #ffc107;
   outline: none;
 }
+
 .sbipdf-upload-btn {
-  background: #ffc107;
+  background: var(--gold);
   color: #222;
-  font-family: 'Montserrat', 'Roboto', sans-serif;
   border: none;
-  border-radius: 50px;
-  font-weight: 700;
-  font-size: 1.08em;
-  padding: 12px 0;
-  width: 100%;
-  letter-spacing: .9px;
-  box-shadow: 0 2px 8px #ffc10733;
+  border-radius: 12px;
+  font-weight: 800;
+  font-size: 1.1rem;
+  padding: 14px;
   cursor: pointer;
-  margin-top: 8px;
-  transition: 
-    background 0.13s,
-    color 0.13s,
-    box-shadow 0.19s,
-    transform 0.19s;
+  transition: .2s;
+  width: 100%;
 }
-.sbipdf-upload-btn:hover,
-.sbipdf-upload-btn:focus {
-  background: #ffd700;
-  color: #1b243b;
-  transform: scale(1.04); /* slight zoom-in */
-  box-shadow: 0 0 19px 3px #ffe082b0;
+
+.sbipdf-upload-btn:active {
+  transform: scale(0.96);
 }
+
 .back-link {
   display: block;
-  margin: 21px auto 0 auto;
-  font-size: 1.05em;
-  font-weight: 600;
+  margin: 25px auto 0;
+  font-weight: 700;
   text-align: center;
-  color: #fff;
-  background: linear-gradient(90deg, #d4af37, #ffdd00);
-  border-radius: 50px;
-  padding: 10px 0;
-  width: 75%;
-  max-width: 320px;
+  color: #333;
+  background: #eee;
+  border-radius: 10px;
+  padding: 12px;
   text-decoration: none;
-  letter-spacing: 0.8px;
-  box-shadow: 0 4px 12px #d4af3733;
-  transition: all 0.25s ease;
-}
-.back-link:hover {
-  background: linear-gradient(90deg, #ffdd00, #ffe382);
-  color: #1b243b;
-  transform: scale(1.07);
-  box-shadow: 0 0 20px #ffe082a9;
+  font-size: 0.9rem;
+  transition: .2s;
 }
 
-@media (max-width: 600px) {
-  .sbipdf-container { padding: 12px 2vw; }
-  .sbipdf-heading { font-size: 1.09em; border-bottom-width:2px; }
-  .sbipdf-upload-btn { font-size: 1em; }
+/* Tablet & Laptop Adjustments */
+@media (min-width: 600px) {
+  .sbipdf-container {
+    padding: 35px;
+  }
+  .sbipdf-heading { font-size: 1.5rem; }
 }
-
 </style>
+
+<div id="message-container">
+  <% if (success) { %>
+    <div class="message success"><%= success %></div>
+  <% } %>
+
+  <% if (error) { %>
+    <div class="message error"><%= error %></div>
+  <% } %>
+</div>
+
+<div class="sbipdf-container">
+  <h2 class="sbipdf-heading">
+    <i class="fas fa-file-excel" style="color: #1d6f42;"></i> Upload SBI Excel
+  </h2>
+
+  <form
+    id="sbiForm"
+    action="/warden/uploadSBI"
+    method="POST"
+    enctype="multipart/form-data"
+    class="sbipdf-form"
+  >
+    <div class="input-group">
+      <label class="sbipdf-label">Select SBI Collect Excel File</label>
+      <input
+        type="file"
+        name="sbi_excel"
+        class="sbipdf-input"
+        accept=".xls,.xlsx"
+        required
+      >
+    </div>
+
+    <button type="submit" class="sbipdf-upload-btn" id="sbiBtn">
+      Upload Excel
+    </button>
+  </form>
+
+  <a href="/warden/dashboard" class="back-link">
+    ⬅ Back to Dashboard
+  </a>
+</div>
+
+<script>
+  // Message auto-remove
+  setTimeout(() => {
+    document.querySelectorAll('.message').forEach(m => m.remove());
+  }, 4000);
+
+  // Simple SPA behavior (Optional)
+  const sbiForm = document.getElementById('sbiForm');
+  const sbiBtn = document.getElementById('sbiBtn');
+
+  sbiForm.onsubmit = function() {
+    sbiBtn.disabled = true;
+    sbiBtn.innerHTML = "Uploading...";
+  };
+</script>
