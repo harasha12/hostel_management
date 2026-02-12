@@ -6,6 +6,7 @@
   <title>Yearly Fees Management</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
   <style>
+    
     :root {
       --color-gold: #FFD700;
       --color-light-gold: #fff176;
@@ -18,7 +19,7 @@
       margin: 0;
       font-family: 'Poppins', sans-serif;
       background-color: var(--color-light-grey);
-      color: var(--color-dark);
+      color: #FFFFFF;
       min-height: 100vh;
     }
 
@@ -65,39 +66,33 @@
 
     /* 🌿 MAIN CONTENT */
     .container {
-      width: 100%;
-      max-width: 900px;
-      margin: 100px auto 40px; /* 👈 space for header */
-      background: var(--color-white);
-      border: 2px solid var(--color-gold);
-      border-radius: 12px;
-      padding: 30px 40px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-    }
+  width: 95%;
+  max-width: 900px;
+  margin: 100px auto 40px;
+  background: var(--color-white);
+  border: 2px solid var(--color-gold);
+  border-radius: 12px;
+  padding: 30px 40px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  box-sizing: border-box;
+}
 
-    h2, h3 {
+     /* prevents anything from going out */
+     
+    
+   
+
+
+     h3 {
       text-align: center;
       color: var(--color-dark);
       margin-bottom: 20px;
       font-weight: 700;
     }
 
-    h2 {
-      color: var(--color-gold);
-      font-size: 2rem;
-      margin-bottom: 30px;
-    }
+     
 
-    h2::after {
-      content: "";
-      display: block;
-      width: 100px;
-      height: 4px;
-      background-color: var(--color-gold);
-      margin: 10px auto 0;
-      border-radius: 2px;
-      box-shadow: 0 0 10px var(--color-gold);
-    }
+   
 
     .fee-form {
       display: grid;
@@ -196,6 +191,92 @@
       color: var(--color-dark);
       background-color: rgba(255, 215, 0, 0.2);
     }
+    /* --- NEW HEADER CONTAINER STYLE (Kept previous h2 styling) --- */
+.header-container {
+    text-align: center; /* Center the h2 wrapper */
+    margin-bottom: 25px; /* Spacing below the heading */
+}
+
+.header-container h2 {
+    font-weight: 800;
+    font-size: 1.9em;
+    color: #222;
+    letter-spacing: 0.8px;
+    margin: 0; /* Remove default margin from h2 */
+    display: inline-block;
+    border-bottom: 3px solid #ffd700;
+    background: linear-gradient(90deg, #8E8EED 60%, #EBD483 100%);
+    border-radius: 6px;
+    padding: 8px 16px;
+}
+.fee-form > div {
+  display: flex;
+  flex-direction: column;
+}
+input:hover {
+  border-color: var(--color-gold);
+}button:active {
+  transform: scale(0.97);
+}
+
+table {
+  display: block;
+  width: 100%;
+  overflow-x: auto;
+}
+
+thead, tbody, tr {
+  width: 100%;
+}
+@media (max-width: 600px) {
+  th, td {
+    padding: 10px 8px;
+    font-size: 0.85rem;
+  }
+
+  h3 {
+    font-size: 1.1rem;
+  }
+}
+.container {
+  animation: fadeIn 0.4s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.container {
+  animation: fadeIn 0.4s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 20px;
+    margin: 80px 12px 30px;
+    border-radius: 10px;
+  }
+}
+
+
+
 
     @media (max-width: 600px) {
       header {
@@ -210,21 +291,195 @@
         grid-template-columns: 1fr;
       }
     }
+    /* ================= MOBILE TABLE CARD VIEW ================= */
+@media (max-width: 600px) {
+
+  /* Keep container safe */
+  .container {
+    overflow: hidden;
+  }
+
+  /* Convert table to block layout */
+  table,
+  thead,
+  tbody,
+  th,
+  tr,
+  td {
+    display: block;
+    width: 100%;
+  }
+
+  /* Hide table header */
+  thead {
+    display: none;
+  }
+
+  /* Each row becomes a card */
+  tbody tr {
+    background: #ffffff;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    margin-bottom: 15px;
+    padding: 12px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+  }
+
+  /* Cell layout: label | value */
+  td {
+    display: grid;
+    grid-template-columns: 40% 60%;
+    padding: 8px 0;
+    border: none;
+    font-size: 0.9rem;
+    box-sizing: border-box;
+  }
+
+  /* Labels (left column) */
+  td:nth-child(1)::before { content: "Year"; }
+  td:nth-child(2)::before { content: "Room Rent"; }
+  td:nth-child(3)::before { content: "Mess Bill 1"; }
+  td:nth-child(4)::before { content: "Mess Bill 2"; }
+  td:nth-child(5)::before { content: "Total Amount"; }
+
+  td::before {
+    font-weight: 700;
+    color: var(--color-dark);
+  }
+
+  /* Data (right column) */
+  td {
+    color: #333;
+  }
+
+  /* Total highlight */
+  .total-cell {
+    background: rgba(255, 215, 0, 0.15);
+    border-radius: 6px;
+    padding: 8px;
+    font-weight: 700;
+  }
+}
+@media (max-width: 1024px) {
+  .container {
+    max-width: 900px;
+    margin: 90px auto 30px;
+    padding: 30px 40px;
+    border-radius: 12px;
+  }
+}
+@media (max-width: 600px) {
+  .container {
+    max-width: 100%;
+    margin: 80px 12px 25px;
+    padding: 20px;
+    border-radius: 12px;
+    overflow: hidden;
+  }
+}
+/* ================= TABLE ROWS AS CONTAINERS (MOBILE + TABLET) ================= */
+@media (max-width: 1024px) {
+
+  /* Keep desktop table untouched */
+  table {
+    display: block;
+    width: 100%;
+  }
+
+  thead {
+    display: none; /* hide header on mobile & tablet */
+  }
+
+  tbody,
+  tr,
+  td {
+    display: block;
+    width: 100%;
+  }
+
+  /* Each row becomes its own container */
+  tbody tr {
+    background: #ffffff;
+    border: 1px solid #ddd;
+    border-radius: 12px;
+    margin-bottom: 16px;
+    padding: 14px;
+    box-shadow: 0 6px 14px rgba(0,0,0,0.08);
+    box-sizing: border-box;
+  }
+
+  /* Label | Value layout */
+  td {
+    display: grid;
+    grid-template-columns: 45% 55%;
+    padding: 8px 0;
+    border: none;
+    font-size: 0.95rem;
+    box-sizing: border-box;
+  }
+
+  /* Column labels */
+  td:nth-child(1)::before { content: "Year"; }
+  td:nth-child(2)::before { content: "Room Rent"; }
+  td:nth-child(3)::before { content: "Mess Bill 1"; }
+  td:nth-child(4)::before { content: "Mess Bill 2"; }
+  td:nth-child(5)::before { content: "Total Amount"; }
+
+  td::before {
+    font-weight: 700;
+    color: var(--color-dark);
+  }
+
+  /* Value styling */
+  td {
+    color: #333;
+  }
+
+  /* Highlight total */
+  .total-cell {
+    background: rgba(255, 215, 0, 0.18);
+    border-radius: 6px;
+    padding: 10px;
+    font-weight: 700;
+  }
+}
+/* ================= MOBILE SCROLL & FOOTER FIX ================= */
+@media (max-width: 600px) {
+
+  /* Allow page scrolling on mobile */
+  body {
+    overflow-y: auto;
+  }
+
+  /* Make container scroll-friendly */
+  .container {
+    max-height: calc(100vh - 90px); /* leaves space for header */
+    overflow-y: auto;               /* ✅ scroll enabled */
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Footer / copyright small & subtle */
+  footer,
+  .footer,
+  .copyright {
+    font-size: 0.60rem;      /* ✅ very small */
+    text-align: center;
+    padding: 6px 0;
+    color: #777;
+  }
+}
+
+
   </style>
 </head>
 <body>
-  <header>
-    <div class="logo"><a href="/">🏠 Hostel Management</a></div>
-    <nav>
-      <a href="/admin/dashboard">Dashboard</a>
-      <a href="/admin/students">Students</a>
-      <a href="/admin/yearlyfees">Yearly Fees</a>
-      <a href="/logout">Logout</a>
-    </nav>
-  </header>
+ 
 
   <div class="container">
-    <h2>💰 Yearly Fees Management</h2>
+
+    <div class="header-container">
+        <h2>Set Yearly Fees</h2>
+    </div>
 
     <form action="/admin/yearlyFees" method="POST" class="fee-form">
       <div>
@@ -284,6 +539,6 @@
       </tbody>
     </table>
   </div>
+  <%- include('../partials/footer') %>
 </body>
 </html>
-
