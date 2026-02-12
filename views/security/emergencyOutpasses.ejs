@@ -1,107 +1,225 @@
-<% 
-  // safe fallbacks
+<%
   const outpassesSafe = Array.isArray(outpasses) ? outpasses : [];
   const roomQuerySafe = typeof roomQuery !== 'undefined' ? roomQuery : '';
-  const userSafe = session && session.user ? session.user : (user || { name: 'Security' });
-  const countSafe = (typeof countToday !== 'undefined' && countToday !== null) ? countToday : outpassesSafe.length;
+  const userSafe = locals.session ? (locals.session.name || 'Security') : 'Security';
+  const countSafe = typeof countToday !== 'undefined' ? countToday : outpassesSafe.length;
 %>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Emergency Outpasses — Security</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"/>
   <style>
-    :root { --bg:#091726; --panel: rgba(255,255,255,0.03); --accent:#ffcc00; --muted:#cfe0f5; }
-    body{ margin:0; font-family: "Segoe UI", Roboto, Arial; min-height:100vh; background: linear-gradient(180deg,#071025 0%, #0d233f 100%); color:#fff; }
-    .wrap{ max-width:1100px; margin:28px auto; padding:18px; }
-    .header{ display:flex; align-items:center; gap:16px; justify-content:center; text-align:center; }
-    .header img{ height:72px; border-radius:8px; filter: drop-shadow(0 6px 18px rgba(0,0,0,0.6)); }
-    h1{ margin:8px 0 2px; color:var(--accent); font-size:20px; }
-    p.sub{ margin:0; color:var(--muted); font-weight:600; }
+    :root {
+      --gold: #ffcc00;
+      --glass: rgba(255, 255, 255, 0.07);
+      --glass-border: rgba(255, 255, 255, 0.12);
+      --success: #00ff88;
+    }
 
-    .card{ background:var(--panel); border-radius:12px; padding:18px; margin-top:18px; box-shadow:0 8px 30px rgba(0,0,0,0.6); }
+    /* Container Wrap */
+    .emergency-container {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 15px;
+      animation: fadeIn 0.4s ease;
+    }
 
-    .controls{ display:flex; gap:12px; align-items:center; justify-content:space-between; flex-wrap:wrap; }
-    .controls form{ display:flex; gap:8px; align-items:center; }
-    input[type="text"]{ padding:10px 12px; border-radius:8px; border:none; min-width:180px; background:rgba(255,255,255,0.04); color:#fff; }
-    button{ background:var(--accent); border:none; color:#07203b; padding:10px 14px; border-radius:8px; font-weight:800; cursor:pointer; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-    .stat { margin-top:14px; font-weight:700; color:var(--muted); }
-    .stat strong{ color:var(--accent); font-size:1.05rem; margin-left:6px; }
+    /* Header Styling */
+    .emergency-header {
+      background: var(--glass);
+      backdrop-filter: blur(10px);
+      border: 1px solid var(--glass-border);
+      padding: 20px;
+      border-radius: 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      border-left: 5px solid var(--gold);
+    }
 
-    table{ width:100%; border-collapse:collapse; margin-top:14px; font-size:0.95rem; color:#eef6ff; }
-    thead th{ text-align:left; color:var(--accent); padding:12px 14px; font-weight:800; background:rgba(0,0,0,0.2); }
-    tbody td{ padding:12px 14px; border-top:1px solid rgba(255,255,255,0.03); color:#dcefff; vertical-align:middle; }
-    tbody tr:hover{ background: rgba(255,255,255,0.02); transform: translateY(-1px); }
+    .header-left h1 { margin: 0; font-size: 1.4rem; color: var(--gold); letter-spacing: 1px; }
+    .header-left p { margin: 5px 0 0; font-size: 0.85rem; opacity: 0.8; }
+    .header-right { text-align: right; }
+    .count-badge { background: var(--gold); color: #000; padding: 5px 12px; border-radius: 20px; font-weight: 800; font-size: 0.9rem; }
 
-    .status { padding:6px 10px; border-radius:999px; font-weight:700; font-size:0.85rem; display:inline-block; }
-    .status.Approved{ background:#e6f7ea; color:#0b6f2b; }
-    .status.Pending{ background:#fff7e6; color:#6b4a00; }
-    .status.Rejected{ background:#ffe6e6; color:#8b1b1b; }
+    /* Search Section */
+    .search-section {
+      margin-bottom: 25px;
+    }
 
-    @media (max-width:800px){
-      .controls{ flex-direction:column; align-items:stretch; gap:8px; }
-      input[type="text"]{ width:100%; }
+    .search-box {
+      display: flex;
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      border-radius: 12px;
+      padding: 5px;
+      transition: 0.3s;
+    }
+
+    .search-box:focus-within { border-color: var(--gold); box-shadow: 0 0 15px rgba(255, 204, 0, 0.2); }
+
+    .search-box input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      padding: 12px 15px;
+      color: white;
+      font-size: 1rem;
+      outline: none;
+    }
+
+    .search-box button {
+      background: var(--gold);
+      border: none;
+      color: #000;
+      padding: 0 20px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    /* Table & Cards Logic */
+    .outpass-list { width: 100%; }
+
+    /* Desktop View */
+    .desktop-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0 8px;
+      display: table;
+    }
+
+    .desktop-table th { padding: 15px; color: var(--gold); text-align: left; font-size: 0.9rem; text-transform: uppercase; }
+    .desktop-table td { background: var(--glass); padding: 15px; border-top: 1px solid var(--glass-border); border-bottom: 1px solid var(--glass-border); }
+    .desktop-table td:first-child { border-left: 1px solid var(--glass-border); border-radius: 12px 0 0 12px; }
+    .desktop-table td:last-child { border-right: 1px solid var(--glass-border); border-radius: 0 12px 12px 0; }
+
+    /* Mobile Cards (Hidden by default) */
+    .mobile-card { display: none; }
+
+    /* Status Tags */
+    .tag {
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: bold;
+      background: rgba(0, 255, 136, 0.1);
+      color: var(--success);
+      border: 1px solid var(--success);
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+      .desktop-table { display: none; }
+      .mobile-card {
+        display: block;
+        background: var(--glass);
+        border: 1px solid var(--glass-border);
+        border-radius: 15px;
+        padding: 15px;
+        margin-bottom: 15px;
+        position: relative;
+        overflow: hidden;
+      }
+      .mobile-card::before { content: ""; position: absolute; left: 0; top: 0; height: 100%; width: 4px; background: var(--gold); }
+      
+      .card-row { display: flex; justify-content: space-between; margin-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 8px; }
+      .card-row:last-child { border: none; margin-bottom: 0; }
+      .label { font-size: 0.8rem; opacity: 0.6; text-transform: uppercase; }
+      .value { font-size: 0.95rem; font-weight: 600; }
+      
+      .header-info { flex-direction: column; text-align: center; }
+      .emergency-header { flex-direction: column; gap: 10px; text-align: center; border-left: none; border-top: 5px solid var(--gold); }
+      .header-right { text-align: center; }
     }
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <header class="header">
-      <img src="/images/college_logo.png" alt="logo">
-      <div>
-        <h1>Security — Emergency Outpasses</h1>
-        <p class="sub">Welcome, <%= userSafe.name || userSafe %> — Today: <strong><%= countSafe %></strong> approved</p>
+
+<div class="emergency-container">
+  
+  <div class="emergency-header">
+    <div class="header-left">
+      <h1>Emergency Outpasses</h1>
+      <p>Security Portal | <%= userSafe %></p>
+    </div>
+    <div class="header-right">
+      <div class="count-badge">Today: <%= countSafe %></div>
+    </div>
+  </div>
+
+  <div class="search-section">
+    <form action="/security/emergencyOutpasses" method="GET" class="search-box">
+      <input type="text" name="room_no" placeholder="Search by Room Number..." value="<%= roomQuerySafe %>">
+      <button type="submit"><i class="fas fa-search"></i></button>
+    </form>
+  </div>
+
+  <div class="outpass-list">
+    <% if (outpassesSafe.length === 0) { %>
+      <div style="text-align: center; padding: 50px; background: var(--glass); border-radius: 15px; border: 1px dashed var(--glass-border);">
+        <i class="fas fa-ghost fa-3x" style="color: var(--gold); margin-bottom: 15px;"></i>
+        <p>No active emergency outpasses found.</p>
       </div>
-    </header>
-
-    <div class="card">
-      <div class="controls" role="region" aria-label="search and actions">
-        <form action="/security/dashboard" method="GET" aria-label="search by room">
-          <input type="text" name="room_no" placeholder="Search by Room No (e.g. A101)" value="<%= roomQuerySafe %>">
-          <button type="submit"><i class="fa fa-search"></i> Search</button>
-        </form>
-
-        <div class="stat">Showing <strong><%= outpassesSafe.length %></strong> approved outpass(es) for today</div>
-      </div>
-
-      <table role="table" aria-label="today's approved emergency outpasses">
+    <% } else { %>
+      
+      <table class="desktop-table">
         <thead>
           <tr>
             <th>Student</th>
             <th>Room</th>
             <th>Reason</th>
             <th>Status</th>
-            <th>Approved By</th>
-            <th>Approved At</th>
+            <th>Time</th>
           </tr>
         </thead>
         <tbody>
-        <% if (outpassesSafe.length === 0) { %>
-          <tr><td colspan="6" style="text-align:center; padding:18px; color:#bcd6ff;">No approved outpasses for today.</td></tr>
-        <% } else { %>
-          <% outpassesSafe.forEach(op => { 
-               const studentName = op.name || op.student_name || op.student || '-';
-               const room = op.room_no || op.room || '-';
-               const reason = op.reason || op.purpose || '-';
-               const status = op.status || '-';
-               const approvedAt = op.approved_at || op.updated_at || op.created_at || null;
-          %>
+          <% outpassesSafe.forEach(op => { %>
             <tr>
-              <td><%= studentName %></td>
-              <td><%= room %></td>
-              <td><%= reason %></td>
-              <td><span class="status <%= status %>"><%= status %></span></td>
-              <td><%= op.accepted_by || op.approved_by || '-' %></td>
-              <td><%= approvedAt ? new Date(approvedAt).toLocaleString() : '-' %></td>
+              <td><i class="fas fa-user-circle" style="color: var(--gold)"></i> <strong><%= op.student_name || op.name %></strong></td>
+              <td><%= op.room_no %></td>
+              <td style="font-style: italic; opacity: 0.8;"><%= op.reason %></td>
+              <td><span class="tag"><%= op.status %></span></td>
+              <td><small><%= op.approved_at ? new Date(op.approved_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '-' %></small></td>
             </tr>
           <% }) %>
-        <% } %>
         </tbody>
       </table>
-    </div>
+
+      <% outpassesSafe.forEach(op => { %>
+        <div class="mobile-card">
+          <div class="card-row">
+            <span class="label">Student</span>
+            <span class="value" style="color: var(--gold)"><%= op.student_name || op.name %></span>
+          </div>
+          <div class="card-row">
+            <span class="label">Room</span>
+            <span class="value"><%= op.room_no %></span>
+          </div>
+          <div class="card-row">
+            <span class="label">Reason</span>
+            <span class="value" style="font-size: 0.85rem;"><%= op.reason %></span>
+          </div>
+          <div class="card-row">
+            <span class="label">Time</span>
+            <span class="value"><%= op.approved_at ? new Date(op.approved_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '-' %></span>
+          </div>
+          <div class="card-row" style="border: none;">
+            <span class="label">Status</span>
+            <span class="tag"><%= op.status %></span>
+          </div>
+        </div>
+      <% }) %>
+
+    <% } %>
   </div>
+
+</div>
+
 </body>
 </html>
