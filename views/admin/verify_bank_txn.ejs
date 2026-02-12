@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Verify Bank Transaction</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f3f4f6;
+      padding: 40px;
+    }
+
+    .card {
+      max-width: 500px;
+      margin: auto;
+      background: #fff;
+      padding: 25px;
+      border-radius: 10px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+      text-align: center;
+    }
+
+    h2 {
+      color: #1e3a8a;
+    }
+
+    p {
+      margin: 10px 0;
+      font-size: 15px;
+    }
+
+    button {
+      margin-top: 20px;
+      padding: 12px 20px;
+      border: none;
+      border-radius: 8px;
+      background: #16a34a;
+      color: #fff;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #15803d;
+    }
+
+    a {
+      display: inline-block;
+      margin-top: 15px;
+      text-decoration: none;
+      font-weight: bold;
+      color: #1e40af;
+    }
+    /* ================= MOBILE UI ================= */
+@media (max-width: 768px) {
+
+  body {
+    padding: 14px;
+    background: #eef2ff;
+  }
+
+  .card {
+    max-width: 100%;
+    padding: 20px;
+    border-radius: 16px;
+    box-shadow: 0 12px 28px rgba(0,0,0,0.12);
+  }
+
+  h2 {
+    font-size: 1.3rem;
+    margin-bottom: 12px;
+  }
+
+  p {
+    font-size: 14px;
+    background: #f8fafc;
+    padding: 10px 12px;
+    border-radius: 10px;
+    margin: 8px 0;
+    text-align: left;
+    border-left: 4px solid #2563eb;
+  }
+
+  button {
+    width: 100%;
+    padding: 14px;
+    font-size: 16px;
+    border-radius: 14px;
+    background: linear-gradient(90deg,#16a34a,#15803d);
+    box-shadow: 0 6px 18px rgba(22,163,74,0.4);
+  }
+
+  button:active {
+    transform: scale(0.97);
+  }
+
+  a {
+    display: block;
+    text-align: center;
+    margin-top: 18px;
+    font-size: 14px;
+  }
+}
+
+/* ================= SMALL PHONES ================= */
+@media (max-width: 420px) {
+
+  h2 {
+    font-size: 1.15rem;
+  }
+
+  p {
+    font-size: 13px;
+  }
+}
+
+  </style>
+</head>
+<body>
+
+<div class="card">
+  <h2>🏦 Verify Bank Transaction</h2>
+
+  <p><b>Date:</b> <%= txn.transaction_date || txn.txn_date %></p>
+  <p><b>Amount:</b> ₹<%= txn.total_amount %></p>
+  <p><b>Reference:</b> <%= txn.bank_ref_no || "N/A" %></p>
+  <p><b>Source:</b> <%= txn.bank_source %></p>
+  <p><b>Status:</b> <%= txn.status %></p>
+
+  <form method="POST">
+    <button type="submit">✅ Verify & Continue</button>
+  </form>
+
+  <a href="/admin/bank-transactions">⬅ Back</a>
+</div>
+
+</body>
+</html>
