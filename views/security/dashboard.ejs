@@ -1,86 +1,314 @@
-
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Security Dashboard</title>
-  <link rel="stylesheet" href="/css/style.css">
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"/>
+
   <style>
-    input[type="text"] {
-      padding: 8px;
-      margin-bottom: 15px;
-      width: 250px;
+    :root{
+      --sidebar-width:250px;
+      --sidebar-collapsed:70px;
+      --navy-dark:#0a1f44;
+      --navy-mid:#153b77;
+      --gold:#ffcc00;
     }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 20px;
+
+    body{
+      margin:0;
+      font-family:"Segoe UI",sans-serif;
+      background:url("/images/hostel-bg.jpg") center/cover fixed;
+      color:#fff;
+      overflow-x:hidden;
     }
-    th, td {
-      padding: 10px;
-      border: 1px solid #ccc;
-      text-align: center;
+
+    .overlay{
+      background:rgba(0,0,0,0.55);
+      backdrop-filter:blur(6px);
+      min-height:100vh;
     }
-    th {
-      background-color: #f2f2f2;
+
+    /* HEADER */
+    .college-header{
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      gap:18px;
+      padding:20px;
+      background:rgba(255,255,255,0.08);
+      text-align:center;
+    }
+    .college-header img{height:70px;}
+    .college-header h2{
+      margin:0;
+      font-size:1.2rem;
+      text-transform:uppercase;
+    }
+    .autonomous{color:var(--gold);}
+
+    /* LAYOUT */
+    .dashboard{
+      display:flex;
+      min-height:80vh;
+      position:relative; /* UPDATED */
+    }
+
+    /* SIDEBAR */
+    .sidebar{
+      width:var(--sidebar-width);
+      background:linear-gradient(180deg,var(--navy-dark),var(--navy-mid));
+      transition:all 0.3s ease;
+      display:flex;
+      flex-direction:column;
+      z-index:1000;
+      padding-top:50px;
+    }
+
+    /* UPDATED: real hide instead of only width */
+    .sidebar.collapsed{
+      transform:translateX(-100%);
+    }
+
+    /* UPDATED TOGGLE */
+    .toggle-btn{
+  position:absolute;
+  top:-8px;
+  left:12px;
+  z-index:1500;
+
+  width:42px;
+  height:42px;
+
+  border:none;
+  border-radius:10px;
+
+  /* 🔥 SIDEBAR STYLE MATCH */
+  background:linear-gradient(180deg,var(--navy-dark),var(--navy-mid));
+  box-shadow:
+    inset 0 0 0 1px rgba(255,255,255,0.15),
+    0 6px 16px rgba(0,0,0,0.45);
+
+  color:var(--gold);
+  font-size:18px;
+  cursor:pointer;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  transition:all 0.25s ease;
+}
+
+/* Hover effect – same feel as menu */
+.toggle-btn:hover{
+  box-shadow:
+    inset 0 0 0 1px rgba(255,204,0,0.4),
+    0 8px 20px rgba(0,0,0,0.6);
+  transform:translateY(-1px);
+}
+
+/* Click feedback */
+.toggle-btn:active{
+  transform:scale(0.95);
+}
+
+
+    .menu a{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      padding:14px 18px;
+      color:white;
+      text-decoration:none;
+      transition:.2s;
+      white-space:nowrap;
+    }
+    .menu a:hover{
+      background:rgba(255,255,255,.15);
+      color:var(--gold);
+    }
+
+    .sidebar.collapsed .nav-text{display:none;}
+    .sidebar.collapsed a{justify-content:center;}
+
+    .logout{
+      margin-top:auto;
+      padding:16px;
+    }
+    .logout a{color:var(--gold);text-decoration:none;}
+
+    /* MAIN */
+    .main{
+      flex:1;
+      padding:20px;
+      width:100%;
+      transition:0.3s;
+    }
+
+    .mini-header{
+      display:none;
+      padding:12px 16px;
+      margin-bottom:14px;
+      background:rgba(0,0,0,.45);
+      border-left:4px solid var(--gold);
+      color:var(--gold);
+      font-weight:700;
+      text-transform:uppercase;
+    }
+
+    /* MOBILE */
+    @media (max-width:768px){
+      .college-header{flex-direction:column;padding:15px;}
+      .college-header h2{font-size:1rem;}
+      .college-header p{font-size:.8rem;}
+
+      .dashboard{position:relative;}
+
+      .sidebar{
+        position:absolute;
+        height:100%;
+        left:0;
+      }
+
+      .main{padding:15px;}
+    }
+
+    /* OPTIONAL: desktop lo toggle hide */
+    @media(min-width:769px){
+      .toggle-btn{display:none;}
     }
   </style>
 </head>
+
 <body>
-  <%- include('../partials/header') %>
+<%- include('../partials/toast') %>
 
-  <div class="container">
-    <h2>Welcome, <%= user.name %> (Security)</h2>
+<div class="overlay">
 
-    <div class="card-container">
-      <a href="/security/viewOutpasses" class="card">View All Outpasses</a>
-    </div>
-<div class="dashboard-card">
-  <h3>Emergency Outpasses</h3>
-  <p>View approved emergency outpasses for verification.</p>
-  <a href="/security/emergencyOutpasses" class="btn">View Emergency Outpasses</a>
-</div>
-
-    <hr>
-    <h3>📅 Outpasses Accepted Today</h3>
-
-    <form method="GET" action="/security/dashboard">
-      <input type="text" name="room_no" placeholder="Search by Room Number" value="<%= roomQuery || '' %>">
-      <button type="submit">Search</button>
-    </form>
-
-    <table>
-      <thead>
-        <tr>
-          <th>Student ID</th>
-          <th>Name</th>
-          <th>Room No</th>
-          <th>Status</th>
-          <th>Accepted By</th>
-          <th>Approved At</th>
-        </tr>
-      </thead>
-      <tbody>
-        <% if (outpasses.length === 0) { %>
-          <tr><td colspan="6">No outpasses found.</td></tr>
-        <% } else { %>
-          <% outpasses.forEach(op => { %>
-            <tr>
-              <td><%= op.student_id %></td>
-              <td><%= op.name %></td>
-              <td><%= op.room_no %></td>
-              <td><%= op.status %></td>
-              <td><%= op.accepted_by %></td>
-              <td><%= new Date(op.approved_at).toLocaleString() %></td>
-            </tr>
-          <% }) %>
-        <% } %>
-      </tbody>
-    </table>
-
-    <a href="/logout" class="logout-btn">Logout</a>
+  <div class="college-header">
+    <img src="/images/college_logo.png">
+    <div class="header-text">
+          <h2>SIR C R REDDY COLLEGE OF ENGINEERING - BOYS HOSTEL (<span class="autonomous">AUTONOMOUS</span>)</h2>
+          <p>Approved by AICTE & Permanently Affiliated to JNTUk, Kakinada, NAAC-A<br>
+          Accredited by NBA (CSE, IT, EEE, Mech, ECE, Civil)<br>
+          Vatluru, Eluru, Eluru District, AP - 534007</p>
+        </div>
   </div>
 
-  <%- include('../partials/footer') %>
+  <div class="dashboard">
+<button id="toggleBtn" class="toggle-btn"><i class="fas fa-bars"></i></button>
+
+    <div id="sidebar" class="sidebar">
+      
+      <div class="menu">
+        <a href="/security/viewOutpasses" onclick="spaNavigate(event,'/security/viewOutpasses')">
+          <i class="fas fa-id-card"></i><span class="nav-text">View Outpasses</span>
+        </a>
+        <a href="/security/emergencyOutpasses" onclick="spaNavigate(event,'/security/emergencyOutpasses')">
+          <i class="fas fa-bell"></i><span class="nav-text">Emergency Outpasses</span>
+        </a>
+        <a href="/security/todayOutpasses" onclick="spaNavigate(event,'/security/todayOutpasses')">
+          <i class="fas fa-check-circle"></i><span class="nav-text">Accepted Today</span>
+        </a>
+      </div>
+
+      <div class="logout">
+        <a href="/logout"><i class="fas fa-sign-out-alt"></i> Logout</a>
+      </div>
+    </div>
+
+    <div class="main">
+      <div id="miniHeader" class="mini-header"></div>
+
+      <div id="content-container">
+        <h2>Welcome, <%= user.name %> (Security)</h2>
+        <p>Select an option from the menu to get started.</p>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const sidebar = document.getElementById("sidebar");
+const toggleBtn = document.getElementById("toggleBtn");
+
+// Manual toggle
+toggleBtn.onclick = () => sidebar.classList.toggle("collapsed");
+
+/* ========= SPA NAVIGATION & AUTO-CLOSE SIDEBAR ========= */
+async function spaNavigate(e, url) {
+  e.preventDefault();
+
+  // 1. Sidebar ni close chestunnam (Mobile lo automatic ga hide avvadaniki)
+  if (window.innerWidth <= 768) {
+      sidebar.classList.add("collapsed");
+  }
+
+  const content = document.getElementById("content-container");
+  const mini = document.getElementById("miniHeader");
+  const title = e.currentTarget.innerText.trim();
+
+  // Show loading
+  content.innerHTML = `<div style="padding:40px;text-align:center;color:#ffcc00">
+    <i class="fas fa-spinner fa-spin fa-2x"></i><br><br>Loading...
+  </div>`;
+
+  try {
+    const res = await fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+    const html = await res.text();
+
+    mini.innerText = title;
+    mini.style.display = "block";
+    content.innerHTML = html;
+
+    history.pushState({}, '', url);
+  } catch (err) {
+    content.innerHTML = `<p style="color:red; text-align:center;">Failed to load content.</p>`;
+  }
+}
+
+window.onpopstate = () => location.reload();
+
+/* ========= SHARED ACTION HANDLER ========= */
+document.addEventListener("click", async function (e) {
+  const btn = e.target.closest(".security-action");
+  if (!btn) return;
+
+  const id = btn.dataset.id;
+  const action = btn.dataset.action;
+
+  if (!confirm(`Confirm ${action === 'exit' ? 'Exit' : 'Return'}?`)) return;
+
+  const row = btn.closest("tr");
+  const originalHtml = btn.innerHTML;
+  
+  btn.disabled = true;
+  btn.innerText = "...";
+
+  try {
+    const res = await fetch(`/security/mark${action === "exit" ? "Exit" : "Return"}/${id}`, {
+        method: "POST",
+        headers: { "X-Requested-With": "XMLHttpRequest" }
+    });
+
+    const data = await res.json();
+    if (!data.success) throw new Error();
+
+    // Update UI
+    const statusEl = row.querySelector(".status") || row.querySelector(".status-badge");
+    if(statusEl) statusEl.innerText = data.status;
+    
+    btn.parentElement.innerHTML = `<i class="fas fa-check-circle" style="color:var(--gold)"></i> Done`;
+
+  } catch (err) {
+    alert("Action failed");
+    btn.disabled = false;
+    btn.innerHTML = originalHtml;
+  }
+});
+</script>
 </body>
 </html>
-
