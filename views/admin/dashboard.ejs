@@ -22,163 +22,562 @@
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"/>
 
-<style>
-/* ===== ROOT RESET (THIS FIXES LOCALHOST ISSUE) ===== */
-html, body {
-  margin: 0;
-  padding: 0;
-  height: 100%;
-  overflow: hidden; /* 🔒 page no scroll */
-  font-family: "Segoe UI", Tahoma, sans-serif;
-}
+ <style>
+    /* ========== GENERAL ========== */
+    body {
+      min-height: 100vh;
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)),
+                  url('/images/hostel-bg.jpg') no-repeat center center fixed;
+      background-size: cover;
+      color: #fff;
+      overflow-x: hidden;
+    }
 
-/* ===== BACKGROUND ===== */
-body {
-  background: url("/images/hostel-bg.jpg") no-repeat center center fixed;
-  background-size: cover;
-  color: #fff;
-}
-
-/* ===== OVERLAY ===== */
-.overlay {
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-  background: rgba(0,0,0,0.6);
-  backdrop-filter: blur(5px);
-}
-
-/* ===== HEADER ===== */
+    /* ========== HEADER ========== */
+    /* ========== HEADER ========== */
 .college-header {
-  flex-shrink: 0;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 1000;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 20px;
-  padding: 20px;
-  background: rgba(255,255,255,0.1);
   text-align: center;
+  padding: 25px 20px;
+
+  /* ✨ Gold + Sand + BlackSand Gradient */
+  background: linear-gradient(90deg, #0a1a3f 0%, #153b6f 60%, #1a1a1a 100%);
+
+
+  border-bottom: 3px solid rgba(0, 0, 0, 0.4);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(5px);
+}
+
+/* Optional: make text more readable */
+.college-header .header-text h2,
+.college-header .header-text p {
+  color: #fff;
+  text-shadow: 2px 2px 5px #000;
 }
 
 .college-header img {
-  height: 90px;
+  max-height: 80px;
+  margin-right: 15px;
+  filter: drop-shadow(0 0 6px rgba(0, 0, 0, 0.7));
 }
 
-.header-text h2 {
-  margin: 0;
-  font-size: 1.8rem;
-  font-weight: bold;
+
+    .college-header img {
+    max-height: 100px;
+    margin-right: 20px;
+    filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.5));
+    animation: float 3s ease-in-out infinite;
 }
 
-.autonomous {
-  color: #ffcc00;
+/* Floating animation */
+@keyframes float {
+    0%   { transform: translateY(0px); }
+    50%  { transform: translateY(-10px); } /* moves up 10px */
+    100% { transform: translateY(0px); }
 }
 
-/* ===== NOTICE ===== */
-.notification-banner {
-  flex-shrink: 0;
+    .college-header .header-text h2 {
+      margin: 0;
+      font-size: 1.9rem;
+      font-weight: bold;
+      color: #fff;
+      text-transform: uppercase;
+      text-shadow: 2px 2px 4px #000;
+    }
+
+    .college-header .header-text p {
+      margin: 6px 0 0;
+      font-size: 0.9rem;
+      color: #f0f0f0;
+      line-height: 1.4;
+    }
+
+    .college-header .autonomous {
+      color: #ffcc00;
+      font-weight: bold;
+      text-shadow: 1px 1px 2px #000;
+    }
+
+    /* ---------------- NOTIFICATION BAR ---------------- */
+    .notification-banner {
+  position: fixed;
+  top: 160px;
+  left: 0;
   width: 100%;
-  background: linear-gradient(90deg,#ffd600,#ffcc00);
-  color: #000;
+  background-color: #FFD700;
+  color: #222;
+  padding: 8px 0;
   font-weight: bold;
+  z-index: 997;
   overflow: hidden;
 }
 
 .scrolling-text {
-  padding: 10px 0;
-  white-space: nowrap;
   display: inline-block;
-  animation: scroll 15s linear infinite;
+  white-space: nowrap;
+  padding-left: 100%;
+  animation: scroll-left 15s linear infinite;
 }
 
-@keyframes scroll {
-  from { transform: translateX(100%); }
+@keyframes scroll-left {
+  from { transform: translateX(0%); }
   to { transform: translateX(-100%); }
 }
 
-/* ===== DASHBOARD ===== */
-.dashboard {
-  flex: 1;
-  display: flex;
-  min-height: 0; /* 🔥 critical fix */
-}
+    /* ========== SIDEBAR ========== */
+    .sidebar {
+      position: fixed;
+      top: 150px;
+      left: 0;
+      height: calc(100vh - 150px);
+      width: 230px;
+      background: linear-gradient(180deg, #0d1b4c, #12306b);
+      box-shadow: 4px 0 10px rgba(0,0,0,0.4);
+      transition: width 0.3s ease;
+      display: flex;
+      z-index: 998;
+       background-color: #111;
+      flex-direction: column;
+      overflow: hidden;
+    }
 
-/* ===== SIDEBAR ===== */
-.sidebar {
-  width: 250px;
-  background: linear-gradient(180deg,#0a1f44,#153b77);
+    .sidebar.collapsed {
+      width: 70px;
+    }
+    
+
+    /* ========== TOGGLE BUTTON ========== */
+    .toggle-btn {
+      position: fixed;
+      top: 160px;
+      left: 15px;
+      background: #0d1b4c;
+      border-radius: 50%;
+      width: 45px;
+      height: 45px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 0 10px rgba(0,0,0,0.5);
+      transition: transform 0.3s, background 0.3s;
+      z-index: 1200;
+    }
+
+    .toggle-btn.active {
+      background: #FFD700;
+    }
+
+    .toggle-btn.active i {
+      color: #0d1b4c;
+    }
+
+    .toggle-btn:hover {
+      transform: rotate(90deg) scale(1.1);
+    }
+
+    .toggle-btn i {
+      color: #FFD700;
+      font-size: 1.4em;
+      transition: color 0.3s;
+    }
+
+    /* ========== NAV LINKS ========== */
+    .nav-links {
+      list-style: none;
+      padding: 60px 0 0;
+      margin: 0;
+      flex-grow: 1;
+      overflow-y: auto;
+    }
+
+    .nav-links li {
+      margin: 10px0;
+    }
+
+    .nav-links a {
+      display: flex;
+      align-items: center;
+      padding: 10px 18px;
+      color: #fff;
+      text-decoration: none;
+      font-size: 0.95em;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+
+    .nav-links a i {
+      font-size: 1.3em;
+      color: #FFD700;
+      width: 30px;
+      text-align: center;
+      transition: transform 0.3s;
+    }
+
+    .nav-links a span {
+      transition: opacity 0.3s;
+    }
+
+    .sidebar.collapsed a span {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .nav-links a:hover {
+      background: rgba(255, 215, 0, 0.2);
+      transform: translateX(4px);
+    }
+
+    .nav-links a.active {
+      background: rgba(255, 215, 0, 0.3);
+      border-left: 4px solid #FFD700;
+    }
+
+    /* ========== LOGOUT SECTION ========== */
+    .logout-section {
+      width: 100%;
+      padding: 20px 0;
+      text-align: center;
+      margin-top: auto;
+    }
+
+    .logout-separator {
+      width: 75%;
+      height: 1px;
+      margin: 0 auto 10px auto;
+      background: #FFD700;
+      opacity: 0.5;
+    }
+
+    .logout-btn {
+      background: transparent;
+      border: 2px solid #FFD700;
+      color: #FFD700;
+      border-radius: 8px;
+      padding: 10px 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .logout-btn:hover {
+      background: #FFD700;
+      color: #0d1b4c;
+      transform: scale(1.05);
+    }
+
+    /* ========== MAIN CONTENT ========== */
+    .page-content {
+      margin-top: 230px;
+      margin-left: 250px;
+      padding: 20px;
+      transition: margin-left 0.3s ease;
+    }
+
+    .sidebar.collapsed ~ .page-content {
+      margin-left: 90px;
+    }
+
+    h2 {
+      text-align: center;
+      color: #f9d342;
+      text-shadow: 2px 2px 6px #000;
+    }
+
+    .card {
+      background: rgba(255,255,255,0.1);
+      border-radius: 15px;
+      padding: 25px;
+      margin-bottom: 30px;
+      backdrop-filter: blur(5px);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+      transition: 0.3s;
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 25px rgba(0,0,0,0.6);
+    }
+
+    .card h3 {
+      color: #FFD700;
+      text-align: center;
+      margin-bottom: 15px;
+      text-decoration: underline;
+    }
+  
+
+
+    /* ===== Profile Card Layout ===== */
+.profile-card {
   display: flex;
   flex-direction: column;
-  overflow-y: auto; /* ✅ sidebar scroll */
+  align-items: center;
 }
 
-.sidebar.compressed {
-  width: 70px;
+.profile-content {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 25px;
+  width: 100%;
+  flex-wrap: wrap;
 }
 
-.toggle-container {
-  padding: 10px;
-  text-align: right;
+.profile-photo img {
+  width: 200px;
+  height: auto;
+  border-radius: 10%;
+  object-fit: cover;
+  border: 3px solid #FFD700;
+  box-shadow: 0 0 10px rgba(255, 215, 0, 0.6);
 }
 
-.toggle-btn {
-  background: rgba(255,255,255,0.1);
-  border: none;
-  color: #ffcc00;
-  font-size: 1.4rem;
-  cursor: pointer;
+.profile-details {
+  flex: 1;
+  font-size: 1rem;
+  color: #fff;
+  line-height: 1.6;
 }
 
-.menu a,
-.logout a {
+.profile-details p {
+  margin: 6px 0;
+}
+
+
+    .fee-list {
+      list-style: none;
+      padding: 0;
+    }
+
+    .fee-list li {
+      background: rgba(255,255,255,0.15);
+      border-radius: 8px;
+      padding: 10px;
+      margin: 6px 0;
+      display: flex;
+      justify-content: space-between;
+      font-weight: bold;
+    }
+
+    /* ========== RESPONSIVE ========== */
+    @media (max-width: 768px) {
+      .college-header img { max-height: 60px; }
+      .sidebar { width: 200px; }
+      .sidebar.collapsed { width: 65px; }
+      .page-content { margin-left: 210px; }
+      .sidebar.collapsed ~ .page-content { margin-left: 80px; }
+    }.toast-box {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 12px 18px;
-  color: #fff;
-  text-decoration: none;
+
+  background: #fff;
+  color: #333;
+  padding: 12px 16px;
+  border-radius: 18px;
+
+  font-size: 16px;
+  font-weight: 600;
+
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+
+  opacity: 0;
+  transform: translateY(20px);
+  transition: all 0.4s ease;
 }
 
-.menu a:hover {
-  background: rgba(255,255,255,0.1);
-  color: #ffcc00;
+.toast-show {
+  opacity: 1;
+  transform: translateY(0);
 }
 
-.sidebar.compressed .nav-text {
+.toast-success  { border-left: 6px solid #4CAF50; }
+.toast-error    { border-left: 6px solid #FF4747; }
+.toast-info     { border-left: 6px solid #1E90FF; }
+.toast-warn     { border-left: 6px solid #FFB300; }
+
+.toast-icon {
+  font-size: 22px;
+}
+/* ========== MOBILE ONLY FIX ========== */
+@media (max-width: 768px) {
+
+  html, body {
+    overflow-y: auto !important;
+  }
+
+  /* Compact header */
+  .college-header {
+    padding: 12px 8px;
+  }
+
+  .college-header .header-text h2 {
+    font-size: 1rem;
+  }
+
+  .college-header .header-text p {
+    font-size: 0.7rem;
+  }
+
+  /* Sidebar slide */
+  .sidebar {
+    left: -100%;
+    width: 75%;
+    top: 140px;
+    height: calc(100vh - 140px);
+    transition: left 0.35s ease;
+  }
+
+  .sidebar.collapsed {
+    left: 0;
+  }
+
+  /* Page content full width */
+  .page-content {
+    margin-left: 0 !important;
+    margin-top: 220px;
+    padding-bottom: 90px;
+  }
+
+  /* Profile layout */
+  .profile-content {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .profile-photo img {
+    width: 140px;
+  }
+}
+@media (max-width: 768px) {
+  
+  .sidebar.collapsed a span {
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
+@media (max-width: 768px) {
+
+  /* Icon + text vertical */
+  .nav-links a {
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 12px 10px;
+    gap: 6px;
+  }
+
+  .nav-links a i {
+    font-size: 20px;
+    width: auto;
+  }
+
+  .nav-links a span {
+    font-size: 11px;
+    opacity: 1;
+    pointer-events: auto;
+    text-align: center;
+    line-height: 1.2;
+  }
+
+}
+/* ===== Sidebar Overlay ===== */
+.sidebar-overlay {
   display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 997;
 }
 
-.logout {
-  margin-top: auto;
-  border-top: 1px solid rgba(255,255,255,0.2);
+.sidebar-overlay.active {
+  display: block;
 }
 
-/* ===== MAIN CONTENT ===== */
-.main-content {
-  flex: 1;
-  padding: 40px;
-  overflow: hidden; /* 🔒 no page scroll */
-}
+/* ===== MOBILE SIDEBAR (FINAL) ===== */
 
-.main-content h2 {
-  color: #ffcc00;
+@media (max-width: 768px) {
+  .menu a {
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .menu a i {
+    font-size: 20px;
+  }
+
+  .menu a span {
+    font-size: 11px;
+    display: block;
+  }
 }
-</style>
+.page-content {
+  margin-top: 260px; /* header + notice clear ga */
+  margin-left: 250px;
+  padding: 20px;
+}
+ /* ========== LOGOUT SECTION ========== */
+    .logout-section {
+      width: 100%;
+      padding: 20px 0;
+      text-align: center;
+      margin-top: auto;
+    }
+
+    .logout-separator {
+      width: 75%;
+      height: 1px;
+      margin: 0 auto 10px auto;
+      background: #FFD700;
+      opacity: 0.5;
+    }
+
+    .logout-btn {
+      background: transparent;
+      border: 2px solid #FFD700;
+      color: #FFD700;
+      border-radius: 8px;
+      padding: 10px 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .logout-btn:hover {
+      background: #FFD700;
+      color: #0d1b4c;
+      transform: scale(1.05);
+    }
+
+  </style>
 </head>
 
 <body>
+
 <div class="overlay">
+  <%- include('../partials/toast') %>
 
   <!-- HEADER -->
   <div class="college-header">
     <img src="/images/college_logo.png" alt="Logo">
     <div class="header-text">
-      <h2>
-        SIR C R REDDY COLLEGE OF ENGINEERING – BOYS HOSTEL
-        (<span class="autonomous">AUTONOMOUS</span>)
-      </h2>
-      <p>Approved by AICTE | JNTUK | NAAC-A</p>
-    </div>
+          <h2>SIR C R REDDY COLLEGE OF ENGINEERING - BOYS HOSTEL (<span class="autonomous">AUTONOMOUS</span>)</h2>
+          <p>Approved by AICTE & Permanently Affiliated to JNTUk, Kakinada, NAAC-A<br>
+          Accredited by NBA (CSE, IT, EEE, Mech, ECE, Civil)<br>
+          Vatluru, Eluru, Eluru District, AP - 534007</p>
+        </div>
   </div>
 
   <!-- NOTICE -->
@@ -194,7 +593,7 @@ body {
 
   <!-- DASHBOARD -->
   <div class="dashboard">
-
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
     <!-- SIDEBAR -->
     <div class="sidebar" id="sidebar">
       <div class="toggle-container">
@@ -203,25 +602,89 @@ body {
         </button>
       </div>
 
-      <div class="menu">
-        <a href="/admin/manageWardens"><i class="fas fa-user-tie"></i><span class="nav-text">Manage Wardens</span></a>
-        <a href="/admin/uploadSBI"><i class="fas fa-upload"></i><span class="nav-text">Upload SBI PDF</span></a>
-        <a href="/admin/acceptedReceipts"><i class="fas fa-clock"></i><span class="nav-text">Paid Receipts</span></a>
-        <a href="/admin/viewOutpasses"><i class="fas fa-sign-out-alt"></i><span class="nav-text">Out Passes</span></a>
-        <a href="/admin/viewStudents"><i class="fas fa-users"></i><span class="nav-text">Students</span></a>
-        <a href="/admin/admin_complaints"><i class="fas fa-comments"></i><span class="nav-text">Complaints</span></a>
-        <a href="/admin/yearlyFees"><i class="fas fa-sliders-h"></i><span class="nav-text">Yearly Fees</span></a>
-      </div>
+      <div class="menu nav-links">
 
-      <div class="logout">
-        <a href="/logout"><i class="fas fa-sign-out-alt"></i><span class="nav-text">Logout</span></a>
-      </div>
+  <!-- CORE MANAGEMENT -->
+  <a href="javascript:void(0)"
+     onclick="loadAdminPage('manageWardens', this)">
+    <i class="fas fa-user-tie"></i>
+    <span class="nav-text">Manage Wardens</span>
+  </a>
+
+  <a href="javascript:void(0)"
+     onclick="loadAdminPage('viewStudents', this)">
+    <i class="fas fa-users"></i>
+    <span class="nav-text">Students</span>
+  </a>
+
+  <a href="javascript:void(0)"
+     onclick="loadAdminPage('yearlyFees', this)">
+    <i class="fas fa-sliders-h"></i>
+    <span class="nav-text">Yearly Fees</span>
+  </a>
+
+  <!-- 🔥 PAYMENTS (BANK-FIRST FLOW) -->
+  <a href="javascript:void(0)"
+     onclick="loadAdminPage('upload-bank-statement', this)">
+    <i class="fas fa-upload"></i>
+    <span class="nav-text">Upload Bank Statement</span>
+  </a>
+
+  <a href="javascript:void(0)"
+     onclick="loadAdminPage('bank-transactions', this)">
+    <i class="fas fa-university"></i>
+    <span class="nav-text">Bank Transactions</span>
+  </a>
+
+  <a href="javascript:void(0)"
+     onclick="loadAdminPage('refunds', this)">
+    <i class="fas fa-undo"></i>
+    <span class="nav-text">Refunds / Adjustments</span>
+  </a>
+
+  <!-- OTHER MODULES -->
+  <a href="javascript:void(0)"
+     onclick="loadAdminPage('acceptedReceipts', this)">
+    <i class="fas fa-clock"></i>
+    <span class="nav-text">Paid Receipts</span>
+  </a>
+
+  <a href="javascript:void(0)"
+     onclick="loadAdminPage('viewOutpasses', this)">
+    <i class="fas fa-sign-out-alt"></i>
+    <span class="nav-text">Out Passes</span>
+  </a>
+
+  <a href="javascript:void(0)"
+     onclick="loadAdminPage('admin_complaints', this)">
+    <i class="fas fa-comments"></i>
+    <span class="nav-text">Complaints</span>
+  </a>
+
+  <a href="/notice/create"
+   onclick="spaNavigate(event,'/notice/create')">
+  <i class="fas fa-bullhorn"></i>
+  <span class="nav-text">Post Notice</span>
+</a>
+
+
+</div>
+
+
+
+      <div class="logout-section">
+      <div class="logout-separator"></div>
+      <button class="logout-btn" onclick="location.href='/logout'">
+        <i class="fa-solid fa-arrow-right-from-bracket"></i> Logout
+      </button>
     </div>
+  </div>
 
     <!-- CONTENT -->
-    <div class="main-content">
-      <h2>Welcome, <%= user.name %> (Admin)</h2>
-    </div>
+    <div class="page-content" id="mainContent">
+  <h2>Welcome, <%= user.name %> (Admin)</h2>
+</div>
+
 
   </div>
 </div>
@@ -229,8 +692,71 @@ body {
 <script>
 const btn = document.getElementById("toggleBtn");
 const sidebar = document.getElementById("sidebar");
+const overlay = document.getElementById("sidebarOverlay");
 
-btn.onclick = () => sidebar.classList.toggle("compressed");
+function toggleMenu() {
+  sidebar.classList.toggle("collapsed");
+
+  if (window.innerWidth <= 768) {
+    overlay.classList.toggle("active");
+  }
+}
+
+btn.onclick = toggleMenu;
+overlay.onclick = toggleMenu;
+
+// SPA page load
+function loadAdminPage(page, el) {
+
+  document.querySelectorAll('.menu a')
+    .forEach(a => a.classList.remove('active'));
+  if (el) el.classList.add('active');
+
+  const content = document.getElementById("mainContent");
+  content.innerHTML = "<div class='card'>⏳ Loading...</div>";
+
+  fetch('/admin/' + page, {
+    headers: { "X-Requested-With": "XMLHttpRequest" }
+  })
+  .then(res => res.text())
+  .then(html => {
+    content.innerHTML = html;
+    history.pushState({}, "", '/admin/' + page);
+
+    // 📱 mobile auto close
+    if (window.innerWidth <= 768) {
+      sidebar.classList.remove("collapsed");
+      overlay.classList.remove("active");
+    }
+  });
+}
+function spaNavigate(event, url) {
+  event.preventDefault();
+
+  const content = document.getElementById("mainContent");
+  content.innerHTML = "<div class='card'>⏳ Loading...</div>";
+
+  fetch(url, {
+    headers: { "X-Requested-With": "XMLHttpRequest" }
+  })
+  .then(res => res.text())
+  .then(html => {
+    content.innerHTML = html;
+    history.pushState({}, "", url);
+
+    // 📱 mobile lo sidebar auto close
+    if (window.innerWidth <= 768) {
+      sidebar.classList.remove("collapsed");
+      overlay.classList.remove("active");
+    }
+  })
+  .catch(() => {
+    content.innerHTML = "<div class='card'>❌ Failed to load page</div>";
+  });
+}
+
 </script>
+
+
 </body>
 </html>
