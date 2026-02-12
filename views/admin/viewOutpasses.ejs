@@ -1,53 +1,192 @@
-
-<%- include('../partials/header') %>
-
-<div class="container">
+<div class="outpass-container">
   <h2>All Outpasses</h2>
-  <table class="outpass-table">
-    <thead>
-      <tr>
-        <th>ID</th>
-        <th>Student</th>
-        <th>Room</th>
-        <th>Course</th>
-        <th>Year</th>
-        <th>Out Date</th>
-        <th>Return Date</th>
-        <th>Status</th>
-        <th>Approved By</th>
-      </tr>
-    </thead>
-    <tbody>
-      <% if (outpasses.length === 0) { %>
-        <tr><td colspan="9">No Outpasses Found</td></tr>
-      <% } else { %>
-        <% outpasses.forEach(o => { %>
+
+  <!-- ================= DESKTOP TABLE ================= -->
+  <div class="table-wrapper">
+    <table class="outpass-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Student</th>
+          <th>Room</th>
+          <th>Course</th>
+          <th>Year</th>
+          <th>Out Date</th>
+          <th>Return Date</th>
+          <th>Status</th>
+          <th>Approved By</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% if (outpasses.length === 0) { %>
           <tr>
-            <td><%= o.outpass_id %></td>
-            <td><%= o.student_name %></td>
-            <td><%= o.room_no %></td>
-            <td><%= o.course %></td>
-            <td><%= o.year %></td>
-            <td><%= o.out_date.toLocaleDateString() %></td>
-            <td><%= o.return_date.toLocaleDateString() %></td>
-            <td class="<%= o.status.toLowerCase() %>"><%= o.status %></td>
-            <td><%= o.accepted_by || '—' %></td>
+            <td colspan="9" class="no-data">No Outpasses Found</td>
           </tr>
-        <% }); %>
-      <% } %>
-    </tbody>
-  </table>
+        <% } else { %>
+          <% outpasses.forEach(o => { %>
+            <tr>
+              <td><%= o.outpass_id %></td>
+              <td class="student-name"><%= o.student_name %></td>
+              <td><%= o.room_no %></td>
+              <td><%= o.course %></td>
+              <td><%= o.year %></td>
+              <td><%= o.out_date.toLocaleDateString() %></td>
+              <td><%= o.return_date.toLocaleDateString() %></td>
+              <td>
+                <span class="status <%= o.status.toLowerCase() %>">
+                  <%= o.status %>
+                </span>
+              </td>
+              <td><%= o.accepted_by || '—' %></td>
+            </tr>
+          <% }) %>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ================= MOBILE CARDS ================= -->
+  <div class="outpass-cards">
+    <% outpasses.forEach(o => { %>
+      <div class="outpass-card">
+        <div class="card-head">
+          <span class="name"><%= o.student_name %></span>
+          <span class="status <%= o.status.toLowerCase() %>"><%= o.status %></span>
+        </div>
+
+        <div class="info">
+          <p><b>ID:</b> <%= o.outpass_id %></p>
+          <p><b>Room:</b> <%= o.room_no %></p>
+          <p><b>Course:</b> <%= o.course %></p>
+          <p><b>Year:</b> <%= o.year %></p>
+          <p><b>Out:</b> <%= o.out_date.toLocaleDateString() %></p>
+          <p><b>Return:</b> <%= o.return_date.toLocaleDateString() %></p>
+          <p><b>Approved:</b> <%= o.accepted_by || '—' %></p>
+        </div>
+      </div>
+    <% }) %>
+  </div>
 </div>
 
 <style>
-  .container { padding: 20px; background: #f9f9f9; border-radius: 8px; }
-  .outpass-table { width: 100%; border-collapse: collapse; background: #fff; }
-  .outpass-table th, .outpass-table td { border: 1px solid #ddd; padding: 8px; text-align: center; }
-  .outpass-table th { background: #4CAF50; color: white; }
-  .pending { color: orange; font-weight: bold; }
-  .approved { color: green; font-weight: bold; }
-  .rejected { color: red; font-weight: bold; }
-  .exited { color: blue; font-weight: bold; }
-  .returned { color: purple; font-weight: bold; }
-</style>
+/* ===== PAGE ===== */
+body {
+  background: #eef2f7;
+}
 
+/* ===== MAIN CONTAINER ===== */
+.outpass-container {
+  max-width: 1200px;
+  margin: 30px auto;
+  padding: 24px;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 12px 30px rgba(0,0,0,0.12);
+}
+
+/* Heading */
+.outpass-container h2 {
+  text-align: center;
+  margin-bottom: 24px;
+  color: #1f2937;
+}
+
+/* ===== TABLE ===== */
+.table-wrapper {
+  overflow-x: auto;
+}
+
+.outpass-table {
+  width: 100%;
+  border-collapse: collapse;
+  user-select: none; /* 🔥 FIX blue highlight */
+}
+
+.outpass-table th,
+.outpass-table td {
+  border: 1px solid #e5e7eb;
+  padding: 12px;
+  text-align: center;
+  color: #111;
+  background: #fff;
+}
+
+.outpass-table th {
+  background: #22c55e;
+  color: #fff;
+  font-weight: 700;
+}
+
+.student-name {
+  font-weight: 600;
+}
+
+/* ===== STATUS PILLS ===== */
+.status {
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  display: inline-block;
+}
+
+.pending  { background:#fff7ed; color:#c2410c; }
+.approved { background:#dcfce7; color:#166534; }
+.rejected { background:#fee2e2; color:#991b1b; }
+.exited   { background:#e0f2fe; color:#075985; }
+.returned { background:#ede9fe; color:#5b21b6; }
+
+/* ===== MOBILE CARDS ===== */
+.outpass-cards {
+  display: none;
+}
+
+.outpass-card {
+  background: #fff;
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 16px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+}
+
+.card-head {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  font-weight: 600;
+}
+
+.outpass-card .info p {
+  margin: 4px 0;
+  font-size: 0.9rem;
+}
+
+/* ===== NO DATA ===== */
+.no-data {
+  padding: 20px;
+  text-align: center;
+  color: #6b7280;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+  .table-wrapper {
+    display: none;
+  }
+  .outpass-cards {
+    display: block;
+  }
+}
+/* 🔥 FORCE TEXT VISIBILITY (MOBILE FIX) */
+.outpass-container,
+.outpass-container * {
+  color: #111 !important;
+}
+.outpass-card,
+.outpass-card p,
+.outpass-card b,
+.outpass-card span {
+  color: #111 !important;
+}
+
+</style>
