@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Refunds & Adjustments</title>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"/>
+
+<style>
+
+/* 🔥 FORCE TEXT VISIBILITY */
+body, table, td, th, span, p, b {
+  color:#111;
+}
+
+/* ===== BASE ===== */
+body{
+  font-family:"Segoe UI",Tahoma,sans-serif;
+  background:#f4f6f9;
+  margin:0;
+  padding:30px;
+}
+
+h2{
+  margin-bottom:20px;
+  color:#1f2937;
+}
+
+/* ===== TABLE (DESKTOP) ===== */
+.table-wrap{
+  overflow-x:auto;
+}
+
+table{
+  width:100%;
+  border-collapse:collapse;
+  background:#fff;
+  box-shadow:0 8px 25px rgba(0,0,0,.08);
+  border-radius:12px;
+}
+
+th,td{
+  padding:14px 12px;
+  text-align:center;
+  border-bottom:1px solid #e5e7eb;
+}
+
+th{
+  background:#0a1f44;
+  color:#ffcc00;
+  font-size:13px;
+  text-transform:uppercase;
+}
+
+tr:nth-child(even){
+  background:#f9fafb;
+}
+
+/* ===== STATUS ===== */
+.status{
+  padding:6px 12px;
+  border-radius:999px;
+  font-weight:700;
+  font-size:12px;
+  display:inline-block;
+}
+
+.HOLD{
+  background:#fff3cd;
+  color:#856404;
+}
+
+.REFUNDED{
+  background:#d4edda;
+  color:#155724;
+}
+
+/* ===== BUTTON ===== */
+.btn{
+  padding:10px;
+  width:100%;
+  border-radius:10px;
+  border:none;
+  cursor:pointer;
+  font-weight:700;
+  background:#0a1f44;
+  color:#fff;
+}
+
+.btn:hover{
+  background:#153b77;
+}
+
+/* ===== MOBILE RESPONSIVE ===== */
+@media (max-width:768px){
+
+  body{
+    padding:16px;
+    background:#eef2f7;
+  }
+
+  table thead{
+    display:none;
+  }
+
+  table,tbody,tr,td{
+    display:block;
+    width:100%;
+  }
+
+  table{
+    background:transparent;
+    box-shadow:none;
+  }
+
+  tr{
+    background:#fff;
+    margin-bottom:16px;
+    padding:14px;
+    border-radius:14px;
+    box-shadow:0 6px 18px rgba(0,0,0,.1);
+  }
+
+  td{
+    border:none;
+    padding:6px 0;
+    font-size:14px;
+
+    /* ✅ SINGLE FLEX LOGIC (FIX) */
+    display:flex;
+    flex-direction:column;
+    align-items:flex-start;
+    gap:4px;
+  }
+
+  td::before{
+    content:attr(data-label);
+    font-weight:700;
+    font-size:13px;
+    color:#374151;
+  }
+
+  .status{
+    margin-top:4px;
+  }
+}
+
+/* ===== SMALL DEVICES ===== */
+@media (max-width:420px){
+  h2{ font-size:1.1rem; }
+  td{ font-size:13px; }
+}
+
+</style>
+</head>
+
+<body>
+
+<h2>💸 Refunds / Extra Amount Adjustments</h2>
+
+<div class="table-wrap">
+<table>
+<thead>
+<tr>
+  <th>ID</th>
+  <th>Bank Txn ID</th>
+  <th>Extra Amount (₹)</th>
+  <th>Status</th>
+  <th>Created At</th>
+  <th>Action</th>
+</tr>
+</thead>
+
+<tbody>
+<% if (!refunds || refunds.length === 0) { %>
+<tr>
+  <td colspan="6">No refund records found.</td>
+</tr>
+<% } else { %>
+<% refunds.forEach(r => { %>
+<tr>
+  <td data-label="ID"><%= r.id %></td>
+  <td data-label="Bank Txn ID"><%= r.bank_txn_id %></td>
+  <td data-label="Extra Amount">₹ <%= Number(r.amount).toFixed(2) %></td>
+  <td data-label="Status">
+    <span class="status <%= r.status %>"><%= r.status %></span>
+  </td>
+  <td data-label="Created At">
+    <%= new Date(r.created_at).toLocaleString() %>
+  </td>
+  <td data-label="Action">
+    <% if (r.status === 'HOLD') { %>
+    <button
+  class="btn approve-btn"
+  data-id="<%= r.id %>">
+  Approve
+</button>
+
+    <% } else { %>
+    —
+    <% } %>
+  </td>
+</tr>
+<% }) %>
+<% } %>
+</tbody>
+</table>
+</div>
+<script>
+document.addEventListener("click", async function (e) {
+
+  if (!e.target.classList.contains("approve-btn")) return;
+
+  const btn = e.target;
+  const refundId = btn.dataset.id;
+
+  btn.disabled = true;
+  btn.textContent = "Approving...";
+
+  try {
+    const res = await fetch("/admin/refund/approve", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ refund_id: refundId })
+    });
+
+    const data = await res.json();
+
+    if (!data.success) {
+      alert("Failed to approve refund");
+      btn.disabled = false;
+      btn.textContent = "Approve";
+      return;
+    }
+
+    /* ✅ UPDATE UI */
+    const row = btn.closest("tr");
+
+    // status cell update
+    const statusCell = row.querySelector('[data-label="Status"] span');
+    statusCell.textContent = "REFUNDED";
+    statusCell.className = "status REFUNDED";
+
+    // action cell clear
+    row.querySelector('[data-label="Action"]').innerHTML = "—";
+
+  } catch (err) {
+    alert("Server error");
+    btn.disabled = false;
+    btn.textContent = "Approve";
+  }
+});
+</script>
+
+</body>
+</html>
