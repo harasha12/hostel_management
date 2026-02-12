@@ -1,48 +1,209 @@
+<!-- ======================================
+     UPLOAD RECEIPT – SAFE PARTIAL (FINAL)
+====================================== -->
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Upload Fee Receipt</title>
-    <link rel="stylesheet" href="/css/style.css">
-</head>
-<body>
-    <%- include('../partials/header') %>
+<div class="upload-receipt-page">
 
-    <div class="container">
-        <h2>Upload Fee Receipt</h2>
-        <form action="/student/uploadReceipt" method="POST" enctype="multipart/form-data">
+<style>
+/* ===== HARD STOP DASHBOARD INHERITANCE ===== */
+.upload-receipt-page {
+  all: initial;
+
+  /* restore required base styles */
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  display: block;
+  width: 100%;
+}
+
+/* ================= SCOPE ALL STYLES ================= */
+
+.upload-receipt-page *,
+.upload-receipt-page *::before,
+.upload-receipt-page *::after {
+  box-sizing: border-box;
+}
+
+/* ---------- Inputs Reset ---------- */
+.upload-receipt-page input,
+.upload-receipt-page select,
+.upload-receipt-page textarea {
+  max-width: 100%;
+  color: #000;
+  background: #fff;
+  font-family: inherit;
+}
+
+/* ---------- Container ---------- */
+.upload-receipt-page .container {
+  width: 100%;
+  max-width: 520px;
+  margin: 40px auto;
+  padding: 30px 40px;
+  background: rgba(255, 255, 255, 0.85);
+  border-radius: 18px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+  backdrop-filter: blur(6px);
+}
+
+/* ---------- Labels ---------- */
+.upload-receipt-page label {
+  display: block;
+  font-weight: bold;
+  margin-top: 12px;
+  margin-bottom: 5px;
+  color: #444;
+}
+
+/* ---------- Inputs ---------- */
+.upload-receipt-page input,
+.upload-receipt-page select,
+.upload-receipt-page textarea {
+  width: 100%;
+  padding: 10px;
+  border-radius: 10px;
+  border: 2px solid #ccc;
+  font-size: 15px;
+  transition: 0.3s ease;
+  outline: none;
+}
+
+.upload-receipt-page input:focus,
+.upload-receipt-page select:focus,
+.upload-receipt-page textarea:focus {
+  border-color: #8E8EED;
+  box-shadow: 0 0 6px rgba(142, 142, 237, 0.5);
+}
+
+/* ---------- Button ---------- */
+.upload-receipt-page button {
+  width: 100%;
+  padding: 12px;
+  background: linear-gradient(90deg, #8E8EED, #EBD483);
+  color: #1b243b;
+  font-size: 16px;
+  font-weight: 700;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: transform .25s, box-shadow .25s;
+  margin-top: 20px;
+}
+
+.upload-receipt-page button:hover {
+  transform: scale(1.03);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+/* ---------- Title ---------- */
+.upload-receipt-page .title-box {
+  width: 100%;
+  padding: 14px;
+  border-radius: 15px;
+  background: linear-gradient(135deg, #8E8EED 0%, #EBD483 90%);
+  box-shadow: 0 4px 14px rgba(0,0,0,0.25);
+  margin-bottom: 25px;
+  text-align: center;
+}
+
+.upload-receipt-page .title-box h2 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 900;
+  color: #1b243b;
+  letter-spacing: 1px;
+}
+
+/* ---------- Placeholder ---------- */
+.upload-receipt-page ::placeholder {
+  color: #000;
+  opacity: 1;
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 1024px) {
+  .upload-receipt-page .container {
+    width: 420px;
+    padding: 24px 26px;
+  }
+}
+
+@media (max-width: 600px) {
+  .upload-receipt-page .container {
+    max-width: 340px;
+    padding: 20px 18px;
+  }
+
+  .upload-receipt-page .title-box h2 {
+    font-size: 18px;
+  }
+}
+/* =====================================
+   📱 MOBILE ONLY – PREVENT RIGHT SHIFT
+   (Phones only, NOT tablets)
+   ===================================== */
+@media (max-width: 600px) {
+
+  /* Let page-content control spacing */
+  .upload-receipt-page {
+    padding: 0;
+  }
+
+  /* Full-width card inside screen */
+  .upload-receipt-page .container {
+    width: 100%;
+    max-width: 100%;
+    margin: 0;              /* ❗ prevents right overflow */
+    padding: 16px 14px;
+    border-radius: 14px;
+  }
+
+  .upload-receipt-page .title-box h2 {
+    font-size: 17px;
+  }
+}
+
+</style>
+
+<div class="container">
+
+  <div class="title-box">
+    <h2>Upload Fee Receipt</h2>
+  </div>
+
+  <form action="/student/uploadReceipt" method="POST" enctype="multipart/form-data">
+
     <label>Unique ID</label>
-    <input type="text" name="student_unique_id" value="<%= user.student_unique_id %>" readonly>
+    <input type="text" name="student_unique_id"
+           value="<%= user.student_unique_id %>" readonly>
 
     <label>Reference ID</label>
-    <input type="text" name="ref_id" required>
+    <input type="text" name="ref_id" required placeholder="Enter reference number">
 
     <label>Amount Paid (₹)</label>
-    <input type="number" name="amount_paid" step="0.01" required>
+    <input type="number" name="amount_paid" step="1000" required placeholder="eg : 15000">
 
     <label>Academic Year</label>
-    <input type="number" name="year" value="<%= new Date().getFullYear() %>" required>
+    <input type="number" name="year"
+           value="<%= new Date().getFullYear() %>" required>
 
     <label>Remarks / Fee Component</label>
     <select name="remarks" required>
-        <option value="">-- Select --</option>
-        <option value="Room Rent">Room Rent</option>
-        <option value="Mess Bill1">Mess Bill1</option>
-        <option value="Mess Bill2">Mess Bill2</option>
-        <option value="Others">Others</option>
+      <option value="">-- Select --</option>
+      <option value="Room Rent">Room Rent</option>
+      <option value="Mess Bill1">Mess Bill1</option>
+      <option value="Mess Bill2">Mess Bill2</option>
+      <option value="Others">Others</option>
     </select>
 
     <label>Upload PDF Receipt</label>
     <input type="file" name="sbi_pdf" accept="application/pdf" required>
 
     <button type="submit">Upload Receipt</button>
-</form>
 
-        <a href="/student/dashboard" class="back-link">⬅ Back to Dashboard</a>
-    </div>
+  </form>
 
-    <%- include('../partials/footer') %>
-</body>
-</html>
+</div>
 
+</div>
+<!-- ======================================
+     END OF UPLOAD RECEIPT – SAFE PARTIAL
