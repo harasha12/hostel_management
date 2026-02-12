@@ -1,4 +1,6 @@
-<%- include('../partials/header') %>
+<% if (!isSpa) { %>
+  <%- include('../partials/header') %>
+<% } %>
 
 <style>
   body {
@@ -87,12 +89,15 @@
 </style>
 
 <div class="upload-container">
-  <h2>📄 Upload Monthly Mess Bill (PDF)</h2>
+  <h2>📊 Upload Monthly Mess Bill (Excel)</h2>
+
   <form action="/warden/uploadMessBill" method="POST" enctype="multipart/form-data">
-    <label for="mess_bill_pdf">Select Mess Bill PDF:</label>
-    <input type="file" id="mess_bill_pdf" name="mess_bill_pdf" accept=".pdf" required>
+    <label>Select Mess Bill Excel:</label>
+    <input type="file" name="mess_bill_pdf" accept=".xls,.xlsx" required>
     <button type="submit">Upload</button>
   </form>
 
-  <a href="/warden/dashboard" class="back-btn">← Back to Dashboard</a>
+  <% if (!isSpa) { %>
+    <a href="/warden/dashboard" class="back-btn">← Back to Dashboard</a>
+  <% } %>
 </div>
