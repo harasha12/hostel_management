@@ -1,32 +1,339 @@
+<div class="student-attendance-page">
 
-<!DOCTYPE html>
-<html>
-<head>
-    <title>My Attendance</title>
-    <link rel="stylesheet" href="/css/style.css">
-</head>
-<body>
-    <h2>Attendance Records</h2>
-    <table border="1">
-        <tr>
-            <th>Date</th>
-            <th>Period</th>
-            <th>Status</th>
-        </tr>
-        <% attendance.forEach(a => { %>
-            <tr>
-               <td><%= new Date(a.date).toISOString().split('T')[0] %></td>
+<style>
+/* ===== RESET & SCOPE ===== */
+.student-attendance-page {
+  all: unset;
+  display: block;
+  width: 100%;
+  padding: 20px;
+  font-family: 'Poppins', sans-serif;
+  background:
+    linear-gradient(rgba(0,0,0,.7), rgba(0,0,0,.7)),
+    url('/images/hostel-bg.jpg') no-repeat center/cover fixed;
+}
 
-                <td><%= a.period %></td>
-                <td><%= a.status %></td>
-            </tr>
-        <% }) %>
-    </table>
-    <% if (attendance.length === 0) { %>
-  <p>No attendance records found yet.</p>
-<% } %>
+.student-attendance-page *,
+.student-attendance-page *::before,
+.student-attendance-page *::after {
+  box-sizing: border-box;
+}
 
-    <a href="/student/dashboard">Back to Dashboard</a>
-</body>
-</html>
+/* ===== CONTAINER ===== */
+.student-attendance-page .attendance-container {
+  max-width: 900px;
+  margin: 40px auto;
+  padding: 30px;
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 18px 45px rgba(10,20,30,.35);
+}
 
+/* ===== HEADING ===== */
+.student-attendance-page .attendance-heading {
+  text-align: center;
+  font-size: 1.8rem;
+  font-weight: 900;
+  color: #1a2a47;
+  border-bottom: 3px solid #ffd700;
+  padding-bottom: 12px;
+  margin-bottom: 30px;
+}
+
+/* ===== TABLE ===== */
+.student-attendance-page table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.student-attendance-page thead {
+  background: #1a2a47;
+}
+
+.student-attendance-page th {
+  padding: 12px;
+  color: #fff;
+  font-size: .85rem;
+  text-transform: uppercase;
+  text-align: left;
+}
+
+.student-attendance-page td {
+  padding: 12px;
+  border-bottom: 1px solid #e5e7eb;
+  color: #1f2937;
+  font-weight: 500;
+}
+
+/* ===== MOBILE CARDS ===== */
+.student-attendance-page .mobile-cards {
+  display: none;
+  margin-top: 20px;
+}
+
+.student-attendance-page .att-card {
+  background: #fff;
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 14px;
+  box-shadow: 0 6px 14px rgba(0,0,0,.15);
+  border-left: 4px solid #1a2a47;
+}
+
+.student-attendance-page .att-card .label {
+  font-size: .7rem;
+  color: #6b7280;
+  font-weight: 600;
+  margin-top: 6px;
+}
+
+.student-attendance-page .att-card .value {
+  font-weight: 700;
+  color: #1f2937;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+  .student-attendance-page table { display: none; }
+  .student-attendance-page .mobile-cards { display: block; }
+}
+/* ===== HEATMAP ===== */
+.student-attendance-page .heatmap-wrapper {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-bottom: 35px;
+}
+
+.student-attendance-page .heatmap-month h3 {
+  text-align: center;
+  font-weight: 800;
+  color: #1a2a47;
+  margin-bottom: 10px;
+}
+
+.student-attendance-page .heatmap-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+}
+
+.student-attendance-page .heatmap-day {
+  aspect-ratio: 1/1;
+  border-radius: 6px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  font-size: 0.8rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Status colors */
+.student-attendance-page .present {
+  background: #22c55e;
+  color: #fff;
+}
+
+.student-attendance-page .absent {
+  background: #ef4444;
+  color: #fff;
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .student-attendance-page .heatmap-wrapper {
+    grid-template-columns: 1fr;
+  }
+}
+/* Heatmap Navigation */
+.heatmap-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.heatmap-header button {
+  background: #1a2a47;
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  cursor: pointer;
+  font-size: 1.2rem;
+}
+/* ===============================
+   🔹 COMPACT HEATMAP REFINEMENTS
+   =============================== */
+
+/* Smaller & lighter date boxes */
+.student-attendance-page .heatmap-day {
+  width: 26px;
+  height: 26px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  border-radius: 5px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  color: #000; /* ✅ black text for unmarked */
+  box-shadow: none;
+}
+
+/* Present → green + white text */
+.student-attendance-page .heatmap-day.present {
+  background: #22c55e;
+  color: #ffffff; /* ✅ white text */
+  border: none;
+}
+
+/* Absent → red + white text */
+.student-attendance-page .heatmap-day.absent {
+  background: #ef4444;
+  color: #ffffff; /* ✅ white text */
+  border: none;
+}
+
+/* Subtle today highlight (does NOT change background) */
+.student-attendance-page .heatmap-day.today {
+  outline: 2px solid #2563eb;
+  outline-offset: -2px;
+}
+
+/* Lighter grid spacing */
+.student-attendance-page .heatmap-grid {
+  gap: 5px;
+}
+
+/* Month title slightly smaller */
+.student-attendance-page .heatmap-month h3 {
+  font-size: 0.95rem;
+  margin-bottom: 8px;
+}
+/* ===== WEEKDAY HEADERS ===== */
+.student-attendance-page .heatmap-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 5px;
+  margin-bottom: 6px;
+}
+/* 🔥 Fix month-year title color */
+.student-attendance-page #currMonthTitle {
+  color: #1a2a47;      /* dark blue */
+  font-weight: 800;
+}
+
+.student-attendance-page .heatmap-weekdays div {
+  text-align: center;
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: #374151; /* dark gray */
+}
+
+/* Mobile fine-tune */
+@media (max-width: 480px) {
+  .student-attendance-page .heatmap-day {
+    width: 23px;
+    height: 23px;
+    font-size: 0.68rem;
+  }
+}
+
+</style>
+
+<div class="attendance-container">
+  
+
+<h2 class="attendance-heading">My Attendance</h2>
+
+<!-- 🔥 HEATMAP NAVIGATION HEADER -->
+<div class="heatmap-header">
+  <button onclick="prevMonth()">&#8249;</button>
+  <h3 id="currMonthTitle"></h3>
+  <button onclick="nextMonth()">&#8250;</button>
+</div>
+<!-- ✅ WEEKDAY HEADERS -->
+<div class="heatmap-weekdays">
+  <div>Sun</div>
+  <div>Mon</div>
+  <div>Tue</div>
+  <div>Wed</div>
+  <div>Thu</div>
+  <div>Fri</div>
+  <div>Sat</div>
+</div>
+
+<!-- 🔥 HEATMAP GRID -->
+<div class="heatmap-grid" id="currMonthGrid"></div>
+
+
+
+  <!-- Desktop Table -->
+  <table>
+    <thead>
+      <tr>
+        <th>Date</th>
+        <th>Period</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% attendance.forEach(a => { %>
+      <tr>
+        <td><%= new Date(a.date).toISOString().split('T')[0] %></td>
+        <td><%= a.period %></td>
+        <td><%= a.status %></td>
+      </tr>
+      <% }) %>
+    </tbody>
+  </table>
+
+  <!-- Mobile Cards -->
+  <div class="mobile-cards">
+    <% attendance.forEach(a => { %>
+    <div class="att-card">
+      <div class="label">Date</div>
+      <div class="value"><%= new Date(a.date).toISOString().split('T')[0] %></div>
+
+      <div class="label">Period</div>
+      <div class="value"><%= a.period %></div>
+
+      <div class="label">Status</div>
+      <div class="value"><%= a.status %></div>
+    </div>
+    <% }) %>
+  </div>
+
+</div>
+<script id="attendance-json" type="application/json">
+  <%- JSON.stringify(attendance) %>
+</script>
+
+<script>
+const attendanceData = JSON.parse(
+  document.getElementById('attendance-json').textContent
+);
+
+const months = [
+  "January","February","March","April","May","June",
+  "July","August","September","October","November","December"
+];
+
+// 🔥 controls current month offset
+let viewYear = new Date().getFullYear();
+let viewMonth = new Date().getMonth(); // 0–11
+
+
+
+
+/* Initial render */
+renderHeatmap();
+</script>
+
+
+
+
+</div>
