@@ -1,120 +1,202 @@
+<%
+  const spa = typeof isSpa !== "undefined" && isSpa;
+%>
 
+<% if (!spa) { %>
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>View Outpasses - Security</title>
-    <link rel="stylesheet" href="/css/style.css">
-    <style>
-        .outpass-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-            background: #fff;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            border-radius: 10px;
-            overflow: hidden;
-        }
-        .outpass-table th, .outpass-table td {
-            padding: 12px;
-            text-align: center;
-            border-bottom: 1px solid #ddd;
-        }
-        .outpass-table th {
-            background: #4CAF50;
-            color: white;
-        }
-        .outpass-table tr:hover {
-            background: #f9f9f9;
-        }
-        .btn-approve, .btn-return {
-            padding: 6px 14px;
-            border-radius: 8px;
-            text-decoration: none;
-            color: #fff;
-            font-weight: bold;
-            transition: 0.3s;
-            cursor: pointer;
-        }
-        .btn-approve {
-            background: #2196F3;
-        }
-        .btn-approve:hover {
-            background: #1976D2;
-        }
-        .btn-return {
-            background: #FF9800;
-        }
-        .btn-return:hover {
-            background: #F57C00;
-        }
-        .status {
-            font-weight: bold;
-            color: #555;
-        }
-        .back-link {
-            display: inline-block;
-            margin-top: 20px;
-            padding: 10px 18px;
-            background: #6a11cb;
-            background: linear-gradient(135deg, #6a11cb, #2575fc);
-            color: #fff;
-            text-decoration: none;
-            border-radius: 8px;
-            font-weight: bold;
-            transition: 0.3s;
-        }
-        .back-link:hover {
-            opacity: 0.85;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>View Outpasses - Security</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"/>
+<% } %>
+
+<style>
+  :root { --accent-gold: #ffd600; }
+
+  body {
+    margin: 0; padding: 0;
+    font-family: "Segoe UI", Arial, sans-serif;
+    background: url('/images/hostel-bg.jpg') center/cover no-repeat fixed;
+    color: white; min-height: 100vh;
+  }
+
+  .bg-layer-outpass {
+    position: fixed; inset: 0;
+    backdrop-filter: blur(18px) brightness(0.55);
+    background: rgba(0, 0, 0, 0.40); z-index: -1;
+  }
+
+  .outpass-container {
+    max-width: 1100px; margin: 15px auto;
+    padding: 10px; width: 100%; box-sizing: border-box;
+  }
+
+  .page-box {
+    background: rgba(0, 0, 0, 0.45); backdrop-filter: blur(10px);
+    border-radius: 12px; padding: 20px;
+    box-shadow: 0 0 18px rgba(0, 0, 0, 0.45);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+  }
+
+  h2 {
+    color: var(--accent-gold); text-align: center; margin-bottom: 20px;
+    font-size: 1.4rem; text-transform: uppercase;
+    border-bottom: 2px solid rgba(255, 214, 0, 0.3); padding-bottom: 12px;
+  }
+
+  .table-responsive { width: 100%; overflow-x: auto; }
+  
+  table { width: 100%; border-collapse: collapse; background: rgba(0, 0, 0, 0.2); }
+
+  thead th {
+    padding: 15px; color: var(--accent-gold);
+    background: rgba(0, 0, 0, 0.3); text-align: left;
+    font-size: 0.85rem; text-transform: uppercase;
+  }
+
+  tbody td { padding: 14px; border-top: 1px solid rgba(255, 255, 255, 0.1); font-size: 0.95rem; }
+
+  @media (max-width: 768px) {
+    thead { display: none; }
+    tr {
+      display: block; margin-bottom: 15px;
+      background: rgba(255, 255, 255, 0.05); border-radius: 10px;
+      padding: 10px; border: 1px solid rgba(255,255,255,0.1);
+    }
+    td {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 10px 5px !important; border: none !important;
+      text-align: right; border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+    }
+    td:last-child { border-bottom: none !important; }
+    td::before {
+      content: attr(data-label); font-weight: bold;
+      color: var(--accent-gold); text-transform: uppercase;
+      font-size: 0.75rem; text-align: left; flex: 1;
+    }
+  }
+
+  .btn {
+    padding: 10px 16px; border-radius: 6px; border: none;
+    cursor: pointer; font-weight: 700; text-transform: uppercase;
+    font-size: 0.75rem; transition: 0.2s; width: 100%; max-width: 130px;
+  }
+
+  .exit { background: #00c853; color: white; }
+  .return { background: var(--accent-gold); color: #000; }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .status-badge {
+    padding: 4px 10px; border-radius: 4px; font-size: 0.8rem;
+    font-weight: bold; background: rgba(255, 255, 255, 0.15);
+  }
+</style>
+
+<% if (!spa) { %>
 </head>
 <body>
-    <%- include('../partials/header') %>
+  <div class="bg-layer-outpass"></div>
+<% } %>
 
-    <div class="container">
-        <h2>Approved Outpasses</h2>
+<div class="outpass-container">
+  <div class="page-box">
+    <h2><i class="fas fa-door-open"></i> Outpass Management</h2>
 
-        <table class="outpass-table">
-            <tr>
-                <th>Student ID</th>
-                <th>Reason</th>
-                <th>Out Date</th>
-                <th>Return Date</th>
-                <th>Status</th>
-                <th>Action</th>
-            </tr>
-            <% outpasses.forEach(op => { %>
-                <tr>
-                    <td><%= op.student_id %></td>
-                    <td><%= op.reason %></td>
-                    <td><%= op.out_date.toISOString().split('T')[0] %></td>
-                    <td><%= op.return_date.toISOString().split('T')[0] %></td>
-                    <td class="status"><%= op.status %></td>
-                    <td>
-                        <% if (op.status === 'Approved') { %>
-                            <a href="/security/markExit/<%= op.outpass_id %>" 
-                               class="btn-approve" 
-                               onclick="return confirm('Are you sure you want to mark this student as Exited?');">
-                               Mark Exit
-                            </a>
-                        <% } else if (op.status === 'Exited') { %>
-                            <a href="/security/markReturn/<%= op.outpass_id %>" 
-                               class="btn-return" 
-                               onclick="return confirm('Are you sure you want to mark this student as Returned?');">
-                               Mark Return
-                            </a>
-                        <% } else { %>
-                            <span class="status"><%= op.status %></span>
-                        <% } %>
-                    </td>
-                </tr>
-            <% }) %>
-        </table>
+    <% if (!outpasses || outpasses.length === 0) { %>
+      <div style="text-align:center; padding: 40px; color: #aaa;">
+        <i class="fas fa-info-circle fa-2x"></i><br><br>
+        No active outpasses found.
+      </div>
+    <% } else { %>
 
-        <a href="/security/dashboard" class="back-link">⬅ Back to Dashboard</a>
+    <div class="table-responsive">
+      <table>
+        <thead>
+          <tr>
+            <th>Student ID</th>
+            <th>Reason</th>
+            <th>Out Date</th>
+            <th>Return Date</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+        <% outpasses.forEach(op => { %>
+          <tr>
+            <td data-label="Student ID" style="color: var(--accent-gold); font-weight: bold;"><%= op.student_id %></td>
+            <td data-label="Reason"><%= op.reason %></td>
+            <td data-label="Out Date"><%= new Date(op.out_date).toLocaleDateString('en-GB') %></td>
+            <td data-label="Return Date"><%= new Date(op.return_date).toLocaleDateString('en-GB') %></td>
+            <td data-label="Status"><span class="status-badge"><%= op.status %></span></td>
+            <td data-label="Action">
+              <% if (op.status === 'Approved') { %>
+                <button class="btn exit security-action" data-id="<%= op.outpass_id %>" data-action="exit">Mark Exit</button>
+              <% } else if (op.status === 'Exited') { %>
+                <button class="btn return security-action" data-id="<%= op.outpass_id %>" data-action="return">Mark Return</button>
+              <% } else { %>
+                <span style="opacity: 0.5;">—</span>
+              <% } %>
+            </td>
+          </tr>
+        <% }) %>
+        </tbody>
+      </table>
     </div>
+    <% } %>
+  </div>
+</div>
 
-    <%- include('../partials/footer') %>
+<script>
+if (typeof window.securityListenerInitialized === "undefined") {
+  document.addEventListener("click", async function (e) {
+    const btn = e.target.closest(".security-action");
+    if (!btn) return;
+
+    // 1 Step Confirmation
+    if (!confirm(`Confirm ${btn.innerText}?`)) return;
+
+    const id = btn.dataset.id;
+    const action = btn.dataset.action;
+    const row = btn.closest("tr");
+
+    // UI Feedback
+    const allRowBtns = row.querySelectorAll("button");
+    allRowBtns.forEach(b => b.disabled = true);
+    const originalText = btn.innerText;
+    btn.innerText = "Processing...";
+
+    try {
+      const res = await fetch(`/security/mark${action === "exit" ? "Exit" : "Return"}/${id}`, {
+        method: "POST",
+        headers: { "X-Requested-With": "XMLHttpRequest" }
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        // Reloading the view to update statistics and lists
+        if (typeof spaNavigate === 'function') {
+          spaNavigate(new Event('click'), window.location.pathname);
+        } else {
+          window.location.reload();
+        }
+      } else {
+        throw new Error("Failed");
+      }
+    } catch (err) {
+      alert("Error: Could not update status.");
+      allRowBtns.forEach(b => b.disabled = false);
+      btn.innerText = originalText;
+    }
+  });
+  window.securityListenerInitialized = true;
+}
+</script>
+
+<% if (!spa) { %>
 </body>
 </html>
-
+<% } %>
