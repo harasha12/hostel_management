@@ -1,0 +1,180 @@
+<%
+  const spa = typeof isSpa !== "undefined" && isSpa;
+%>
+
+
+<% if (!spa) { %>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Emergency Outpasses</title>
+
+  <style>
+    body {
+      background: #182235;
+      font-family: "Segoe UI", sans-serif;
+      margin: 0;
+      padding: 30px;
+      color: #222;
+    }
+  </style>
+</head>
+<body>
+<% } %>
+
+<style>
+  body {
+    background: #0f172a; /* dark slate */
+    font-family: "Segoe UI", sans-serif;
+    margin: 0;
+    padding: 30px;
+    color: #0f172a;
+  }
+
+  .page-box {
+    max-width: 1100px;
+    margin: auto;
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 26px;
+    box-shadow: 0 20px 45px rgba(0,0,0,0.25);
+  }
+
+  h2 {
+    text-align: center;
+    font-weight: 900;
+    color: #0f172a;
+    border-bottom: 3px solid #facc15; /* soft yellow */
+    padding-bottom: 10px;
+    margin-bottom: 22px;
+    letter-spacing: 0.5px;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #ffffff;
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  th {
+    background: #1e293b; /* dark blue-gray */
+    color: #fef3c7;      /* soft yellow */
+    padding: 12px;
+    text-align: center;
+    font-size: 0.9rem;
+  }
+
+  td {
+    padding: 11px;
+    text-align: center;
+    border-bottom: 1px solid #e5e7eb;
+    font-weight: 500;
+    color: #111827;
+    font-size: 0.9rem;
+  }
+
+  tr:nth-child(even) td {
+    background: #f9fafb;
+  }
+
+  tr:hover td {
+    background: #fef9c3; /* light yellow hover */
+  }
+
+  .btn {
+    padding: 6px 14px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 0.85em;
+  }
+
+  .approve {
+    background: #16a34a; /* green */
+    color: #ffffff;
+  }
+
+  .reject {
+    background: #dc2626; /* red */
+    color: #ffffff;
+  }
+
+  .btn:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+  }
+
+  .empty {
+    text-align: center;
+    padding: 30px;
+    font-weight: 600;
+    color: #374151;
+    font-size: 1rem;
+  }
+
+  small {
+    color: #6b7280;
+  }
+</style>
+
+
+<div class="page-box">
+  <h2>🚨 Emergency Outpasses</h2>
+
+  <% if (!outpasses || outpasses.length === 0) { %>
+    <div class="empty">No emergency outpasses pending.</div>
+  <% } else { %>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Student</th>
+        <th>Room</th>
+        <th>Reason</th>
+        <th>Out Date</th>
+        <th>Return Date</th>
+        <th>Requested At</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      <% outpasses.forEach(o => { %>
+        <tr>
+          <td>
+            <strong><%= o.student_name %></strong><br>
+            <small><%= o.student_id %></small>
+          </td>
+          <td><%= o.room_no %></td>
+          <td><%= o.reason %></td>
+          <td><%= new Date(o.out_date).toLocaleDateString() %></td>
+          <td><%= new Date(o.return_date).toLocaleDateString() %></td>
+          <td><%= new Date(o.created_at).toLocaleString() %></td>
+          <td>
+            <form action="/warden/approveOutpass/<%= o.outpass_id %>/approve"
+      method="POST" style="display:inline;">
+  <button class="btn approve">Approve</button>
+</form>
+
+<form action="/warden/approveOutpass/<%= o.outpass_id %>/reject"
+      method="POST" style="display:inline;">
+  <button class="btn reject">Reject</button>
+</form>
+
+          </td>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table>
+
+  <% } %>
+</div>
+
+<% if (!spa) { %>
+</body>
+</html>
+<% } %>
