@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -18,7 +17,7 @@
       --font-poppins: 'Poppins', sans-serif;
       --sidebar-width: 280px;
       --sidebar-collapsed: 70px;
-      --header-height: 140px; /* header height used for spacer & offsets */
+      --header-height: 140px; 
       --gold: #ffcc00;
       --gold-soft: rgba(255,204,0,0.12);
       --royal-1: #0d1b4c;
@@ -34,9 +33,9 @@
       color:var(--text-light);
       min-height:100vh;
       line-height:1.6;
+      overflow-x: hidden;
     }
 
-    /* subtle global overlay for contrast */
     body::before{
       content:"";
       position:fixed;
@@ -45,84 +44,52 @@
       z-index:-1;
     }
 
-    /* ====== Header (royal blue animated + logo glow) ====== */
+    /* ====== Header ====== */
     .college-header{
       position:fixed;
       top:0; left:0; right:0;
       height: var(--header-height);
       display:flex;
       align-items:center;
-      justify-content:center;
+      justify-content:space-between;
       z-index:1000;
-      padding: 18px 40px;
-      /* Animated Royal Blue Gradient (shimmer) */
-      background: linear-gradient(
-        90deg,
-        var(--royal-1),
-        var(--royal-2),
-        var(--royal-3),
-        var(--royal-2),
-        var(--royal-1)
-      );
+      padding: 0 40px;
+      background: linear-gradient(90deg, var(--royal-1), var(--royal-2), var(--royal-3), var(--royal-2), var(--royal-1));
       background-size: 300% 300%;
       animation: shimmerMove 15s ease-in-out infinite;
       box-shadow: 0 6px 18px rgba(0,0,0,0.45);
-      border-bottom: none; /* ensure no line */
       backdrop-filter: blur(4px);
     }
 
-    /* Left area - logo */
-    .header-left{
-      display:flex;
-      align-items:center;
-      gap:14px;
-      flex:0 0 auto;
-      margin-right:auto; /* keep center text near middle */
-      padding-left:8px;
+    .header-left, .header-right {
+      flex: 0 0 100px; /* Gives equal space to sides so center stays center */
     }
 
-    /* Logo with faint inner glow */
-    .college-header img{
-      height:88px;
+    .header-right { text-align: right; }
+
+    .header-left img{
+      height:80px;
       width:auto;
-      filter:
-        drop-shadow(0 0 8px rgba(255,255,255,0.8))
-        drop-shadow(0 0 15px rgba(255,215,0,0.3));
-      transition: filter 0.45s ease, transform 0.3s;
-    }
-    .college-header img:hover{
-      filter:
-        drop-shadow(0 0 12px rgba(255,255,255,1))
-        drop-shadow(0 0 25px rgba(255,215,0,0.5));
-      transform: translateY(-2px);
+      filter: drop-shadow(0 0 8px rgba(255,255,255,0.8));
     }
 
-    /* Center area - heading */
     .header-center{
-      display:flex;
-      align-items:center;
-      gap:18px;
-      text-align:center;
-      justify-content:center;
-      flex:1 1 auto;
+      flex: 1;
+      text-align: center;
+      padding: 0 10px;
     }
 
-    .header-text h2{
+    .header-text h1{
       margin:0;
-      font-size:1.6rem;
+      font-size: 1.4rem;
       letter-spacing:0.6px;
       text-transform:uppercase;
       color:#fff;
-      text-shadow: 2px 2px 6px rgba(0,0,0,0.6);
       font-weight:700;
     }
     .boyshostel{ color:var(--gold); }
 
-    /* Login button moved more to the right and touching header bottom */
     .login-btn{
-      position: absolute; /* place relative to header area */
-      right: 24px;
-      bottom: 10px; /* touching near header bottom */
       background: linear-gradient(90deg, #ffdb4d, #ffb300);
       color:#000;
       font-weight:700;
@@ -132,365 +99,143 @@
       cursor:pointer;
       text-transform:uppercase;
       box-shadow: 0 0 12px rgba(255,204,0,0.6);
-      transition: transform .18s ease, box-shadow .18s ease;
+      transition: transform .18s ease;
       white-space:nowrap;
       font-size:0.85rem;
-
-      /* shimmer glow animation */
-      animation: loginGlow 3.2s ease-in-out infinite;
-    }
-    .login-btn:hover{
-      transform: translateY(-3px) scale(1.03);
-      box-shadow: 0 0 30px rgba(255,204,0,0.95);
     }
 
-    @keyframes loginGlow {
-      0% { box-shadow: 0 0 8px rgba(255,204,0,0.4), 0 0 0 rgba(255,255,255,0.02); transform: translateY(0); }
-      50% { box-shadow: 0 0 22px rgba(255,204,0,0.9), 0 0 10px rgba(255,255,255,0.04); transform: translateY(-1px); }
-      100% { box-shadow: 0 0 8px rgba(255,204,0,0.4), 0 0 0 rgba(255,255,255,0.02); transform: translateY(0); }
-    }
-
-    /* right spacer to visually balance header (kept empty) */
-    .header-right { width:120px; flex:0 0 120px; }
-
-    /* spacer so content isn't hidden behind header */
-    .spacer { height: var(--header-height); }
-
-    @keyframes shimmerMove {
-      0% { background-position: 0% 50%; }
-      50% { background-position: 100% 50%; }
-      100% { background-position: 0% 50%; }
-    }
-
-    /* ===== Sidebar (now uses same header royal-blue gradient) ===== */
+    /* ====== Sidebar ====== */
     .sidebar {
-      position: fixed;
-      left: 0;
-      top: var(--header-height);
-      width: var(--sidebar-width);
-      height: calc(100vh - var(--header-height));
-      /* use same gradient as header so colors match */
-      background: linear-gradient(
-        90deg,
-        var(--royal-1),
-        var(--royal-2),
-        var(--royal-3),
-        var(--royal-2),
-        var(--royal-1)
-      );
-      background-size: 300% 300%;
-      animation: shimmerMove 15s ease-in-out infinite;
-      box-shadow: 4px 0 14px rgba(0,0,0,0.6);
-      overflow: hidden;
-      transition: width 300ms cubic-bezier(.2,.9,.2,1), transform 300ms ease;
-      z-index:900;
-      display:flex;
-      flex-direction:column;
-      align-items:stretch;
-      border-right: none; /* removed line as requested */
+      position: fixed; left: 0; top: var(--header-height);
+      width: var(--sidebar-width); height: calc(100vh - var(--header-height));
+      background: linear-gradient(180deg, var(--royal-1), var(--royal-2));
+      box-shadow: 4px 0 14px rgba(0,0,0,0.6); z-index:900;
+      transition: width 300ms cubic-bezier(.2,.9,.2,1);
+      overflow-y: auto; overflow-x: hidden;
+    }
+    .sidebar.collapsed { width: var(--sidebar-collapsed); }
+
+    .nav-list { padding: 10px; display:flex; flex-direction:column; gap:8px; }
+    .nav-item { 
+      display:flex; align-items:center; gap:12px; background:transparent; 
+      border:none; color:#fff; padding:12px; cursor:pointer; 
+      border-radius:8px; width:100%; text-align:left; transition: 0.3s;
+    }
+    .nav-item i { color:var(--primary-color); width:20px; text-align: center; font-size: 1.2rem;}
+    .sidebar.collapsed .label { display:none; }
+    .nav-item:hover, .nav-item.active { background: var(--gold-soft); color: var(--gold); }
+
+    /* ====== Content Area ====== */
+    .container { 
+        margin-left: var(--sidebar-width); 
+        transition: margin-left 300ms; 
+        padding: 40px; 
+        width: calc(100% - var(--sidebar-width));
+    }
+    .sidebar.collapsed ~ .container { 
+        margin-left: var(--sidebar-collapsed); 
+        width: calc(100% - var(--sidebar-collapsed));
+    }
+    
+    .content h2 { font-size: 1.8rem; margin-bottom: 15px; }
+    .content p { font-size: 1rem; line-height: 1.6; }
+
+    .highlight-box { 
+        background: rgba(255,255,255,0.05); 
+        border-left:5px solid var(--primary-color); 
+        padding:20px; border-radius:10px; margin:20px 0; 
     }
 
-    .sidebar.collapsed {
-      width: var(--sidebar-collapsed);
+    .image-gallery { 
+        display:grid; 
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); 
+        gap:20px; margin-top: 20px;
     }
+    .image-gallery img { width:100%; height:220px; object-fit:cover; border-radius:12px; border:2px solid rgba(0,212,255,0.3); }
 
-    /* Top area: toggle container (gold) with white toggle icon inside */
-    .sidebar-top {
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      gap:8px;
-      padding:10px 12px;
-      min-height:78px;
-      position:relative;
-    }
-
-    /* Toggle container in gold color */
-    .toggle-container {
-      background: linear-gradient(180deg, rgba(255,204,0,0.12), rgba(255,204,0,0.08));
-      border: 1px solid rgba(255,204,0,0.65);
-      padding:8px;
-      border-radius:10px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-    }
-
-    .sidebar-toggle-btn{
-      background: #ffffff; /* white toggle in container */
-      color: #000;
-      font-size:18px;
-      cursor:pointer;
-      padding:8px 10px;
-      border-radius:6px;
-      border:none;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      transition: transform .28s cubic-bezier(.2,.9,.2,1), background .18s ease, box-shadow .18s ease;
-    }
-
-    /* rotate horizontal on hover (90deg), default vertical (0deg) */
-    .sidebar-toggle-btn i { transition: transform 220ms ease; transform: rotate(0deg); display:block; }
-    .sidebar-toggle-btn:hover i { transform: rotate(90deg); }
-
-    /* underline below the toggle - gold line */
-    .toggle-underline {
-      height:3px;
-      background: var(--gold);
-      width: calc(100% - 36px);
-      margin: 12px auto 10px;
-      border-radius:3px;
-      opacity:0.95;
-    }
-
-    /* Menu list */
-    .nav-list {
-      margin: 6px 0 20px;
-      padding: 8px;
-      display:flex;
-      flex-direction:column;
-      gap:6px;
-      flex:1 1 auto;
-      align-items:stretch;
-    }
-
-    .nav-item {
-      display:flex;
-      align-items:center;
-      gap:12px;
-      background:transparent;
-      border:none;
-      color:var(--text-light);
-      padding:12px 16px;
-      text-align:left;
-      cursor:pointer;
-      font-size:15px;
-      transition: background .18s ease, color .18s;
-      white-space:nowrap;
-      border-radius:8px;
-    }
-
-    .nav-item i { font-size:18px; color:var(--primary-color); width:26px; text-align:center; flex:0 0 26px; transition: color 180ms ease; }
-
-    .nav-item .label {
-      opacity:1;
-      transform:translateX(0);
-      transition: opacity 220ms ease, transform 260ms ease, color 180ms ease;
-      color: var(--text-light);
-    }
-
-    /* Hide labels when collapsed */
-    .sidebar.collapsed .nav-item {
-      justify-content:center;
-      padding:10px 6px;
-    }
-    .sidebar.collapsed .nav-item .label {
-      opacity:0;
-      transform:translateX(-8px);
-      width:0;
-      height:0;
-      display:none;
-    }
-
-    /* Hover: gold background and gold color for icon+label */
-    .nav-item:hover {
-      background: var(--gold-soft);
-      color: var(--gold);
-    }
-    .nav-item:hover i,
-    .nav-item:hover .label { color: var(--gold); }
-
-    /* Active state: persistent gold (icon and label) and slightly stronger bg */
-    .nav-item.active {
-      background: rgba(255,204,0,0.18);
-      color: var(--gold);
-    }
-    .nav-item.active i,
-    .nav-item.active .label { color: var(--gold); font-weight:700; }
-
-    /* When sidebar collapsed and hovered item - keep gold background */
-    .sidebar.collapsed .nav-item:hover {
-      background: var(--gold-soft);
-    }
-
-    /* content area margin updated to match sidebar width */
-    .container {
-      margin-left: var(--sidebar-width);
-      transition: margin-left 300ms cubic-bezier(.2,.9,.2,1);
-      padding: 30px 28px;
-      padding-top: 40px;
-    }
-
-    .sidebar.collapsed ~ .container {
-      margin-left: var(--sidebar-collapsed);
-    }
-
-    .content {
-      max-width:1000px;
-      margin:0 auto;
-      padding-bottom:80px;
-    }
-
-    /* highlight box, gallery, footer (kept from previous design) */
-    .highlight-box{
-      background: rgba(0,212,255,0.06);
-      border-left:5px solid var(--primary-color);
-      padding:18px 20px;
-      border-radius:10px;
-      margin: 18px 0;
-    }
-
-    .image-gallery{
-      display:grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-      gap:18px;
-      margin-top:18px;
-    }
-    .image-gallery img{
-      width:100%;
-      height:190px;
-      object-fit:cover;
-      border-radius:8px;
-      border:2px solid var(--primary-color);
-    }
-
-    footer{
-      position:fixed;
-      bottom:12px;
-      right:12px;
-      background: rgba(0,0,0,0.6);
-      padding:8px 12px;
-      border-radius:8px;
-      font-size:13px;
-      z-index:600;
-    }
-
-    /* responsive */
-    @media (max-width: 900px){
-      :root{ --sidebar-width:240px; --sidebar-collapsed:60px; }
-      .college-header{ padding:14px 18px; height:140px; }
-      .header-text h2{ font-size:1.2rem; }
-      .header-right{ width:86px; }
-    }
-
+    /* ====== Mobile Adjustments ====== */
     @media (max-width: 760px){
-      .college-header{ flex-direction:column; height:200px; padding:12px 16px; gap:8px; }
-      .header-left{ margin-right:0; }
-      .header-right{ display:none; }
-      .sidebar{ top:200px; height: calc(100vh - 200px); }
-      .spacer{ height:200px; }
-      .container{ margin-left: var(--sidebar-collapsed); padding:16px; }
-      .login-btn{ right:14px; bottom:6px; padding:8px 16px; font-size:0.8rem; }
+      :root { --header-height: 90px; }
+
+      .college-header { padding: 0 10px; }
+      
+      .header-left, .header-right { flex: 0 0 50px; } /* Smaller side containers */
+
+      .header-left img { height: 40px; }
+      
+      .header-text h1 { 
+          font-size: 0.75rem; 
+          white-space: normal; /* Allows wrap so it stays centered */
+          line-height: 1.2;
+          text-align: center;
+      }
+      
+      .login-btn { padding: 5px 10px; font-size: 0.6rem; border-radius: 15px; }
+
+      .sidebar { top: 90px; height: calc(100vh - 90px); }
+      .container { 
+          margin-left: var(--sidebar-collapsed); 
+          padding: 20px; 
+          width: calc(100% - var(--sidebar-collapsed));
+      }
     }
 
+    @keyframes shimmerMove { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+    .spacer { height: var(--header-height); }
+    footer { position:fixed; bottom:10px; right:10px; background:rgba(0,0,0,0.6); padding:5px 10px; border-radius:5px; font-size:12px; z-index: 1001;}
   </style>
 </head>
 <body>
 
-  <!-- Header -->
-  <div class="college-header" role="banner">
+  <div class="college-header">
     <div class="header-left">
-      <img src="images/college_logo.png" alt="College Logo">
+      <img src="images/college_logo.png" alt="Logo">
     </div>
-
     <div class="header-center">
       <div class="header-text">
-        <h1>SIR C R REDDY COLLEGE OF ENGINEERING - <span class="boyshostel">BOYS HOSTEL</span></h1>
+        <h1>SIR C R REDDY COLLEGE OF ENGINEERING <br class="mobile-only"> <span class="boyshostel">BOYS HOSTEL</span></h1>
       </div>
-      <!-- Note: login moved to absolute right-bottom of header -->
     </div>
-
-    <div class="header-right"></div>
-
-    <!-- Login button anchored to header bottom-right -->
-    <button class="login-btn" onclick="location.href='/choose_login'">Login</button>
+    <div class="header-right">
+      <button class="login-btn" onclick="location.href='/choose_login'">Login</button>
+    </div>
   </div>
 
-  <!-- spacer -->
   <div class="spacer"></div>
 
-  <!-- Sidebar -->
-  <aside class="sidebar" id="sidebar" aria-label="Main navigation">
-    <div class="sidebar-top">
-      <div class="toggle-container" title="Collapse / Expand">
-        <button id="sidebarToggle" class="sidebar-toggle-btn" aria-label="Toggle sidebar">
-          <i class="fa-solid fa-bars"></i>
+  <aside class="sidebar" id="sidebar">
+    <div style="text-align: center; padding: 15px;">
+        <button id="sidebarToggle" style="background:none; border:none; color:white; cursor:pointer; font-size:1.5rem;">
+            <i class="fa-solid fa-bars"></i>
         </button>
-      </div>
     </div>
-
-    <!-- gold underline below toggle -->
-    <div class="toggle-underline" aria-hidden="true"></div>
-
-    <nav class="nav-list" aria-hidden="false">
-      <button class="nav-item" data-section="about">
-        <i class="fa-solid fa-building-columns"></i>
-        <span class="label">About Hostel</span>
-      </button>
-
-      <button class="nav-item" data-section="fee">
-        <i class="fa-solid fa-coins"></i>
-        <span class="label">Fee Details</span>
-      </button>
-
-      <button class="nav-item" data-section="rules">
-        <i class="fa-solid fa-scroll"></i>
-        <span class="label">Rules</span>
-      </button>
-
-      <button class="nav-item" data-section="facilities">
-        <i class="fa-solid fa-bolt"></i>
-        <span class="label">Facilities</span>
-      </button>
-
-      <button class="nav-item" data-section="mess">
-        <i class="fa-solid fa-utensils"></i>
-        <span class="label">Mess Details</span>
-      </button>
-
-      <button class="nav-item" data-section="security">
-        <i class="fa-solid fa-shield-halved"></i>
-        <span class="label">Security</span>
-      </button>
-
-      <button class="nav-item" data-section="contact">
-        <i class="fa-solid fa-phone"></i>
-        <span class="label">Contact</span>
-      </button>
+    <nav class="nav-list">
+      <button class="nav-item active" data-section="about"><i class="fa-solid fa-building-columns"></i><span class="label">About</span></button>
+      <button class="nav-item" data-section="fee"><i class="fa-solid fa-coins"></i><span class="label">Fee</span></button>
+      <button class="nav-item" data-section="rules"><i class="fa-solid fa-scroll"></i><span class="label">Rules</span></button>
+      <button class="nav-item" data-section="facilities"><i class="fa-solid fa-bolt"></i><span class="label">Facilities</span></button>
+      <button class="nav-item" data-section="mess"><i class="fa-solid fa-utensils"></i><span class="label">Mess</span></button>
+      <button class="nav-item" data-section="security"><i class="fa-solid fa-shield-halved"></i><span class="label">Security</span></button>
+      <button class="nav-item" data-section="contact"><i class="fa-solid fa-phone"></i><span class="label">Contact</span></button>
     </nav>
   </aside>
 
-  <!-- Main content area -->
-  <main class="container" id="mainContainer">
-  <div class="content" id="contentArea">
-    <h2 style="color: var(--gold); text-align:center; font-size:2rem; text-shadow: 0 0 10px rgba(255,255,255,0.4); margin-bottom:10px;">
-      Welcome to Sir C R Reddy Boys Hostel
-    </h2>
-    <p style="font-size:1.1rem; text-align:center; max-width:850px; margin:0 auto 25px;">
-      Experience comfort, discipline, and growth in a home away from home. 
-      Our hostel provides top-class facilities, a peaceful environment, and a student-managed mess system that builds both responsibility and unity.
-    </p>
-
-    <div class="highlight-box" style="box-shadow: 0 0 15px rgba(0,212,255,0.3);">
-      <p><i class="fa-solid fa-star" style="color:var(--primary-color);"></i> Proudly part of <b>Sir C R Reddy College of Engineering (Autonomous)</b>, Eluru.</p>
-      <p><i class="fa-solid fa-map-location-dot" style="color:var(--primary-color);"></i> Located in the serene campus of Vatluru, Andhra Pradesh.</p>
+  <main class="container">
+    <div class="content" id="contentArea">
+      <h2 style="color: var(--gold); text-align:center;">Welcome to Sir C R Reddy Boys Hostel</h2>
+      <p style="text-align:center;">Experience comfort, discipline, and growth in a home away from home.</p>
+      <div class="image-gallery">
+        <img src="images/h6.jpg" alt="Hostel Night View">
+        <img src="images/h1.jpg" alt="Building">
+        <img src="images/h2.jpg" alt="Entrance">
+      </div>
     </div>
+  </main>
 
-    <p style="text-align:center; font-weight:500; font-size:1.05rem;">Here's a glimpse of our vibrant hostel environment:</p>
-    <div class="image-gallery">
-      <img src="https://picsum.photos/id/237/400/250" alt="Hostel Exterior View">
-      <img src="https://picsum.photos/id/1018/400/250" alt="Hostel Common Area">
-      <img src="https://picsum.photos/id/10/400/250" alt="Hostel Entrance">
-    </div>
-  </div>
-</main>
-
-
-  <footer>© 2025 Sir C R Reddy Boys Hostel | Designed by <a href="#" style="color:var(--primary-color)">Hostel Management</a></footer>
+  <footer>© 2025 | <a href="#" style="color:var(--primary-color); text-decoration: none;">Hostel Management</a></footer>
 
   <script>
-    // keep your content sections detailed as before
+    // Content data objects (Abbreviated for space, keep your original full content here)
     const content = {
        about: `
                 <h2>About Hostel</h2>
@@ -502,11 +247,12 @@
                     <p><b>Achievements:</b> Students have organized cultural fests, sports tournaments, and community service activities within the hostel.</p>
                 </div>
                 <h3>Hostel Environment Gallery</h3>
-                < div class="image-gallery">
-                    <img src="https://source.unsplash.com/random/400x250/?hostel,campus" alt="Hostel Building View">
-                    <img src="https://source.unsplash.com/random/400x250/?college,students" alt="Students on Campus">
-                    <img src="https://source.unsplash.com/random/400x250/?library,study" alt="Study Area in Hostel">
-                </div>
+                <p style="text-align:center; font-weight:500; font-size:1.05rem;">Here's a glimpse of our vibrant hostel environment:</p>
+    <div class="image-gallery">
+      <img src="images/h4.jpg" alt="Hostel Exterior View">
+      <img src="images/h3.jpg" alt="Hostel Common Area">
+      <img src="images/h5.jpg" alt="Hostel Entrance">
+    </div>
             `,
             fee: `
                 <h2>Fee Details</h2>
@@ -539,7 +285,9 @@
             facilities: `
                 <h2>Facilities</h2>
                 <ul>
-                    <li>24x7 purified water supply and electricity backup.</li>
+                    <li>24x7 purified water supply </li>
+                    <li> cc camera protection</li>
+                    <li> NO power supply issue 24x7 Power Backup Through Generator </li>
                     <li>High-speed free Wi-Fi access (monitored and filtered).</li>
                     <li>Clean and hygienic restrooms and common rooms.</li>
                     <li>Sports grounds and indoor gaming zones (e.g., Chess, Carrom).</li>
@@ -592,68 +340,29 @@
             `
         };
 
-    function showSection(section){
-      const area = document.getElementById('contentArea');
-      area.innerHTML = content[section] || '<p>Section not found</p>';
-      area.style.animation = 'none';
-      setTimeout(()=> area.style.animation = 'fadeIn 0.8s ease', 10);
 
-      // set active state for nav items
-      document.querySelectorAll('.nav-item').forEach(btn => {
-        if (btn.dataset.section === section) btn.classList.add('active');
-        else btn.classList.remove('active');
-      });
-    }
-
-    // Sidebar collapse/expand toggle (icons-only when collapsed)
     const sidebar = document.getElementById('sidebar');
-    const toggleBtn = document.getElementById('sidebarToggle');
-
-    // restore last state using localStorage
-    const saved = localStorage.getItem('sidebarCollapsed');
-    if (saved === 'true') sidebar.classList.add('collapsed');
-
-    toggleBtn.addEventListener('click', () => {
-      const isCollapsed = sidebar.classList.toggle('collapsed');
-      localStorage.setItem('sidebarCollapsed', isCollapsed ? 'true' : 'false');
-
-      // animate / small feedback: rotate the icon slightly while toggling
-      toggleBtn.style.transform = 'rotate(360deg)';
-      setTimeout(()=> toggleBtn.style.transform = '', 260);
+    
+    document.getElementById('sidebarToggle').addEventListener('click', () => {
+      sidebar.classList.toggle('collapsed');
     });
 
-    // keyboard accessibility for toggle
-    toggleBtn.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        toggleBtn.click();
-      }
-    });
-
-    // nav item click wiring (also set active)
     document.querySelectorAll('.nav-item').forEach(btn => {
       btn.addEventListener('click', () => {
-        const sec = btn.dataset.section;
-        showSection(sec);
+        const section = btn.dataset.section;
+        const area = document.getElementById('contentArea');
+        area.innerHTML = content[section] || '<h2>Section</h2>';
+        
+        document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        if (window.innerWidth <= 760) {
+          sidebar.classList.add('collapsed');
+        }
       });
     });
 
-    // ensure responsive initial collapsed state on small screens
     if (window.innerWidth <= 760) sidebar.classList.add('collapsed');
-
-    window.addEventListener('resize', () => {
-      if (window.innerWidth <= 760) {
-        sidebar.classList.add('collapsed');
-      } else {
-        const saved = localStorage.getItem('sidebarCollapsed');
-        if (saved === 'true') sidebar.classList.add('collapsed');
-        else sidebar.classList.remove('collapsed');
-      }
-    });
-
-    
-
   </script>
 </body>
-
 </html>
