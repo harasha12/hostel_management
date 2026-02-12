@@ -1,33 +1,317 @@
+<div class="top-bar">
+  <button class="back-btn" onclick="goBackToDashboard()">
+    ← Back to Dashboard
+  </button>
+</div>
 
-<h2>🚪 Today's Outpasses</h2>
+<h2 class="title">🚪 Today's Outpasses</h2>
 
-<form action="/security/searchByRoom" method="GET">
-  <input type="text" name="room_no" placeholder="Enter Room No" required>
-  <button type="submit">🔍 Search</button>
+<form class="search-form" onsubmit="searchTodayOutpasses(event)">
+
+  <div class="search-group">
+    <input type="text" name="room_no" placeholder="Enter Room No" required>
+    <button type="submit">🔍 <span class="btn-text">Search</span></button>
+  </div>
 </form>
 
-<table border="1" cellpadding="8">
-  <thead>
-    <tr>
-      <th>Student Name</th>
-      <th>Room No</th>
-      <th>Reason</th>
-      <th>Status</th>
-      <th>Approved By</th>
-      <th>Approved At</th>
-    </tr>
-  </thead>
-  <tbody>
-    <% outpasses.forEach(outpass => { %>
+<div class="table-container">
+  <table class="styled-table">
+    <thead>
       <tr>
-        <td><%= outpass.student_name %></td>
-        <td><%= outpass.room_no %></td>
-        <td><%= outpass.reason %></td>
-        <td><%= outpass.status %></td>
-        <td><%= outpass.accepted_by %></td>
-        <td><%= new Date(outpass.updated_at).toLocaleString() %></td>
+        <th>Student Name</th>
+        <th>Room No</th>
+        <th>Reason</th>
+        <th>Status</th>
+        <th>Approved By</th>
+        <th>Approved At</th>
       </tr>
-    <% }) %>
-  </tbody>
-</table>
+    </thead>
 
+    <tbody id="todayOutpassesBody">
+      <% outpasses.forEach(outpass => { %>
+        <tr>
+          <td data-label="Student Name" class="name-cell"><%= outpass.student_name %></td>
+          <td data-label="Room No"><%= outpass.room_no %></td>
+          <td data-label="Reason"><%= outpass.reason %></td>
+
+          <td data-label="Status">
+            <span class="status-badge <%= outpass.status.toLowerCase() %>">
+              <%= outpass.status %>
+            </span>
+          </td>
+
+          <td data-label="Approved By"><%= outpass.accepted_by %></td>
+          <td data-label="Approved At" class="time-cell">
+            <%= new Date(outpass.updated_at).toLocaleString('en-IN', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: 'short' }) %>
+          </td>
+        </tr>
+      <% }) %>
+      
+    </tbody>
+  </table>
+</div>
+
+<style>
+/* PAGE TITLE */
+.title {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: #ffcc00;
+  margin-bottom: 20px;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* SEARCH FORM */
+.search-form {
+  margin-bottom: 25px;
+}
+
+.search-group {
+  display: flex;
+  gap: 8px;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.search-form input {
+  padding: 12px 15px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.2);
+  flex: 1;
+  background: rgba(255,255,255,0.9);
+  font-size: 1rem;
+  color: #000;
+  outline: none;
+}
+
+.search-form button {
+  background: #ffcc00;
+  border: none;
+  padding: 0 20px;
+  border-radius: 10px;
+  font-weight: 800;
+  cursor: pointer;
+  color: #1a1a1a;
+  transition: 0.3s;
+}
+
+.search-form button:hover {
+  background: #e6b800;
+  transform: translateY(-2px);
+}
+
+/* TABLE CONTAINER */
+.table-container {
+  width: 100%;
+  overflow-x: auto;
+}
+
+/* ===== TABLE THEME ===== */
+.styled-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 8px; /* Space between rows for card effect */
+}
+
+.styled-table thead th {
+  background: rgba(255, 204, 0, 0.9);
+  padding: 15px;
+  font-size: 0.85rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: #000;
+  text-align: center;
+}
+
+.styled-table thead th:first-child { border-radius: 10px 0 0 10px; }
+.styled-table thead th:last-child { border-radius: 0 10px 10px 0; }
+
+.styled-table tbody tr {
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(10px);
+  transition: 0.3s;
+}
+
+.styled-table tbody tr:hover {
+  background: rgba(255, 204, 0, 0.1);
+}
+
+.styled-table td {
+  padding: 14px;
+  text-align: center;
+  font-size: 0.95rem;
+  color: #ffffff;
+  border-top: 1px solid rgba(255,255,255,0.1);
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.styled-table td:first-child { border-left: 1px solid rgba(255,255,255,0.1); border-radius: 10px 0 0 10px; }
+.styled-table td:last-child { border-right: 1px solid rgba(255,255,255,0.1); border-radius: 0 10px 10px 0; }
+
+.name-cell { color: #ffcc00 !important; font-weight: 700; }
+
+/* STATUS BADGES */
+.status-badge {
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-weight: 800;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+}
+
+.status-badge.approved { background: #1976d2; color: #fff; }
+.status-badge.exited { background: #f57c00; color: #fff; }
+.status-badge.returned { background: #388e3c; color: #fff; }
+
+/* ===== MOBILE VIEW (Responsive Cards) ===== */
+@media (max-width: 768px) {
+  .title { font-size: 1.3rem; }
+
+  .search-group { flex-direction: row; }
+  .btn-text { display: none; } /* Show only icon on small mobile */
+  .search-form button { padding: 0 15px; }
+
+  .styled-table thead { display: none; }
+
+  .styled-table tbody tr {
+    display: block;
+    margin-bottom: 15px;
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 12px;
+    background: rgba(0, 0, 0, 0.4);
+    padding: 10px;
+  }
+
+  .styled-table td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 8px;
+    border: none !important;
+    text-align: right;
+    font-size: 0.85rem;
+  }
+
+  .styled-table td::before {
+    content: attr(data-label);
+    font-weight: 700;
+    color: #ffcc00;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    margin-right: 15px;
+    text-align: left;
+  }
+
+  .name-cell {
+    border-bottom: 1px solid rgba(255,255,255,0.1) !important;
+    margin-bottom: 5px;
+    padding-bottom: 12px !important;
+    font-size: 1rem !important;
+  }
+}
+/* ===== DESKTOP TABLE FIX ===== */
+@media (min-width: 769px) {
+  .styled-table tbody tr {
+    display: table-row;
+  }
+
+  .styled-table td {
+    display: table-cell;
+    text-align: center;
+  }
+
+  .styled-table td::before {
+    content: none !important;
+  }
+}
+@media (max-width: 768px) {
+
+  .styled-table thead {
+    display: none;
+  }
+
+  .styled-table tbody tr {
+    display: block;
+    margin-bottom: 15px;
+    border-radius: 12px;
+    background: rgba(0,0,0,0.4);
+    padding: 10px;
+  }
+
+  .styled-table td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    text-align: right;
+  }
+
+  .styled-table td::before {
+    content: attr(data-label);
+    font-weight: 700;
+    color: #ffcc00;
+  }
+}
+.styled-table tbody tr {
+  background: rgba(0, 0, 0, 0.45) !important;
+}
+
+.styled-table td {
+  color: #ffffff !important;
+}
+.styled-table tbody tr {
+  backdrop-filter: blur(8px);
+}
+/* TOP BAR */
+.top-bar {
+  display: flex;
+  justify-content: flex-start;
+  margin-bottom: 10px;
+}
+
+/* BACK BUTTON */
+.back-btn {
+  background: rgba(255, 204, 0, 0.9);
+  border: none;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-weight: 800;
+  cursor: pointer;
+  color: #000;
+  transition: 0.25s;
+}
+
+.back-btn:hover {
+  background: #e6b800;
+  transform: translateX(-3px);
+}
+
+/* MOBILE ADJUST */
+@media (max-width: 768px) {
+  .top-bar {
+    justify-content: center;
+  }
+
+  .back-btn {
+    width: 100%;
+    text-align: center;
+  }
+}
+
+
+</style>
+<script>
+function goBackToDashboard() {
+  // SPA environment lo unte
+  if (typeof spaNavigate === "function") {
+    spaNavigate(
+      { preventDefault: () => {}, currentTarget: { innerText: "Dashboard" } },
+      "/security/dashboard"
+    );
+  } else {
+    // fallback
+    window.location.href = "/security/dashboard";
+  }
+}
+</script>
