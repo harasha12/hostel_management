@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Assign & Split Payment</title>
+
+  <!-- jQuery -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+  <!-- Select2 -->
+  <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+  <style>
+    body{
+      font-family: Arial, sans-serif;
+      background:#f4f6fb;
+      padding:30px;
+    }
+    .card{
+      background:#fff;
+      padding:25px;
+      border-radius:10px;
+      max-width:700px;
+      margin:auto;
+      box-shadow:0 10px 25px rgba(0,0,0,.15);
+    }
+    label{
+  display:block;
+  margin-top:14px;
+  font-weight:bold;
+}
+
+input,
+select:not(.select2-hidden-accessible){
+  width:100%;
+  padding:8px;
+  margin-top:6px;
+}
+
+    button{
+      margin-top:22px;
+      padding:12px;
+      background:#2563eb;
+      color:#fff;
+      border:none;
+      width:100%;
+      font-size:16px;
+      border-radius:6px;
+      cursor:pointer;
+    }
+    button:disabled{
+      background:#9ca3af;
+      cursor:not-allowed;
+    }
+    .warn{
+      color:#b91c1c;
+      font-weight:bold;
+      margin-top:10px;
+    }
+    .ok{
+      color:#065f46;
+      font-weight:bold;
+      margin-top:10px;
+    }
+    /* ================= MOBILE RESPONSIVE ================= */
+@media (max-width: 768px) {
+
+  body {
+    padding: 14px;
+    background: #eef2ff;
+  }
+
+  .card {
+    padding: 18px;
+    border-radius: 16px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+  }
+
+  h2 {
+    font-size: 1.3rem;
+    text-align: center;
+    margin-bottom: 14px;
+  }
+
+  /* Transaction summary */
+  .card > p {
+    font-size: 14px;
+    line-height: 1.5;
+    background: #f8fafc;
+    padding: 12px;
+    border-radius: 12px;
+    border-left: 4px solid #2563eb;
+    margin-bottom: 18px;
+  }
+
+  label {
+    font-size: 14px;
+    margin-top: 16px;
+  }
+
+  input,
+  select:not(.select2-hidden-accessible) {
+    padding: 12px;
+    font-size: 15px;
+    border-radius: 10px;
+    border: 1px solid #c7d2fe;
+  }
+
+  input:focus,
+  select:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 2px rgba(37,99,235,0.2);
+  }
+
+  /* Select2 mobile fix */
+  .select2-container--default .select2-selection--single {
+    height: 44px;
+    border-radius: 10px;
+    border: 1px solid #c7d2fe;
+  }
+
+  .select2-selection__rendered {
+    line-height: 44px !important;
+    font-size: 14px;
+  }
+
+  .select2-selection__arrow {
+    height: 44px !important;
+  }
+
+  /* Remaining amount highlight */
+  #rem {
+    font-weight: bold;
+    color: #1e40af;
+  }
+
+  #msg {
+    font-size: 14px;
+    margin-top: 10px;
+  }
+
+  button {
+    margin-top: 24px;
+    padding: 14px;
+    font-size: 16px;
+    font-weight: bold;
+    border-radius: 16px;
+    background: linear-gradient(90deg,#2563eb,#1e40af);
+    box-shadow: 0 6px 18px rgba(37,99,235,0.4);
+  }
+
+  button:active {
+    transform: scale(0.97);
+  }
+}
+
+/* ================= SMALL PHONES ================= */
+@media (max-width: 420px) {
+
+  h2 {
+    font-size: 1.15rem;
+  }
+
+  .card > p {
+    font-size: 13px;
+  }
+
+  label {
+    font-size: 13px;
+  }
+
+  input,
+  select {
+    font-size: 14px;
+  }
+}
+
+  </style>
+</head>
+
+<body>
+
+<div class="card">
+
+  <h2>Assign & Split Payment</h2>
+
+  <p>
+    <b>Amount:</b> ₹<%= txn.total_amount %><br>
+    <b>Ref:</b> <%= txn.bank_ref_no %><br>
+    <b>Source:</b> <%= txn.bank_source %>
+  </p>
+
+  <form method="POST" action="/admin/bank/<%= txn.id %>/split" oninput="calc()">
+
+    <input type="hidden" id="total" value="<%= txn.total_amount %>">
+
+    <!-- ✅ STUDENT SELECT -->
+    <label for="student_id">Student</label>
+    <select id="student_id" name="student_id">
+      <option value=""></option>
+      <% students.forEach(s => { %>
+        <option value="<%= s.student_id %>">
+          <%= s.student_id %> - <%= s.name %>
+        </option>
+      <% }) %>
+    </select>
+
+    <!-- ACADEMIC YEAR -->
+    <label>Academic Year</label>
+    <select name="academic_year" required>
+      <option value="">-- Select Academic Year --</option>
+      <option value="1">1st Year</option>
+      <option value="2">2nd Year</option>
+      <option value="3">3rd Year</option>
+      <option value="4">4th Year</option>
+    </select>
+
+    <!-- SPLIT FIELDS -->
+    <label>Room Rent</label>
+    <input type="number" id="r" name="room_rent" min="0">
+
+    <label>Mess Bill 1</label>
+    <input type="number" id="m1" name="mess1" min="0">
+
+    <label>Mess Bill 2</label>
+    <input type="number" id="m2" name="mess2" min="0">
+
+    <p>
+      <b>Remaining / Advance:</b>
+      ₹<span id="rem">0.00</span>
+    </p>
+
+    <p id="msg"></p>
+
+    <button id="submitBtn" disabled>Submit</button>
+  </form>
+
+</div>
+
+<script>
+/* ✅ Select2 Initialization (FIXED) */
+$(document).ready(function () {
+  $('#student_id').select2({
+    placeholder: "Type Student ID or Name",
+    width: '100%',
+    allowClear: true
+  });
+});
+
+/* 💰 Split calculation + validation */
+function calc(){
+  const t = Number(document.getElementById("total").value || 0);
+  const r = Number(document.getElementById("r").value || 0);
+  const m1 = Number(document.getElementById("m1").value || 0);
+  const m2 = Number(document.getElementById("m2").value || 0);
+
+  const allocated = r + m1 + m2;
+  const remaining = t - allocated;
+
+  document.getElementById("rem").innerText = remaining.toFixed(2);
+
+  const msg = document.getElementById("msg");
+  const btn = document.getElementById("submitBtn");
+
+  if (allocated <= 0) {
+    msg.innerHTML = "⚠️ Enter at least one fee component";
+    msg.className = "warn";
+    btn.disabled = true;
+  }
+  else if (allocated > t) {
+    msg.innerHTML = "❌ Allocated amount cannot exceed bank amount";
+    msg.className = "warn";
+    btn.disabled = true;
+  }
+  else {
+    msg.innerHTML = "✅ Split looks valid";
+    msg.className = "ok";
+    btn.disabled = false;
+  }
+}
+</script>
+
+</body>
+</html>
