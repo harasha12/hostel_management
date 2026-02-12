@@ -1,0 +1,92 @@
+<% if (!isSpa) { %>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Verified Fee Receipts</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-900">
+<% } %>
+
+<div class="w-full max-w-5xl mx-auto p-4 sm:p-6 bg-[rgba(0,0,0,0.45)] backdrop-blur-md rounded-xl shadow-xl mt-4 sm:mt-6">
+
+  <h2 class="text-xl sm:text-2xl font-bold text-yellow-400 text-center mb-4">
+    Verified Fee Receipts
+  </h2>
+
+  <!-- DATA JSON -->
+  <script id="accepted-data" type="application/json">
+    <%- JSON.stringify(locals.accepted || []) %>
+  </script>
+
+  <div id="receipt-list"></div>
+</div>
+
+<script>
+// read JSON safely
+const acceptedReceipts = JSON.parse(
+  document.getElementById('accepted-data').textContent
+);
+
+function renderReceipts(receipts) {
+  const box = document.getElementById('receipt-list');
+
+  if (!receipts.length) {
+    box.innerHTML = '<p class="text-center text-gray-300">No receipts found</p>';
+    return;
+  }
+
+  // Mobile-first card layout + desktop table
+  if (window.innerWidth <= 820) {
+    box.innerHTML = receipts.map(r => `
+      <div class="bg-slate-800 text-white p-4 rounded-lg mb-3 border border-yellow-500">
+        <div class="font-semibold text-yellow-400">${r.name}</div>
+        <div class="text-sm">ID: <span class="font-medium">${r.student_unique_id}</span></div>
+        <div class="text-sm">Ref: <span class="font-medium">${r.ref_id}</span></div>
+        <div class="text-sm">Amount: <span class="font-bold text-green-400">₹${r.amount_paid}</span></div>
+        <div class="text-sm">Date: <span class="font-medium">
+          ${r.verified_at ? new Date(r.verified_at).toLocaleString('en-IN') : 'N/A'}
+        </span></div>
+        <div class="mt-1 font-bold text-blue-400">${r.status}</div>
+      </div>
+    `).join('');
+
+  } else {
+    box.innerHTML = `
+      <div class="overflow-x-auto mt-2">
+        <table class="min-w-full border border-yellow-500 text-sm bg-slate-900 text-white">
+          <thead class="bg-yellow-500 text-black font-bold">
+            <tr>
+              ${['Name','ID','Ref','Amount','Date','Status']
+                .map(h => `<th class="p-2 text-left">${h}</th>`).join('')}
+            </tr>
+          </thead>
+          <tbody>
+            ${receipts.map((r,i) => `
+              <tr class="${i%2?'bg-slate-800':'bg-slate-900'}">
+                <td class="p-2">${r.name}</td>
+                <td class="p-2">${r.student_unique_id}</td>
+                <td class="p-2">${r.ref_id}</td>
+                <td class="p-2 font-bold text-green-400">₹${r.amount_paid}</td>
+                <td class="p-2">
+                  ${r.verified_at ? new Date(r.verified_at).toLocaleString('en-IN') : 'N/A'}
+                </td>
+                <td class="p-2 font-bold text-blue-400">${r.status}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+    `;
+  }
+}
+
+renderReceipts(acceptedReceipts);
+</script>
+
+
+<% if (!isSpa) { %>
+</body>
+</html>
+<% } %>
