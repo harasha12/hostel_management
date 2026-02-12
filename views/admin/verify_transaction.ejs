@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Verify Transaction</title>
+  <style>
+  body {
+    font-family: "Segoe UI", Arial, sans-serif;
+    background: #f3f4f6;
+    margin: 0;
+    padding: 30px;
+  }
+
+  h2 {
+    text-align: center;
+    color: #1e40af;
+    margin-bottom: 20px;
+  }
+
+  p {
+    font-size: 15px;
+    margin: 10px 0;
+  }
+
+  button {
+    margin-top: 20px;
+    padding: 12px 20px;
+    background: #16a34a;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+  }
+
+  a {
+    text-decoration: none;
+    font-weight: bold;
+    color: #1e40af;
+  }
+
+  /* ================= MOBILE UI ================= */
+  @media (max-width: 768px) {
+
+    body {
+      padding: 14px;
+      background: #eef2ff;
+    }
+
+    h2 {
+      font-size: 1.25rem;
+    }
+
+    /* Card effect */
+    body > * {
+      background: #ffffff;
+      padding: 18px;
+      border-radius: 16px;
+      box-shadow: 0 10px 28px rgba(0,0,0,0.12);
+      max-width: 100%;
+    }
+
+    p {
+      background: #f8fafc;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border-left: 4px solid #2563eb;
+      font-size: 14px;
+    }
+
+    button {
+      width: 100%;
+      padding: 14px;
+      font-size: 16px;
+      border-radius: 14px;
+      background: linear-gradient(90deg,#16a34a,#15803d);
+      box-shadow: 0 6px 18px rgba(22,163,74,0.4);
+    }
+
+    button:active {
+      transform: scale(0.97);
+    }
+
+    a {
+      display: block;
+      text-align: center;
+      margin-top: 16px;
+      font-size: 14px;
+    }
+  }
+</style>
+
+</head>
+<body>
+
+  <h2>Verify Bank Transaction</h2>
+
+  <p><b>Date:</b> <%= txn.transaction_date %></p>
+  <p><b>Amount:</b> ₹<%= txn.total_amount %></p>
+  <p><b>Reference:</b> <%= txn.bank_ref_no %></p>
+  <p><b>Status:</b> <%= txn.status %></p>
+
+  <form method="POST">
+    <button type="submit">✅ Mark as Verified</button>
+  </form>
+
+  <br>
+  <a href="/admin/bank-transactions">⬅ Back</a>
+
+</body>
+</html>
