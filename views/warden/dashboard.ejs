@@ -1,479 +1,791 @@
-<% 
-  // Safe fallbacks so template doesn't crash when backend didn't supply variables
-  const wardenNameSafe    = (typeof wardenName !== 'undefined' && wardenName) ? wardenName : 'Warden';
-  const pendingCountSafe  = (typeof pendingCount !== 'undefined' && pendingCount !== null) ? pendingCount : 0;
-  const studentCountSafe  = (typeof studentCount !== 'undefined' && studentCount !== null) ? studentCount : 0;
-  const complaintCountSafe= (typeof complaintCount !== 'undefined' && complaintCount !== null) ? complaintCount : 0;
-  const approvedCountSafe = (typeof approvedCount !== 'undefined' && approvedCount !== null) ? approvedCount : 0;
-  const studentsSafe      = Array.isArray(students) ? students : [];
+<%
+  const noticeData = typeof latestNotice !== "undefined" ? latestNotice : null;
+  let showNotice = false;
+  let noticeTime = null;
+  let isNew = false;
+
+  if (noticeData) {
+    noticeTime = new Date(noticeData.created_at);
+    const now = new Date();
+    const hoursDiff = Math.abs(now - noticeTime) / 36e5;
+    isNew = hoursDiff <= 24;
+    showNotice = true;
+  }
 %>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Warden Dashboard</title>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Warden Dashboard</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"/>
 
-  <!-- Font Awesome -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"/>
+<style>
+:root {
+  --accent-gold:#ffd600;
+  --sidebar-width:290px;
+  --sidebar-collapsed:60px;
+}
 
-  <style>
-    :root{
-      --sidebar-width: 250px;
-      --sidebar-collapsed: 70px;
-      --accent-gold: #ffd600;
-      --glass: rgba(255,255,255,0.06);
-    }
+body {
+  margin:0;
+  font-family:"Segoe UI",Arial,sans-serif;
+  background:url('/images/hostel-bg.jpg') center/cover no-repeat fixed;
+  color:white;
+}
 
-    /* Background image (use your image path) */
-    body{
-      margin:0;
-      font-family: "Segoe UI", Roboto, Arial, sans-serif;
-      min-height:100vh;
-      background: url('/images/hostel-bg.jpg') center/cover no-repeat fixed;
-      color:#fff;
-    }
+.bg-layer {
+  position:fixed;
+  inset:0;
+  backdrop-filter:blur(18px) brightness(0.55);
+  background:rgba(0,0,0,0.40);
+  z-index:-1;
+}
 
-    /* dark overlay so text is readable */
-    .overlay {
-      min-height:100vh;
-      background: linear-gradient(to bottom, rgba(2,6,23,0.65), rgba(2,6,23,0.75));
-      backdrop-filter: blur(3px);
-      display:flex;
-      flex-direction:column;
-    }
+/* HEADER */
+.college-header {
+  display:flex;
+  justify-content:center;
+  padding:16px;
+  background:rgba(0,0,0,0.45);
+  border-bottom:1px solid rgba(255,255,255,0.15);
+}
+.college-header-inner {
+  display:flex;
+  align-items:center;
+  gap:16px;
+}
+.college-header img {
+  height:70px;
+  border-radius:6px;
+}
+.header-text {
+  text-align:center;
+}
+.header-text h2 {
+  margin:0;
+  font-size:1.35rem;
+  text-transform:uppercase;
+}
+.header-text p {
+  margin:4px 0;
+  font-size:0.82rem;
+  color:#ddd;
+}
+.compact-title { display:none; }
 
-    /* ---------- HEADER (CENTERED) ---------- */
-    .college-header{
-      display:flex;
-      align-items:center;
-      gap:18px;
-      padding:18px 28px;
-      border-bottom: 3px solid rgba(0,0,0,0.35);
-      background: linear-gradient(90deg, rgba(0,0,0,0.35), rgba(0,0,0,0.15));
-      justify-content:center;           /* CENTER content horizontally */
-      text-align:center;                /* center text inside header-text */
-      flex-wrap:wrap;                   /* allow logo + text to wrap on narrow screens */
-    }
+/* LAYOUT */
+.dashboard {
+  display:flex;
+  min-height:calc(100vh - 90px);
+}
 
-    .college-header-inner{
-      display:flex;
-      align-items:center;
-      gap:18px;
-      max-width:1150px;                 /* keeps header content centered with a max width */
-      width:100%;
-      padding:0 12px;
-      justify-content:center;
-      box-sizing:border-box;
-    }
+/* SIDEBAR */
+.sidebar {
+  width: var(--sidebar-width);
+  background: rgba(2, 8, 25, 0.98);  /* Darker, higher opacity for text visibility [web:8] */
+  backdrop-filter: blur(6px);
+  display: flex;
+  flex-direction: column;
+  transition: 0.25s;
+  padding-top: 6px;
+}
 
-    .college-header img{
-      height:78px;
-      width:auto;
-      border-radius:6px;
-      box-shadow:0 6px 18px rgba(0,0,0,0.5);
-      animation: float 4s ease-in-out infinite;
-      flex-shrink:0;
-    }
-    @keyframes float {50%{transform:translateY(-6px)}}
 
-    .header-text{
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      justify-content:center;
-    }
+.sidebar.collapsed {
+  width:var(--sidebar-collapsed);
+}
 
-    .header-text h2{
-      margin:0;
-      font-size:1.6rem;
-      letter-spacing:0.6px;
-      text-transform:uppercase;
-      color:#fff;
-      text-shadow:0 3px 6px rgba(0,0,0,0.7);
-    }
-    .header-text p{
-      margin:6px 0 0 0;
-      color: #e6e6e6;
-      font-size:0.9rem;
-      line-height:1.2;
-    }
-    .header-text .autonomous{ color: var(--accent-gold); font-weight:700; }
+#toggleBtn {
+  height:42px;
+  margin:6px;
+  border:none;
+  border-radius:6px;
+  background:rgba(255,255,255,0.08);
+  color:var(--accent-gold);
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:18px;
+}
 
-    /* Layout */
-    .dashboard {
-      display:flex;
-      width:100%;
-      flex:1;
-    }
+/* NAV ITEMS */
+.nav {
+  margin-top:8px;
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+}
+.nav-item {
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:12px 16px;
+  color:white;
+  font-size:15px;
+  text-decoration:none;
+  border-radius:6px;
+  transition:0.2s;
+  white-space:nowrap;
+}
+.nav-item i {
+  font-size:19px;
+  min-width:22px;
+  text-align:center;
+}
+.nav-item:hover {
+  background:rgba(255,255,255,0.15);
+  color:var(--accent-gold);
+}
 
-    /* Sidebar */
-    .sidebar{
-      width:var(--sidebar-width);
-      min-width:var(--sidebar-width);
-      background: linear-gradient(180deg, rgba(6,25,63,0.95), rgba(15,45,99,0.95));
-      box-shadow: 6px 0 30px rgba(0,0,0,0.6);
-      display:flex;
-      flex-direction:column;
-      transition: width .28s ease;
-      z-index: 20;
-    }
+.sidebar.collapsed .nav-label {
+  display:block;
+  font-size:10px;
+  margin-top:4px;
+  text-align:center;
+  opacity:0.9;
+}
 
-    .sidebar.collapsed{
-      width:var(--sidebar-collapsed);
-      min-width:var(--sidebar-collapsed);
-    }
 
-    .toggle-area {
-      display:flex;
-      justify-content:flex-end;
-      padding:12px;
-    }
+.sidebar.collapsed .nav-item {
+  flex-direction:column;
+  gap:2px;
+  justify-content:center;
+  padding:10px 0;
+}
 
-    .toggle-btn{
-      width:44px; height:44px;
-      border-radius:10px;
-      border:none;
-      background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
-      color:var(--accent-gold);
-      cursor:pointer;
-      box-shadow: 0 6px 14px rgba(0,0,0,0.4);
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      font-size:18px;
-    }
 
-    .nav {
-      padding:10px 8px 12px 8px;
-      display:flex;
-      flex-direction:column;
-      gap:8px;
-      overflow:auto;
-    }
+/* TOOLTIP WHEN COLLAPSED */
+.nav-item[data-tip] {
+  position:relative;
+}
+.sidebar.collapsed .nav-item:hover::after {
+  content:attr(data-tip);
+  position:absolute;
+  left:calc(100% + 10px);
+  top:50%;
+  transform:translateY(-50%);
+  background:black;
+  color:white;
+  padding:4px 6px;
+  border-radius:4px;
+  font-size:11px;
+  white-space:nowrap;
+}
 
-    .nav a{
-      display:flex;
-      align-items:center;
-      gap:12px;
-      color:#fff;
-      text-decoration:none;
-      padding:12px 16px;
-      border-radius:10px;
-      transition: all .18s ease;
-      font-weight:600;
-    }
-    .nav a i{ color: var(--accent-gold); width:22px; text-align:center; }
-    .nav a:hover{ background: rgba(255,255,255,0.04); transform:translateX(4px); color:var(--accent-gold); }
+/* LOGOUT */
+.logout {
+  margin-top:auto;
+  padding:12px;
+}
+.logout a {
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:10px 12px;
+  border:1px solid var(--accent-gold);
+  border-radius:6px;
+  color:var(--accent-gold);
+  text-decoration:none;
+  font-size:14px;
+}
+.logout a i { font-size:17px; }
+.sidebar.collapsed .logout a span { display:none; }
 
-    /* hide text when collapsed */
-    .sidebar.collapsed .nav a span.label { opacity:0; width:0; pointer-events:none; transition: opacity .18s, width .18s; }
-    .sidebar.collapsed .nav a { justify-content:center; padding:12px 6px; }
+/* MAIN */
+.main {
+  flex:1;
+  min-width: 0; 
+  padding:24px;
+  overflow-x: hidden; 
+}
 
-    .logout{
-      margin-top:auto;
-      padding:18px;
-      border-top:1px solid rgba(255,255,255,0.04);
-    }
-    .logout a{
-      display:flex;
-      gap:10px;
-      align-items:center;
-      justify-content:center;
-      background:transparent;
-      padding:10px 8px;
-      border-radius:8px;
-      color:var(--accent-gold);
-      border:1px solid rgba(255,214,0,0.14);
-      text-decoration:none;
-      font-weight:700;
-    }
-    .logout a:hover{ background:var(--accent-gold); color:#08203b; }
+.welcome h1 {
+  color:var(--accent-gold);
+  text-align:center;
+  margin-bottom:12px;
+  font-size:24px;
+}
 
-    /* Main content */
-    .main{
-      flex:1;
-      padding:36px;
-      transition: margin-left .28s ease;
-      min-height: calc(100vh - 150px);
-    }
+/* CARDS */
+.metrics {
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
+  gap:18px;
+}
+.card {
+  background:rgba(0,0,0,0.45);
+  border-radius:12px;
+  padding:18px;
+  text-align:center;
+  backdrop-filter:blur(10px);
+  box-shadow:0 0 18px rgba(0,0,0,0.45);
+}
+.card .icon {
+  font-size:30px;
+  color:var(--accent-gold);
+  margin-bottom:6px;
+}
+.card .num {
+  font-size:22px;
+  font-weight:700;
+}
+.card .label {
+  font-size:0.85rem;
+  color:#ddd;
+}
 
-    /* welcome */
-    .welcome{
-      text-align:center;
-      margin-top:8px;
-      margin-bottom:20px;
-    }
-    .welcome h1{
-      margin:0;
-      font-size:28px;
-      color:var(--accent-gold);
-      text-shadow:0 4px 18px rgba(0,0,0,0.6);
-    }
+/* TABLE */
+.table-section {
+  margin-top:20px;
+}
+.table-title {
+  font-size:16px;
+  font-weight:600;
+  margin-bottom:10px;
+}
+table {
+  width:100%;
+  border-collapse:collapse;
+  background:rgba(0,0,0,0.45);
+  border-radius:12px;
+  overflow:hidden;
+  backdrop-filter:blur(8px);
+}
+thead th {
+  padding:12px;
+  color:var(--accent-gold);
+}
+tbody td {
+  padding:12px;
+  border-top:1px solid rgba(255,255,255,0.15);
+}
 
-    /* metric cards */
-    .metrics{
-      display:grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px,1fr));
-      gap:18px;
-      margin-top:26px;
-    }
-    .card{
-      background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
-      border-radius:12px;
-      padding:18px;
-      box-shadow: 0 8px 30px rgba(0,0,0,0.5);
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      justify-content:center;
-      gap:8px;
-      transition: transform .16s, box-shadow .16s;
-      min-height:110px;
-    }
-    .card:hover{ transform:translateY(-6px); box-shadow: 0 18px 40px rgba(0,0,0,0.6); }
-    .card .icon{ font-size:34px; color:var(--accent-gold); }
-    .card .num{ font-size:28px; font-weight:800; color:#fff; }
-    .card .label{ color:#dcdcdc; font-weight:700; }
+/* MOBILE */
 
-    /* table */
-    .table-section{
-      margin-top:28px;
-    }
-    .table-title{ color:var(--accent-gold); font-weight:800; margin-bottom:8px; }
+.notification-banner {
+  width: 100%;
+  background: linear-gradient(90deg, rgba(255,214,0,0.92), rgba(255,214,0,0.85));
+  color: black;
+  font-weight: 700;
+  padding: 10px 0;
+  margin-bottom: 10px;
+  font-size: 0.95rem;
+  overflow: hidden;
+  border-bottom: 2px solid rgba(0,0,0,0.25);
+  white-space: nowrap;
+}
 
-    table{
-      width:100%;
-      border-collapse:collapse;
-      border-radius:10px;
-      overflow:hidden;
-      background: rgba(0,0,0,0.35);
-      box-shadow: 0 8px 30px rgba(0,0,0,0.5);
-    }
-    thead th{
-      padding:12px 16px;
-      text-align:left;
-      color:var(--accent-gold);
-      background: linear-gradient(90deg, rgba(0,0,0,0.25), rgba(255,255,255,0.02));
-      font-weight:700;
-    }
-    tbody td{
-      padding:12px 16px;
-      border-bottom:1px solid rgba(255,255,255,0.04);
-      color:#f6f6f6;
-    }
-    tbody tr:last-child td{ border-bottom:none; } /* remove bottom line */
+.scrolling-text {
+  display: inline-block;
+  padding-left: 100%;
+  animation: scroll-left 15s linear infinite;
+}
 
-    /* responsive */
-    @media (max-width:900px){
-      .college-header{ padding:12px 14px; }
-      .college-header img{ height:56px; }
-      .main{ padding:18px; }
-      .nav a span.label{ display:inline-block; } /* keep visible on narrow */
-    }
-    @media (max-width:720px){
-      .sidebar{ position:fixed; left:-100%; top:0; height:100vh; z-index:40; }
-      .sidebar.open{ left:0; }
-      .sidebar.collapsed{ width:250px; min-width:250px; } /* mobile uses overlay menu */
-      .main{ padding:18px; }
-      .toggle-area{ position:fixed; left:12px; top:12px; z-index:50; }
-    }
-  </style>
+@keyframes scroll-left {
+  to { transform: translateX(-100%); }
+}
+
+/* mobile adjustments */
+@media (max-width: 768px) {
+  .notification-banner {
+    font-size: 0.85rem;
+    padding: 8px 0;
+  }
+}
+
+.nav-label {
+  max-width:100%;
+  white-space:normal;       /* 👈 allows wrapping */
+  word-break:break-word;    /* 👈 splits big words */
+  line-height:1.15;
+  margin-top:2px;
+}
+.sidebar {
+  overflow-y: auto;     /* 👈 vertical scroll */
+  overflow-x: hidden;   /* 👈 horizontal avoid */
+  scrollbar-width: thin; /* firefox thin scrollbar */
+}
+.sidebar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.sidebar::-webkit-scrollbar-track {
+  background: rgba(255,255,255,0.05);
+  border-radius: 4px;
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.25);
+  border-radius: 4px;
+}
+@media(max-width:820px){
+  .sidebar {
+    max-height: 100vh;
+  }
+}
+.mini-header {
+  width:100%;
+  padding:12px 14px;
+  margin-bottom:12px;
+  background:rgba(0,0,0,0.50);
+  backdrop-filter:blur(6px);
+  border-left:4px solid var(--accent-gold);
+  font-size:1.05rem;
+  font-weight:600;
+  color:var(--accent-gold);
+  text-transform:uppercase;
+}
+/* =========================
+   MOBILE UI – FIXED VERSION
+   ========================= */
+@media (max-width: 768px) {
+
+  /* ---- layout fix ---- */
+  body {
+    overflow-x: hidden;
+  }
+
+  .dashboard {
+    min-height: auto;
+  }
+
+  /* ---- sidebar visible ---- */
+  .sidebar {
+    width: 72px;
+    flex-shrink: 0;
+  }
+
+  .sidebar.collapsed {
+    width: 60px;
+  }
+
+  #toggleBtn {
+    display: flex;
+  }
+
+  /* ---- nav items (mobile only) ---- */
+  .nav-item {
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 8px 4px;
+    font-size: 11px;
+  }
+
+  .nav-item i {
+    font-size: 18px;
+    min-width: unset;
+  }
+
+  .nav-label {
+    font-size: 10px;
+    line-height: 1.1;
+    text-align: center;
+    white-space: normal;
+    word-break: break-word;
+  }
+
+  /* ---- main dashboard ---- */
+  .main {
+    padding: 14px 10px;
+  }
+
+  .welcome h1 {
+    font-size: 18px;
+  }
+
+  /* ---- cards ---- */
+  .metrics {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+
+  .card {
+    padding: 12px;
+  }
+
+  .card .icon {
+    font-size: 22px;
+  }
+
+  .card .num {
+    font-size: 17px;
+  }
+
+  /* ---- table ---- */
+  .table-section {
+    overflow-x: auto;
+  }
+
+  table {
+    min-width: 620px;
+    font-size: 12px;
+  }
+
+  /* ---- header compact ---- */
+  .college-header img {
+    height: 44px;
+  }
+
+  .header-text h2 {
+    font-size: 0.8rem;
+  }
+
+  .header-text p {
+    display: none;
+  }
+}
+/* =========================
+   MOBILE MAIN WIDTH FIX
+   ========================= */
+@media (max-width: 768px) {
+
+  .dashboard {
+    width: 100vw;
+    overflow-x: hidden;
+  }
+
+  .main {
+    width: calc(100vw - 72px); /* sidebar width */
+    max-width: calc(100vw - 72px);
+  }
+
+  .metrics {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+
+}
+
+
+
+</style>
 </head>
 <body>
-  <%- include('../partials/toast') %>
 
-  <div class="overlay">
-    <!-- header -->
-    <header class="college-header">
-      <div class="college-header-inner">
-        <img src="/images/college_logo.png" alt="logo" />
-        <div class="header-text">
-          <h2>SIR C R REDDY COLLEGE OF ENGINEERING - BOYS HOSTEL (<span class="autonomous">AUTONOMOUS</span>)</h2>
-          <p>Approved by AICTE & Permanently Affiliated to JNTUk, Kakinada, NAAC-A<br>
-          Accredited by NBA (CSE, IT, EEE, Mech, ECE, Civil)<br>
-          Vatluru, Eluru, Eluru District, AP - 534007</p>
-        </div>
-      </div>
-    </header>
+<div class="bg-layer"></div>
 
-    <div class="dashboard">
-      <!-- sidebar -->
-      <nav id="sidebar" class="sidebar">
-        <div class="toggle-area">
-          <button id="toggleBtn" class="toggle-btn" aria-label="Toggle navigation">
-            <i id="toggleIcon" class="fas fa-bars"></i>
-          </button>
-        </div>
-
-        <div class="nav" role="navigation" aria-label="Main menu">
-          <a href="/warden/markAttendance"><i class="fas fa-clipboard-check"></i><span class="label">Mark Attendance</span></a>
-          <a href="/warden/approveOutpass"><i class="fas fa-check-circle"></i><span class="label">Approve Outpasses</span></a>
-          <a href="/warden/emergencyOutpasses"><i class="fas fa-bell"></i><span class="label">Emergency Outpasses</span></a>
-          <a href="/warden/viewStudents"><i class="fas fa-users"></i><span class="label">View Student Profiles</span></a>
-          <a href="/warden/complaints"><i class="fas fa-comments"></i><span class="label">Manage Complaints</span></a>
-          <a href="/warden/upload-students"><i class="fas fa-file-upload"></i><span class="label">Upload Students</span></a>
-          <a href="/warden/upload_results"><i class="fas fa-file-alt"></i><span class="label">Upload Results</span></a>
-          <a href="/warden/uploadSBI"><i class="fas fa-file-invoice"></i><span class="label">Upload SBI File</span></a>
-          <a href="/warden/uploadMessBill"><i class="fas fa-receipt"></i><span class="label">Upload Mess Bill</span></a>
-          <a href="/warden/viewReceipts"><i class="fas fa-receipt"></i><span class="label"> View Paid Receipts</span></a>
-    <div style="
-  background:#ffd700;
-  padding:12px;
-  border-radius:8px;
-  margin-bottom:20px;
-  text-align:center;
-  font-weight:bold;
-">
-  <a href="/notice/create" style="text-decoration:none; color:#000;">
-      📝 Post Important Notice
-  </a>
-</div>
-
-        </div>
-
-        <div class="logout">
-          <a href="/logout"><i class="fas fa-sign-out-alt"></i><span class="label">Logout</span></a>
-        </div>
-      </nav>
-
-      <!-- main -->
-      <main class="main" id="main">
-        <div class="welcome">
-          <h1>Welcome, <%= wardenNameSafe %>!</h1>
-        </div>
-
-        <section class="metrics" aria-label="Key metrics">
-          <div class="card" role="article" aria-labelledby="m1">
-            <div class="icon"><i class="fa-solid fa-user-clock"></i></div>
-            <div id="m1" class="num"><%= pendingCountSafe %></div>
-            <div class="label">Pending Outpasses</div>
-          </div>
-
-          <div class="card" role="article" aria-labelledby="m2">
-            <div class="icon"><i class="fa-solid fa-school"></i></div>
-            <div id="m2" class="num"><%= studentCountSafe %></div>
-            <div class="label">Total Students Today</div>
-          </div>
-
-          <div class="card" role="article" aria-labelledby="m3">
-            <div class="icon"><i class="fa-solid fa-flag"></i></div>
-            <div id="m3" class="num"><%= complaintCountSafe %></div>
-            <div class="label">New Complaints</div>
-          </div>
-
-          <div class="card" role="article" aria-labelledby="m4">
-            <div class="icon"><i class="fa-solid fa-check"></i></div>
-            <div id="m4" class="num"><%= approvedCountSafe %></div>
-            <div class="label">Approved Today</div>
-          </div>
-        </section>
-
-        <section class="table-section" aria-labelledby="tblTitle">
-          <div id="tblTitle" class="table-title">✔ Outpasses Approved Today: <strong><%= approvedCountSafe %></strong></div>
-
-          <table role="table" aria-label="Approved outpasses">
-            <thead>
-              <tr>
-                <th style="width:20%;">Student ID</th>
-                <th style="width:35%;">Name</th>
-                <th style="width:15%;">Status</th>
-                <th style="width:30%; text-align:center;">Approved At</th>
-              </tr>
-            </thead>
-            <tbody>
-              <% if (studentsSafe.length === 0) { %>
-                <tr>
-                  <td colspan="4" style="text-align:center; padding:20px;">No approved outpasses yet.</td>
-                </tr>
-              <% } else { %>
-                <% studentsSafe.forEach(s => { %>
-                  <tr>
-                    <td><%= s.student_id %></td>
-                    <td><%= s.name %></td>
-                    <td><%= s.status %></td>
-                    <td style="text-align:center;"><%= s.approved_at ? new Date(s.approved_at).toLocaleString() : '-' %></td>
-                  </tr>
-                <% }) %>
-              <% } %>
-            </tbody>
-          </table>
-        </section>
-      </main>
+<header class="college-header">
+  <div class="college-header-inner">
+    <img src="/images/college_logo.png"/>
+    <div class="header-text">
+      <h2>SIR C R REDDY COLLEGE OF ENGINEERING - BOYS HOSTEL (AUTONOMOUS)</h2>
+      <p>Approved by AICTE & Permanently Affiliated to JNTUk, Kakinada, NAAC-A<br>
+      Accredited by NBA (CSE, IT, EEE, Mech, ECE, Civil)<br>
+      Vatluru, Eluru, Eluru District, AP - 534007</p>
     </div>
   </div>
-<% if (globalNotices && globalNotices.length > 0) { %>
-<div style="margin-bottom: 20px;">
-    <% globalNotices.forEach(n => { %>
-        <div style="
-            background: rgba(255, 204, 0, 0.9);
-            padding: 12px;
-            border-radius: 6px;
-            margin-bottom: 10px;
-            color: #333;
-            font-weight: bold;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-        ">
-            📢 <%= n.title %>  
-            <br>
-            <span style="font-weight: normal;"><%= n.description %></span>
-            <br>
-            <small style="color: #222;">
-                Posted by: <%= n.posted_by %>
-                | <%= new Date(n.created_at).toLocaleString() %>
-            </small>
-        </div>
-    <% }) %>
+</header>
+
+<% if (showNotice) { %>
+<div class="notification-banner">
+  <div class="scrolling-text">
+    <% if (isNew) { %> 🆕 NEW | <% } %>
+    📢 <%= noticeData.title %> — <%= noticeData.description %> |
+    ⏱ <%= noticeTime.toLocaleString() %>
+  </div>
 </div>
 <% } %>
 
-  <script>
-    // Sidebar toggle logic (robust)
-    (function(){
-      const sidebar = document.getElementById('sidebar');
-      const toggleBtn = document.getElementById('toggleBtn');
-      const toggleIcon = document.getElementById('toggleIcon');
-      const mq = window.matchMedia('(max-width:720px)');
 
-      function setInitial(){
-        if(mq.matches){
-          sidebar.classList.add('collapsed'); // mobile: collapsed (overlay)
-          // leave collapsed but hidden left via CSS on mobile unless user opens
-        }
+
+<div class="dashboard">
+
+<nav id="sidebar" class="sidebar"><!-- expanded default -->
+  <button id="toggleBtn"><i class="fas fa-bars"></i></button>
+
+  <div class="nav">
+    <a class="nav-item" data-tip="Mark Attendance" href="/warden/markAttendance" onclick="spaNavigate(event,'/warden/markAttendance')">
+      <i class="fas fa-clipboard-check"></i><span class="nav-label">Mark Attendance</span>
+    </a>
+    <a class="nav-item" data-tip="Approve Outpass" href="/warden/approveOutpass" onclick="spaNavigate(event,'/warden/approveOutpass')">
+      <i class="fas fa-check-circle"></i><span class="nav-label">Approve Outpass</span>
+    </a>
+    <a class="nav-item" data-tip="Emergency Outpasses" href="/warden/emergencyOutpasses" onclick="spaNavigate(event,'/warden/emergencyOutpasses')">
+      <i class="fas fa-bell"></i><span class="nav-label">Emergency Outpasses</span>
+    </a>
+    <a class="nav-item" data-tip="View Students" href="/warden/viewStudents" onclick="spaNavigate(event,'/warden/viewStudents')">
+      <i class="fas fa-users"></i><span class="nav-label">View Students</span>
+    </a>
+    <a class="nav-item" data-tip="Eligibility" href="/warden/eligibility" onclick="spaNavigate(event,'/warden/eligibility')">
+      <i class="fas fa-receipt"></i><span class="nav-label">Eligibility</span>
+    </a>
+    <a class="nav-item" data-tip="Complaints" href="/warden/complaints" onclick="spaNavigate(event,'/warden/complaints')">
+      <i class="fas fa-comments"></i><span class="nav-label">Complaints</span>
+    </a>
+    <a class="nav-item" data-tip="Upload Students" href="/warden/upload-students" onclick="spaNavigate(event,'/warden/upload-students')">
+      <i class="fas fa-file-upload"></i><span class="nav-label">Upload Students</span>
+    </a>
+    <a class="nav-item" data-tip="Upload Results" href="/warden/upload_results" onclick="spaNavigate(event,'/warden/upload_results')">
+      <i class="fas fa-file-alt"></i><span class="nav-label">Upload Results</span>
+    </a>
+    <a class="nav-item" data-tip="Upload SBI" href="/warden/uploadSBI" onclick="spaNavigate(event,'/warden/uploadSBI')">
+      <i class="fas fa-file-invoice"></i><span class="nav-label">Upload SBI</span>
+    </a>
+    <a class="nav-item" data-tip="Upload Mess Bill" href="/warden/uploadMessBill" onclick="spaNavigate(event,'/warden/uploadMessBill')">
+      <i class="fas fa-receipt"></i><span class="nav-label">Upload Mess Bill</span>
+    </a>
+    <a class="nav-item" data-tip="View Receipts" href="/warden/viewReceipts" onclick="spaNavigate(event,'/warden/viewReceipts')">
+      <i class="fas fa-receipt"></i><span class="nav-label">View Receipts</span>
+    </a>
+    <a class="nav-item" data-tip="Post Notice" href="/notice/create" onclick="spaNavigate(event,'/notice/create')">
+      <i class="fas fa-bullhorn"></i><span class="nav-label">Post Notice</span>
+    </a>
+  </div>
+
+  <div class="logout">
+    <a href="/logout"><i class="fas fa-sign-out-alt"></i><span>Logout</span></a>
+  </div>
+</nav>
+
+
+<main id="main" class="main">
+
+  <!-- MINI HEADER (hidden on dashboard) -->
+  <div id="miniHeader" class="mini-header" style="display:none;"></div>
+
+  <!-- SPA DYNAMIC CONTENT -->
+  <div id="content-container">
+
+      <div class="welcome">
+        <h1>Welcome, <%= wardenNameSafe %>!</h1>
+      </div>
+
+      <section class="metrics">
+        <div class="card">
+          <div class="icon"><i class="fa-solid fa-user-clock"></i></div>
+          <div class="num"><%=pendingCountSafe%></div>
+          <div class="label">Pending</div>
+        </div>
+        <div class="card">
+          <div class="icon"><i class="fa-solid fa-school"></i></div>
+          <div class="num"><%=studentCountSafe%></div>
+          <div class="label">Students</div>
+        </div>
+        <div class="card">
+          <div class="icon"><i class="fa-solid fa-flag"></i></div>
+          <div class="num"><%=complaintCountSafe%></div>
+          <div class="label">Complaints</div>
+        </div>
+        <div class="card">
+          <div class="icon"><i class="fa-solid fa-check"></i></div>
+          <div class="num"><%=approvedCountSafe%></div>
+          <div class="label">Approved</div>
+        </div>
+      </section>
+
+      <div class="table-section">
+        <div class="table-title">Approved Today: <%=approvedCountSafe%></div>
+        <table>
+          <thead><tr><th>ID</th><th>Name</th><th>Status</th><th>Approved</th></tr></thead>
+          <tbody>
+          <% studentsSafe.forEach(s=>{ %>
+            <tr>
+              <td><%=s.student_id%></td>
+              <td><%=s.name%></td>
+              <td><%=s.status%></td>
+              <td><%=s.approved_at?new Date(s.approved_at).toLocaleString():'-'%></td>
+            </tr>
+          <% }) %>
+          </tbody>
+        </table>
+      </div>
+
+  </div><!-- /content-container -->
+</main>
+
+</div>
+
+<script>
+const sidebar=document.getElementById('sidebar');
+document.getElementById('toggleBtn').onclick=()=>sidebar.classList.toggle('collapsed');
+</script>
+
+<script>
+async function spaNavigate(e, url) {
+  e.preventDefault();
+
+  const link = e.currentTarget;
+  const title = link.querySelector('.nav-label')?.innerText.trim();
+  
+  const miniHeader = document.getElementById('miniHeader');
+  const collegeHeader = document.querySelector('.college-header');
+  const content = document.getElementById('content-container'); // dynamic content
+
+  // loading state
+  content.innerHTML = `<div style="padding:40px;text-align:center;color:#ffd600;">
+    <i class="fas fa-spinner fa-spin fa-2x"></i><br><br>Loading...
+  </div>`;
+
+  const res = await fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+  const html = await res.text();
+
+  // show mini-header
+  if (title) {
+    miniHeader.innerText = title;
+    miniHeader.style.display = "block";
+  }
+
+  // hide big header
+  collegeHeader.style.display = "none";
+
+  // inject page
+  content.innerHTML = html;
+  if (typeof initMarkAttendanceSPA === "function") {
+  initMarkAttendanceSPA();}
+
+  history.pushState({}, '', url);
+
+  // close sidebar mobile-only
+  if (window.innerWidth <= 820 && typeof closeSidebar === "function") {
+    closeSidebar();
+  }
+}
+
+window.onpopstate=()=>location.reload();
+</script>
+<script>
+/* ========= MARK ATTENDANCE – SPA SAFE ========= */
+
+document.addEventListener('change', function (e) {
+
+  if (e.target && e.target.id === 'blockSelect') {
+
+    const form = document.getElementById('filterForm');
+    const roomSelect = document.getElementById('roomSelect');
+
+    if (!form || !roomSelect) return;
+
+    const roomsByBlock = JSON.parse(form.dataset.rooms || '{}');
+    const selectedBlock = e.target.value;
+
+    console.log("BLOCKS FROM DB:", Object.keys(roomsByBlock));
+    console.log("SELECTED BLOCK:", selectedBlock);
+
+    roomSelect.innerHTML = '<option value="">Room</option>';
+
+    if (selectedBlock && roomsByBlock[selectedBlock]) {
+      console.log("ROOMS FOR BLOCK:", roomsByBlock[selectedBlock]);
+
+      roomsByBlock[selectedBlock].forEach(room => {
+        const opt = document.createElement('option');
+        opt.value = room;
+        opt.textContent = room;
+        roomSelect.appendChild(opt);
+      });
+    } else {
+      console.log("ROOMS FOR BLOCK: []");
+    }
+  }
+
+});
+</script>
+<script>
+if (
+  location.pathname.startsWith('/warden/') &&
+  location.pathname !== '/warden/dashboard'
+) {
+  fetch('/warden/dashboard', { method: 'HEAD' })
+    .then(res => {
+      if (res.redirected) {
+        window.location.replace(res.url);
+      } else {
+        window.location.replace('/warden/dashboard');
       }
+    });
+}
 
-      // Toggle click
-      toggleBtn.addEventListener('click', () => {
-        const isCollapsed = sidebar.classList.toggle('collapsed');
+</script>
+<script>
+async function updateOutpass(id, action, btn) {
+  btn.disabled = true;
+  btn.innerText = '...';
 
-        // handle mobile open/close: when collapsed on mobile we want to open (so invert)
-        if(mq.matches){
-          if(sidebar.classList.contains('collapsed')){
-            // on small screens, toggling collapsed should open it (treat collapsed as 'open' flag)
-            sidebar.classList.toggle('open');
-          } else {
-            sidebar.classList.remove('open');
-          }
-        }
+  const res = await fetch(`/warden/approveOutpass/${id}/${action}`, {
+    method: 'POST',
+    headers: {
+      'X-Requested-With': 'XMLHttpRequest'
+    }
+  });
 
-        // toggle icon
-        toggleIcon.className = isCollapsed ? 'fas fa-arrow-right' : 'fas fa-bars';
-      });
+  const data = await res.json();
 
-      // close sidebar on small screens when clicking outside (optional)
-      document.addEventListener('click', (e) => {
-        if(mq.matches){
-          if(!sidebar.contains(e.target) && !toggleBtn.contains(e.target)){
-            sidebar.classList.remove('open');
-            sidebar.classList.add('collapsed');
-            toggleIcon.className = 'fas fa-arrow-right';
-          }
-        }
-      });
+  if (data.success) {
+    const card = btn.closest('.mobile-card') || btn.closest('tr');
 
-      setInitial();
-      window.addEventListener('resize', setInitial);
-    })();
-  </script>
+    // update status badge
+    const badge = card.querySelector('.status-badge');
+    badge.innerText = data.status;
+    badge.className = `status-badge ${data.status.toLowerCase()}`;
+
+    // remove action buttons
+    const actions = card.querySelector('.mobile-actions') || btn.parentElement;
+    if (actions) actions.remove();
+  } else {
+    alert('Action failed');
+    btn.disabled = false;
+    btn.innerText = action;
+  }
+}
+</script>
+<script>
+async function handleOutpass(id, action, btn) {
+
+  // 🔒 Find parent container
+  const container = btn.closest('tr') || btn.closest('.mobile-card');
+
+  // 🔒 Disable ALL buttons immediately
+  const allButtons = container.querySelectorAll('button');
+  allButtons.forEach(b => {
+    b.disabled = true;
+    b.style.opacity = '0.6';
+    b.style.cursor = 'not-allowed';
+  });
+
+  btn.innerText = '...';
+
+  try {
+    const res = await fetch(`/warden/approveOutpass/${id}/${action}`, {
+      method: 'POST',
+      headers: {
+        'X-Requested-With': 'XMLHttpRequest'
+      }
+    });
+
+    const data = await res.json();
+
+    if (!data.success) throw new Error('Failed');
+
+    // ✅ Update status badge
+    const badge = container.querySelector('.status-badge');
+    badge.innerText = data.status;
+    badge.className = `status-badge ${data.status.toLowerCase()}`;
+
+    // 🧹 Remove action area completely
+    const actions =
+      container.querySelector('.mobile-actions') ||
+      container.querySelector('td:last-child');
+
+    if (actions) actions.innerHTML = '—';
+
+  } catch (err) {
+    alert('Action failed. Try again.');
+
+    // ❌ Re-enable buttons ONLY if failed
+    allButtons.forEach(b => {
+      b.disabled = false;
+      b.style.opacity = '1';
+      b.style.cursor = 'pointer';
+    });
+
+    btn.innerText = action;
+  }
+}
+</script>
+
 </body>
 </html>
