@@ -1,216 +1,316 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<title>Your Outpasses | Student Portal</title>
+<div class="student-outpasses-page">
 
 <style>
-/* ========= DESIGN TOKENS ========= */
-:root {
-    --bg-dark: #020617;
-    --bg-surface: rgba(15, 23, 42, 0.92);
-    --bg-card: rgba(15, 23, 42, 0.75);
-    --text-main: #e5e7eb;
-    --text-muted: #9ca3af;
-    --gold: #fbbf24;
-
-    --status-approved: #22c55e;
-    --status-pending: #facc15;
-    --status-rejected: #ef4444;
-
-    --radius-lg: 14px;
-    --radius-md: 10px;
-
-    --shadow-soft: 0 18px 45px rgba(0,0,0,0.45);
+/* ===== HARD STOP DASHBOARD INHERITANCE ===== */
+.student-outpasses-page {
+  all: initial;
+  display: block;
+  width: 100%;
+  font-family: 'Poppins', sans-serif;
 }
 
-/* ========= GLOBAL ========= */
-body {
-    margin: 0;
-    padding: 40px 16px;
-    background: radial-gradient(circle at top, #1f2937 0, #020617 55%);
-    font-family: "Poppins", sans-serif;
-    color: var(--text-main);
+/* ===== SCOPE EVERYTHING ===== */
+.student-outpasses-page *,
+.student-outpasses-page *::before,
+.student-outpasses-page *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
-.container {
-    max-width: 1050px;
-    margin: 0 auto;
+/* ===== PAGE BACKGROUND (REPLACES BODY) ===== */
+.student-outpasses-page {
+  background:
+    linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)),
+    url('/images/hostel-bg.jpg') no-repeat center center fixed;
+  background-size: cover;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  padding: 20px;
 }
 
-/* ========= PAGE TITLE ========= */
-h2 {
-    text-align: center;
-    font-size: 26px;
-    margin-bottom: 25px;
-    color: var(--gold);
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    font-weight: 700;
+/* ================= CONTAINER ================= */
+.student-outpasses-page .outpass-container {
+  max-width: 1000px;
+  width: 100%;
+  margin: 40px auto;
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 15px 45px rgba(10, 20, 30, 0.3);
+  overflow: hidden;
 }
 
-/* ========= TABLE CARD ========= */
-.table-card {
-    background: var(--bg-surface);
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-soft);
-    padding: 20px;
-    border: 1px solid rgba(255,255,255,0.1);
+.student-outpasses-page .gold-header-bar {
+  height: 8px;
+  background: linear-gradient(90deg, #ffd700, #ffc400);
 }
 
-/* TABLE WRAPPER */
-.table-wrapper {
-    overflow-x: auto;
-    border-radius: 12px;
-    border: 1px solid rgba(255,255,255,0.12);
+.student-outpasses-page .content-wrapper {
+  padding: 24px;
 }
 
-/* TABLE */
-.outpass-table {
-    width: 100%;
-    border-collapse: collapse;
-    color: var(--text-main);
-    font-size: 14px;
+/* ================= HEADING ================= */
+.student-outpasses-page h2 {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 1.5em;
+  font-weight: 900;
+  color: #1a2a47;
+  text-align: center;
+  margin-bottom: 24px;
 }
 
-.outpass-table th,
-.outpass-table td {
-    padding: 12px 14px;
-    border-bottom: 1px solid rgba(255,255,255,0.1);
-    white-space: nowrap;
+/* ================= DESKTOP TABLE ================= */
+.student-outpasses-page .desktop-table {
+  display: none;
 }
 
-.outpass-table th {
-    background: rgba(2, 6, 23, 0.8);
-    color: var(--gold);
-    font-size: 12px;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    font-weight: 600;
+.student-outpasses-page table {
+  width: 100%;
+  border-collapse: collapse;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #e0e0e0;
 }
 
-.outpass-table tbody tr:nth-child(even) {
-    background: rgba(255,255,255,0.03);
+.student-outpasses-page thead {
+  background: linear-gradient(135deg, #1a2a47, #0f1a2e);
 }
 
-.outpass-table tbody tr:hover {
-    background: rgba(255,255,255,0.07);
+.student-outpasses-page th {
+  padding: 14px 18px;
+  font-weight: 600;
+  color: #f9fafb;
+  font-size: 0.85em;
+  text-transform: uppercase;
 }
 
-/* ========= STATUS BADGES ========= */
-.status-badge {
-    padding: 5px 12px;
-    border-radius: 999px;
-    font-weight: 600;
-    font-size: 12px;
-    text-transform: uppercase;
+.student-outpasses-page td {
+  padding: 14px 18px;
+  border-bottom: 1px solid #e0e0e0;
+  color: #374151;
 }
 
-.status-APPROVED { background: rgba(34,197,94,0.2); color: var(--status-approved); }
-.status-PENDING { background: rgba(250,204,21,0.25); color: var(--status-pending); }
-.status-REJECTED { background: rgba(239,68,68,0.2); color: var(--status-rejected); }
-
-/* ========= MOBILE TABLE (CARDS) ========= */
-@media (max-width: 720px) {
-    .outpass-table {
-        border-collapse: separate;
-        border-spacing: 0 12px;
-        background: transparent;
-    }
-
-    .outpass-table thead {
-        display: none;
-    }
-
-    .outpass-table tbody tr {
-        display: block;
-        background: var(--bg-card);
-        border-radius: 12px;
-        padding: 10px 12px;
-        border: 1px solid rgba(255,255,255,0.12);
-        margin-bottom: 10px;
-    }
-
-    .outpass-table td {
-        display: flex;
-        justify-content: space-between;
-        border-bottom: none;
-        padding: 6px 4px;
-        font-size: 13px;
-        white-space: normal;
-    }
-
-    .outpass-table td::before {
-        content: attr(data-label);
-        font-weight: 600;
-        color: var(--text-muted);
-        margin-right: 10px;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-    }
+.student-outpasses-page tbody tr:nth-child(even) {
+  background-color: #f9fafb;
 }
 
-/* ========= BACK BUTTON ========= */
-.back-btn {
-    display: block;
-    text-align: center;
-    width: 230px;
-    margin: 25px auto 0;
-    padding: 12px;
-    background: var(--gold);
-    color: black;
-    font-weight: 700;
-    text-decoration: none;
-    border-radius: var(--radius-md);
-    box-shadow: 0 10px 20px rgba(251,191,36,0.25);
-    transition: 0.2s;
+.student-outpasses-page tbody tr:hover {
+  background-color: #f0f4f8;
 }
 
-.back-btn:hover {
-    background: #ffdd4d;
-    transform: translateY(-2px);
+/* ================= MOBILE CARDS ================= */
+.student-outpasses-page .mobile-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.student-outpasses-page .outpass-card {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.student-outpasses-page .outpass-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 22px rgba(0,0,0,0.15);
+}
+
+.student-outpasses-page .card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.student-outpasses-page .card-period {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 700;
+  color: #1a2a47;
+  font-size: 1.1em;
+}
+
+.student-outpasses-page .card-reason {
+  color: #6b7280;
+  font-size: 0.9em;
+  margin-top: 4px;
+}
+
+.student-outpasses-page .card-dates {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.student-outpasses-page .date-item {
+  background: #f9fafb;
+  padding: 12px;
+  border-radius: 8px;
+  transition: background-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.student-outpasses-page .date-item:hover {
+  background: #f1f5f9;
+  box-shadow: inset 0 0 0 1px #e5e7eb;
+}
+
+.student-outpasses-page .date-label {
+  font-size: 0.75em;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 4px;
+}
+
+.student-outpasses-page .date-value {
+  font-weight: 600;
+  color: #1f2937;
+}
+
+/* ================= STATUS BADGES ================= */
+.student-outpasses-page .status-badge {
+  display: inline-block;
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 0.8em;
+  letter-spacing: 0.03em;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.student-outpasses-page .status-badge:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+}
+
+.student-outpasses-page .status-approved {
+  background-color: #ecfdf5;
+  color: #047857;
+  border: 1px solid #047857;
+}
+
+.student-outpasses-page .status-pending {
+  background-color: #f3f4f6;
+  color: #4b5563;
+  border: 1px solid #9ca3af;
+}
+
+.student-outpasses-page .status-rejected {
+  background-color: #fef2f2;
+  color: #b91c1c;
+  border: 1px solid #b91c1c;
+}
+
+/* ================= BACK BUTTON ================= */
+.student-outpasses-page .back-link {
+  display: inline-block;
+  margin-top: 24px;
+  padding: 12px 28px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #ffd700, #ffc400);
+  color: #1a2a47;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 0.95em;
+  box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+  transition: all 0.25s ease;
+}
+
+.student-outpasses-page .back-link:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(255, 215, 0, 0.4);
+}
+
+/* ================= DESKTOP ROW ZOOM ================= */
+.student-outpasses-page table tbody tr {
+  transition: transform 0.25s ease, box-shadow 0.25s ease, background-color 0.25s ease;
+}
+
+.student-outpasses-page table tbody tr:hover {
+  transform: scale(1.015);
+  background-color: rgba(243, 246, 251, 0.95);
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.12);
+}
+
+/* ================= RESPONSIVE ================= */
+@media (min-width: 768px) {
+  .student-outpasses-page .mobile-cards { display: none; }
+  .student-outpasses-page .desktop-table { display: block; }
+  .student-outpasses-page .content-wrapper { padding: 32px 40px; }
+  .student-outpasses-page h2 { font-size: 1.8em; }
 }
 </style>
-</head>
 
-<body>
-<div class="container">
+<div class="outpass-container">
+  <div class="gold-header-bar"></div>
+  <div class="content-wrapper">
     <h2>Your Outpass Requests</h2>
 
-    <div class="table-card">
-        <div class="table-wrapper">
-            <table class="outpass-table">
-                <thead>
-                    <tr>
-                        <th>Period</th>
-                        <th>Reason</th>
-                        <th>Out Date</th>
-                        <th>Return Date</th>
-                        <th>Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                <% outpasses.forEach(op => { 
-                    const status = op.status ? op.status.toUpperCase() : "PENDING";
-                %>
-                    <tr>
-                        <td data-label="Period"><%= op.period %></td>
-                        <td data-label="Reason"><%= op.reason %></td>
-                        <td data-label="Out Date"><%= op.out_date.toISOString().split('T')[0] %></td>
-                        <td data-label="Return Date"><%= op.return_date.toISOString().split('T')[0] %></td>
-                        <td data-label="Status">
-                            <span class="status-badge status-<%= status %>">
-                                <%= status %>
-                            </span>
-                        </td>
-                    </tr>
-                <% }) %>
-                </tbody>
-            </table>
+    <!-- Mobile / Tablet -->
+    <div class="mobile-cards">
+      <% outpasses.forEach(op => { 
+        const status = (op.status || 'pending').trim().toLowerCase();
+      %>
+      <div class="outpass-card">
+        <div class="card-header">
+          <div>
+            <div class="card-period">Days : <%= op.period %></div>
+            <div class="card-reason"><%= op.reason %></div>
+          </div>
+          <span class="status-badge status-<%= status %>"><%= op.status %></span>
         </div>
+        <div class="card-dates">
+          <div class="date-item">
+            <div class="date-label">Out Date</div>
+            <div class="date-value"><%= op.out_date.toISOString().split('T')[0] %></div>
+          </div>
+          <div class="date-item">
+            <div class="date-label">Return Date</div>
+            <div class="date-value"><%= op.return_date.toISOString().split('T')[0] %></div>
+          </div>
+        </div>
+      </div>
+      <% }) %>
     </div>
 
-    <a href="/student/dashboard" class="back-btn">← Back to Dashboard</a>
+    <!-- Desktop -->
+    <div class="desktop-table">
+      <table>
+        <thead>
+          <tr>
+            <th>Period</th>
+            <th>Reason</th>
+            <th>Out Date</th>
+            <th>Return Date</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% outpasses.forEach(op => { 
+            const status = (op.status || 'pending').trim().toLowerCase();
+          %>
+          <tr>
+            <td><%= op.period %></td>
+            <td><%= op.reason %></td>
+            <td><%= op.out_date.toISOString().split('T')[0] %></td>
+            <td><%= op.return_date.toISOString().split('T')[0] %></td>
+            <td><span class="status-badge status-<%= status %>"><%= op.status %></span></td>
+          </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+
+    <a href="/student/dashboard" class="back-link">← Back to Dashboard</a>
+  </div>
 </div>
-</body>
-</html>
+
+</div>
+<!-- ======================================
+     END OF STUDENT OUTPASSES – SAFE PARTIAL -->
