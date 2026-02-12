@@ -1,39 +1,492 @@
+<% if (!isSpa) { %>
 
 <!DOCTYPE html>
-<html>
+
+<html lang="en">
+
 <head>
-  <title>Room Eligibility</title>
-  <style>
-    .eligible { background-color: #c8f7c5; } /* green */
-    .not-eligible { background-color: #f7c5c5; } /* red */
-    table { border-collapse: collapse; width: 70%; margin-top: 20px; }
-    th, td { border: 1px solid #333; padding: 8px; text-align: center; }
-  </style>
-</head>
-<body>
-  <h2>Student Room Eligibility</h2>
 
-  <table>
-    <tr>
-      <th>Reg No</th>
-      <th>Name</th>
-      <th>Year</th>
-      <th>Backlogs</th>
-      <th>Status</th>
-    </tr>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <% students.forEach(s => { 
-         const rowClass = s.room_status === 'Eligible' ? 'eligible' : 'not-eligible';
-    %>
-      <tr class="<%= rowClass %>">
-        <td><%= s.student_unique_id %></td>
-        <td><%= s.name %></td>
-        <td><%= s.year %></td>
-        <td><%= s.remaining_backlogs %></td>
-        <td><%= s.room_status %></td>
-      </tr>
-    <% }) %>
-  </table>
+  <title>Boys Hostel – Room Eligibility</title>
+
+<% } %>
+
+
+
+<style>
+
+  :root {
+
+    --bg-dark: rgba(0, 0, 0, 0.55);
+
+    --card-bg: rgba(255, 255, 255, 0.08);
+
+    --accent-gold: #ffcc00;
+
+    --success: #28bb75;
+
+    --danger: #db3159;
+
+    --text-light: #ffffff;
+
+    --text-muted: #dddddd;
+
+  }
+
+
+
+  body {
+
+    font-family: "Segoe UI", Arial, sans-serif;
+
+    color: var(--text-light);
+
+     /* Mobile spacing */
+
+    background-color: #1a1a1a; /* Fallback background */
+
+  }
+
+
+
+  h2 {
+
+    color: var(--accent-gold);
+
+    text-align: center;
+
+    margin-bottom: 15px;
+
+    font-size: 1.5rem; /* Slightly smaller for mobile */
+
+    text-shadow: 1px 1px 4px #000;
+
+  }
+
+
+
+  /* 🔙 TOP BACK BUTTON */
+
+  .top-back {
+
+    margin-bottom: 15px;
+
+  }
+
+
+
+  .top-back a {
+
+    display: inline-flex;
+
+    align-items: center;
+
+    gap: 6px;
+
+    padding: 10px 16px; /* Bigger touch target */
+
+    border-radius: 20px;
+
+    background: rgba(0,0,0,0.45);
+
+    color: var(--accent-gold);
+
+    font-weight: 700;
+
+    text-decoration: none;
+
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+
+  }
+
+
+
+  /* FILTER BOX - Optimized for Mobile */
+
+  .filter-box {
+
+    display: flex;
+
+    flex-direction: column; /* Stack vertically on mobile */
+
+    gap: 15px;
+
+    background: var(--card-bg);
+
+    padding: 20px;
+
+    border-radius: 12px;
+
+    margin-bottom: 20px;
+
+  }
+
+
+
+  .filter-box label {
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 5px;
+
+    font-weight: 600;
+
+    color: var(--text-muted);
+
+  }
+
+
+
+  .filter-box input,
+
+  .filter-box select {
+
+    padding: 12px;
+
+    border-radius: 8px;
+
+    border: 1px solid rgba(255,255,255,0.2);
+
+    background: #222;
+
+    color: white;
+
+    font-size: 1rem;
+
+    width: 100%; /* Full width */
+
+    box-sizing: border-box;
+
+  }
+
+
+
+  .filter-box .btn-group {
+
+    display: flex;
+
+    gap: 10px;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+  }
+
+
+
+  .filter-box button {
+
+    flex: 1;
+
+    padding: 12px;
+
+    border-radius: 10px;
+
+    border: none;
+
+    font-weight: 700;
+
+    background: var(--accent-gold);
+
+    color: #000;
+
+    cursor: pointer;
+
+  }
+
+
+
+  /* TABLE TO CARD CONVERSION (Mobile) */
+
+  /* =========================
+   MOBILE CARD VIEW (FIXED)
+   ========================= */
+@media screen and (max-width: 600px) {
+
+  table, thead, tbody, tr {
+    display: block;
+    width: 100%;
+  }
+
+  thead {
+    display: none;
+  }
+
+  tr {
+    background: var(--bg-dark);
+    margin-bottom: 14px;
+    border-radius: 12px;
+    padding: 12px;
+    border-left: 5px solid var(--accent-gold);
+  }
+
+  td {
+    display: grid;
+    grid-template-columns: 42% 58%;   /* 👈 label | value */
+    padding: 8px 6px;
+    font-size: 0.95rem;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    align-items: center;
+    text-align: left;
+  }
+
+  td:last-child {
+    border-bottom: none;
+  }
+
+  td::before {
+    content: attr(data-label);
+    font-weight: 700;
+    color: var(--accent-gold);
+    text-align: left;
+  }
+
+  .eligible {
+    border-left-color: var(--success);
+  }
+
+  .not-eligible {
+    border-left-color: var(--danger);
+  }
+}
+
+
+
+
+  /* Desktop View */
+
+  @media screen and (min-width: 601px) {
+
+    .filter-box {
+
+      flex-direction: row;
+
+      justify-content: center;
+
+    }
+
+    .table-wrap {
+
+      overflow-x: auto;
+
+      background: var(--bg-dark);
+
+      padding: 12px;
+
+      border-radius: 12px;
+
+    }
+
+    table {
+
+      width: 100%;
+
+      border-collapse: collapse;
+
+    }
+
+    th, td {
+
+      padding: 12px;
+
+      text-align: center;
+
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+
+    }
+
+    .eligible { background: rgba(40, 187, 117, 0.15); }
+
+    .not-eligible { background: rgba(219, 49, 89, 0.15); }
+
+  }
+
+ .table-wrap {
+  max-height: 65vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.eligibility-wrapper {
+  padding: 10px;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow-x: hidden;   /* 🔑 Prevents right overflow */
+}
+
+.table-wrap {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+  box-sizing: border-box;
+}
+
+table {
+  width: 100%;
+  table-layout: fixed;   /* 🔑 prevents stretch */
+}
+
+
+
+
+</style>
+
+
+
+<div class="eligibility-wrapper">
+
+
+  <div class="top-back">
+
+    <a href="/warden/dashboard" <% if (isSpa) { %> onclick="spaNavigate(event,'/warden/dashboard')" <% } %>>
+
+      ← Back
+
+    </a>
+
+  </div>
+
+
+
+  <h2>Hostel Eligibility</h2>
+
+
+
+  <form method="GET" action="/warden/eligibility" class="filter-box">
+
+    <label>
+
+      Year:
+
+      <select name="year">
+
+        <option value="">All Years</option>
+
+        <option value="1">1st Year</option>
+
+        <option value="2">2nd Year</option>
+
+        <option value="3">3rd Year</option>
+
+        <option value="4">4th Year</option>
+
+      </select>
+
+    </label>
+
+
+
+    <label>
+
+      Student ID:
+
+      <input type="text" name="student_id" placeholder="Eg: 23B81A4652">
+
+    </label>
+
+    <label>
+
+  Backlogs ≤:
+
+  <input type="number" name="backlogs" min="0" placeholder="Enter backlogs">
+
+</label>
+
+
+
+
+
+    <div class="btn-group">
+
+      <button type="submit">Apply Filter</button>
+
+      <a href="/warden/eligibility" style="color: var(--accent-gold); text-decoration: none; font-weight: bold;">Reset</a>
+
+    </div>
+
+  </form>
+
+
+
+  <div class="table-wrap">
+
+    <table>
+
+      <thead>
+
+        <tr>
+
+          <th>Student ID</th>
+
+          <th>Name</th>
+
+          <th>Year</th>
+
+          <th>Backlogs</th>
+
+          <th>Status</th>
+
+        </tr>
+
+      </thead>
+
+      <tbody>
+
+        <% if (students.length === 0) { %>
+
+          <tr>
+
+            <td colspan="5">No students found</td>
+
+          </tr>
+
+        <% } %>
+
+
+
+        <% students.forEach(s => {
+
+             const rowClass = s.room_status === 'Eligible' ? 'eligible' : 'not-eligible';
+
+        %>
+
+          <tr class="<%= rowClass %>">
+
+            <td data-label="Student ID"><%= s.student_id %></td>
+
+            <td data-label="Name"><%= s.name %></td>
+
+            <td data-label="Year"><%= s.year %></td>
+
+            <td data-label="Backlogs"><%= s.remaining_backlogs %></td>
+
+            <td data-label="Status"><%= s.room_status %></td>
+
+          </tr>
+
+        <% }) %>
+
+      </tbody>
+
+    </table>
+
+  </div>
+
+</div>
+
+
+
+<% if (!isSpa) { %>
+
 </body>
+
 </html>
 
+<% } %>
