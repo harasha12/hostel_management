@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Upload Bank Statement</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Poppins', sans-serif;
+      background: #f4f6f9;
+    }
+
+    .container {
+      max-width: 700px;
+      margin: 80px auto;
+      background: #fff;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+
+    h2 {
+      text-align: center;
+      color: #1e3a8a;
+      margin-bottom: 25px;
+    }
+
+    form {
+      display: grid;
+      gap: 18px;
+    }
+
+    label {
+      font-weight: 600;
+      color: #374151;
+    }
+
+    input, select {
+      padding: 10px 12px;
+      border-radius: 8px;
+      border: 1px solid #d1d5db;
+      font-size: 14px;
+    }
+
+    input[type="file"] {
+      background: #f9fafb;
+    }
+
+    button {
+      padding: 14px;
+      border: none;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 16px;
+      background: linear-gradient(90deg,#2563eb,#1e40af);
+      color: white;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(37,99,235,0.4);
+    }
+
+    .hint {
+      font-size: 13px;
+      color: #6b7280;
+    }
+
+    .back {
+      display: block;
+      text-align: center;
+      margin-top: 20px;
+      text-decoration: none;
+      color: #2563eb;
+      font-weight: 600;
+    }
+    /* ================= MOBILE UI FIX ================= */
+@media (max-width: 768px) {
+
+  body {
+    background: #eef2f7;
+  }
+
+  .container {
+    margin: 20px 12px;
+    padding: 22px 18px;
+    border-radius: 16px;
+    box-shadow: 0 8px 22px rgba(0,0,0,0.08);
+  }
+
+  h2 {
+    font-size: 1.35rem;
+    margin-bottom: 18px;
+  }
+
+  form {
+    gap: 14px;
+  }
+
+  label {
+    font-size: 0.9rem;
+  }
+
+  input,
+  select {
+    width: 100%;
+    font-size: 15px;
+    padding: 12px;
+    border-radius: 10px;
+  }
+
+  input[type="file"] {
+    font-size: 13px;
+    padding: 10px;
+  }
+
+  .hint {
+    font-size: 12px;
+    margin-top: 4px;
+  }
+
+  button {
+    font-size: 15px;
+    padding: 14px;
+    border-radius: 14px;
+  }
+
+  button:hover {
+    transform: none;
+    box-shadow: none;
+  }
+
+  .back {
+    font-size: 14px;
+    margin-top: 16px;
+  }
+}
+
+/* ================= SMALL PHONES ================= */
+@media (max-width: 420px) {
+
+  h2 {
+    font-size: 1.2rem;
+  }
+
+  button {
+    font-size: 14px;
+    padding: 13px;
+  }
+}
+
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h2>🏦 Upload Bank Statement</h2>
+
+    <form
+  action="/admin/upload-bank-statement"
+  method="POST"
+  enctype="multipart/form-data"
+>
+
+
+      <!-- DATE -->
+      <div>
+        <label>Statement Date</label>
+        <input type="date" name="statement_date" required>
+      </div>
+
+      <!-- SOURCE TYPE -->
+      <div>
+        <label>Source Type</label>
+        <select name="source_type" required>
+          <option value="">Select</option>
+          <option value="SBI_COLLECT">SBI Collect</option>
+          <option value="BANK_TRANSFER">Direct Bank Transfer</option>
+          <option value="LOAN_DISBURSEMENT">Loan Disbursement</option>
+          <option value="DD">Demand Draft</option>
+          <option value="CHEQUE">Cheque</option>
+        </select>
+      </div>
+
+      <!-- FILE -->
+      <div>
+        <label>Upload File</label>
+        <input
+  type="file"
+  name="statement_file"
+  accept=".pdf"
+  required
+>
+
+<div class="hint">
+  Accepted: PDF bank statement only (.pdf)
+</div>
+
+
+      </div>
+
+      <!-- SUBMIT -->
+      <button type="submit">📤 Upload & Parse</button>
+
+    </form>
+
+    <a href="/admin/dashboard" class="back">⬅ Back to Dashboard</a>
+  </div>
+
+</body>
+</html>
+
