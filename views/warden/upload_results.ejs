@@ -1,198 +1,182 @@
-
+<% if (!isSpa) { %>
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Upload Results</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"/>
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      --primary-dark: #162039;
-      --accent-gold: #ffc107;
-      --soft-gray: #f4f6fb;
-      --success: #28bb75;
-      --danger: #db3159;
-      --card-shadow: 0 10px 25px rgba(0,0,0,0.08);
-    }
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Upload Results - Mobile UI</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<% } %>
 
-    body {
-      background: linear-gradient(135deg, #f2f5fb 0%, #dfe8f2 100%);
-      font-family: 'Montserrat', sans-serif;
-      margin: 0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-    }
+<style>
+  :root {
+    --bg-dark: #121212;
+    --card-bg: rgba(255, 255, 255, 0.08);
+    --accent-gold: #ffcc00;
+    --success: #28bb75;
+    --danger: #db3159;
+    --text-light: #ffffff;
+    --text-muted: #bbbbbb;
+  }
 
-    /* Message container */
-    #message-container {
-      position: fixed;
-      top: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 9999;
-      width: 90%;
-      max-width: 420px;
-      text-align: center;
-    }
+  body {
+    background-color: var(--bg-dark);
+    font-family: 'Segoe UI', Roboto, sans-serif;
+    color: var(--text-light);
+    margin: 0;
+    padding: 15px; /* Reduced for mobile */
+    min-height: 100vh;
+    box-sizing: border-box;
+  }
 
-    .message-box {
-      display: inline-block;
-      width: 100%;
-      padding: 15px 20px;
-      border-radius: 10px;
-      color: white;
-      font-weight: 700;
-      font-size: 1rem;
-      animation: fadeInOut 4s ease forwards;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-      margin-bottom: 10px;
-    }
+  .results-wrapper {
+    width: 100%;
+    max-width: 450px;
+    margin: 20px auto; /* Centers the card horizontally */
+    background: var(--card-bg);
+    border-radius: 20px;
+    padding: 25px 20px; /* Adjusted padding */
+    border: 1px solid rgba(255, 204, 0, 0.2);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(10px);
+    box-sizing: border-box; /* Crucial for mobile */
+  }
 
-    .message-box.success { background: var(--success); }
-    .message-box.error { background: var(--danger); }
+  .results-heading {
+    color: var(--accent-gold);
+    text-align: center;
+    margin-bottom: 25px;
+    font-size: 1.3rem;
+    font-weight: 800;
+    text-transform: uppercase;
+  }
 
-    @keyframes fadeInOut {
-      0% { opacity: 0; transform: translateY(-20px); }
-      10%, 90% { opacity: 1; transform: translateY(0); }
-      100% { opacity: 0; transform: translateY(-20px); }
-    }
+  .input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 15px;
+  }
 
-    .results-container {
-      width: 450px;
-      background: #fff;
-      border-radius: 14px;
-      box-shadow: var(--card-shadow);
-      padding: 40px 35px;
-      border: 3px solid var(--accent-gold);
-      text-align: center;
-    }
+  input, select {
+    width: 100%; /* Ensures it stays inside parent */
+    box-sizing: border-box; 
+    padding: 12px;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(0, 0, 0, 0.3);
+    color: #fff;
+    font-size: 16px; /* Prevents iOS zoom on focus */
+  }
 
-    .results-heading {
-      font-size: 1.7em;
-      font-weight: 900;
-      color: #1b243b;
-      background: linear-gradient(90deg, #8E8EED 65%, #EBD483 100%);
-      padding: 10px;
-      border-radius: 8px;
-      margin-bottom: 25px;
-    }
+  button {
+    width: 100%;
+    padding: 15px;
+    border-radius: 12px;
+    background: var(--accent-gold);
+    color: #000;
+    font-weight: 800;
+    border: none;
+    cursor: pointer;
+  }
 
-    form {
-      display: flex;
-      flex-direction: column;
-      gap: 18px;
-      align-items: stretch;
-    }
+  /* Alert styling */
+  .message-toast {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 9999;
+    width: 85%;
+    max-width: 400px;
+    padding: 15px;
+    border-radius: 10px;
+    display: none; /* Hidden by default */
+  }
+</style>
 
-    label {
-      text-align: left;
-      font-weight: 600;
-      color: #22304c;
-      font-size: 1.05em;
-    }
+<div id="toast" class="message-toast"></div>
 
-    input[type="number"], input[type="text"], input[type="file"] {
-      padding: 10px 12px;
-      border-radius: 8px;
-      border: 2px solid #bdc3c7;
-      font-size: 1em;
-      background: #fff;
-      box-shadow: 0 1px 6px #22304c10;
-      transition: all 0.2s ease;
-    }
+<div class="results-wrapper">
+  <h2 class="results-heading"><i class="fas fa-file-upload"></i> Upload Results</h2>
 
-    input:focus {
-      border-color: var(--accent-gold);
-      outline: none;
-      box-shadow: 0 0 7px var(--accent-gold)66;
-    }
+  <form id="uploadForm" action="/warden/upload_results" method="POST" enctype="multipart/form-data">
+    <div class="input-group">
+      <label>Academic Year</label>
+      <input type="number" name="year" min="1" max="4" placeholder="Year (1-4)" required>
+    </div>
 
-    button {
-      background: var(--accent-gold);
-      color: #222;
-      border: none;
-      border-radius: 50px;
-      font-weight: 700;
-      font-size: 1.05em;
-      padding: 12px;
-      cursor: pointer;
-      box-shadow: 0 2px 8px var(--accent-gold)44;
-      transition: all 0.25s ease;
-    }
+    <div class="input-group">
+      <label>Semester</label>
+      <input type="text" name="semester" placeholder="e.g., 2-1" pattern="[1-8]-[1-2]" required>
+    </div>
 
-    button:hover {
-      background: #ffd700;
-      transform: scale(1.04);
-      box-shadow: 0 0 16px #ffe082a9;
-    }
+    <div class="input-group">
+      <label>Result Type</label>
+      <select name="result_type" required>
+        <option value="regular">Regular</option>
+        <option value="supply">Supplementary</option>
+        <option value="revaluation">Revaluation</option>
+      </select>
+    </div>
 
-    .back-link {
-      display: inline-block;
-      margin-top: 25px;
-      font-size: 1em;
-      font-weight: 600;
-      color: #fff;
-      background: linear-gradient(90deg, #d4af37, #ffdd00);
-      border-radius: 50px;
-      padding: 10px 30px;
-      text-decoration: none;
-      transition: all 0.25s ease;
-    }
-
-    .back-link:hover {
-      background: linear-gradient(90deg, #ffdd00, #ffe382);
-      color: #1b243b;
-      transform: scale(1.07);
-    }
-
-    @media (max-width: 600px) {
-      .results-container { width: 90%; padding: 25px 18px; }
-      .results-heading { font-size: 1.3em; }
-    }
-  </style>
-</head>
-<body>
-
-  <!-- Message Container -->
-  <div id="message-container">
-    <% if (messages && messages.success) { %>
-      <div class="message-box success"><i class="fas fa-check-circle"></i> <%= messages.success %></div>
-    <% } %>
-    <% if (messages && messages.error) { %>
-      <div class="message-box error"><i class="fas fa-times-circle"></i> <%= messages.error %></div>
-    <% } %>
-  </div>
-
-  <div class="results-container">
-    <h2 class="results-heading"><i class="fas fa-upload"></i> Upload Results PDF</h2>
-
-    <form action="/warden/upload_results" method="POST" enctype="multipart/form-data">
-      <label>Year:</label>
-      <input type="number" name="year" min="1" max="4" required>
-
-      <label>Semester:</label>
-      <input type="text" name="semester" pattern="[1-8]-[1-2]" title="Format: 1-1, 1-2, 2-1, 2-2, etc." required>
-
-      <label>Upload PDF:</label>
+    <div class="input-group">
+      <label>Results PDF</label>
       <input type="file" name="result_pdf" accept=".pdf" required>
+    </div>
 
-      <button type="submit"><i class="fas fa-upload"></i> Upload & Process</button>
-    </form>
+    <button type="submit" id="submitBtn">
+      <i class="fas fa-cloud-upload-alt"></i> Upload & Process
+    </button>
+  </form>
 
-    <a href="/warden/eligibility" class="back-link"><i class="fas fa-arrow-left"></i> View Eligibility</a>
-  </div>
+  <a href="/warden/eligibility" class="back-link" style="color: var(--accent-gold); display: block; text-align: center; margin-top: 20px; text-decoration: none;">
+    <i class="fas fa-arrow-left"></i> View Eligibility List
+  </a>
+</div>
 
-  <script>
-    // Auto-hide messages
-    setTimeout(() => {
-      const msgBox = document.querySelector('.message-box');
-      if (msgBox) msgBox.style.display = 'none';
-    }, 4000);
-  </script>
+<script>
+  const form = document.getElementById('uploadForm');
+  const toast = document.getElementById('toast');
 
+  function showToast(msg, type) {
+    toast.innerText = msg;
+    toast.style.display = 'block';
+    toast.style.background = type === 'success' ? '#28bb75' : '#db3159';
+    setTimeout(() => { toast.style.display = 'none'; }, 4000);
+  }
+
+  // Handle SPA Submission
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = document.getElementById('submitBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+
+    const formData = new FormData(form);
+
+    try {
+      const response = await fetch(form.action, {
+        method: 'POST',
+        body: formData
+      });
+
+      if (response.ok) {
+        showToast("Results uploaded successfully!", "success");
+        form.reset();
+      } else {
+        showToast("Upload failed. Please try again.", "error");
+      }
+    } catch (err) {
+      showToast("Network error occurred.", "error");
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fas fa-cloud-upload-alt"></i> Upload & Process';
+    }
+  });
+</script>
+
+<% if (!isSpa) { %>
 </body>
 </html>
-
+<% } %>
