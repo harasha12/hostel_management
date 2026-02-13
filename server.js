@@ -1,5 +1,5 @@
 const express = require("express");
-
+const path = require('path');
 const app = express();   // <-- CREATE APP FIRST
 const mysql = require("mysql2");
 const session = require("express-session");
@@ -41,7 +41,7 @@ app.use(express.json());
 app.use(cookieParser());
 
 // ⭐ SESSION MUST COME BEFORE FLASH ⭐
-app.use(
+
   session({
     secret: "hostel_management_secret_123",
     resave: false,
