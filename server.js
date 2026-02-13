@@ -385,15 +385,6 @@ function parseSbiPdf(pdfPath) {
   });
 }
 
-app.get("/uploads/*", (req, res) => {
-  const filePath = path.join(__dirname, req.path);
-  res.download(filePath, (err) => {
-    if (err) {
-      console.error("DOWNLOAD ERROR:", err);
-      res.status(404).send("File not found");
-    }
-  });
-});
 
 
 // Serve downloads from the uploads directory (secure)
