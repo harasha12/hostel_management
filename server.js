@@ -448,7 +448,7 @@ const db = mysql.createPool({
     host: 'trolley.proxy.rlwy.net',   // Railway host
     user: 'root',                     // Railway username
     password: 'NTIbbHdQTrBfAIvtbxDRGAexhVWzjFCw',     // Railway password
-    database: 'Hosteldb',              // Railway database name
+    database: 'railway',              // Railway database name
     port: 13580,                      // Railway port
     waitForConnections: true,
     connectionLimit: 10,
