@@ -1,5 +1,5 @@
 const express = require("express");
-const path = require('path');
+
 const app = express();   // <-- CREATE APP FIRST
 const mysql = require("mysql2");
 const session = require("express-session");
@@ -16,6 +16,9 @@ const fs = require("fs");
 
 const { execFile } = require("child_process");
 const pdfParse = require("pdf-parse");
+const path = require('path');
+
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 
 
