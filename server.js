@@ -1,6 +1,6 @@
 const express = require("express");
+const app = express();
 
-const app = express();   // <-- CREATE APP FIRST
 const mysql = require("mysql2");
 const session = require("express-session");
 const flash = require("connect-flash");
@@ -13,20 +13,16 @@ const { v4: uuidv4 } = require("uuid");
 const multer = require("multer");
 const xlsx = require("xlsx");
 const fs = require("fs");
-
 const { execFile } = require("child_process");
 const pdfParse = require("pdf-parse");
-const path = require('path');
 
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+// ================================
+// STATIC UPLOADS (FIXES YOUR ERROR)
+// ================================
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
-
-
-
-
+// Ensure uploads/receipts exists (Render safe)
 const receiptsDir = path.join(__dirname, "uploads", "receipts");
-
-// 🔥 ensure directory exists (important for Render + localhost)
 if (!fs.existsSync(receiptsDir)) {
   fs.mkdirSync(receiptsDir, { recursive: true });
 }
@@ -34,17 +30,20 @@ if (!fs.existsSync(receiptsDir)) {
 console.log("pdfParse type:", typeof pdfParse);
 
 // ================================
-// MUST RUN BEFORE USING req.flash()
+// BODY PARSERS
 // ================================
-// Body parsers
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
-// Cookies
+// ================================
+// COOKIES
+// ================================
 app.use(cookieParser());
 
-// ⭐ SESSION MUST COME BEFORE FLASH ⭐
-
+// ================================
+// SESSION (FIXED ❗)
+// ================================
+app.use(
   session({
     secret: "hostel_management_secret_123",
     resave: false,
@@ -52,19 +51,24 @@ app.use(cookieParser());
     cookie: { maxAge: 1000 * 60 * 60 }, // 1 hour
   })
 );
+
+// ================================
+// FLASH
+// ================================
 app.use(flash());
+
 // ================================
-// FLASH → EXPOSE TO VIEWS
+// FLASH → VIEWS
 // ================================
-// MUST BE BEFORE ANY ROUTES!
 app.use((req, res, next) => {
-  res.locals.flashSuccess = req.flash("success") || [];
-  res.locals.flashError = req.flash("error") || [];
-  res.locals.flashInfo = req.flash("info") || [];
-  res.locals.flashWarn = req.flash("warning") || [];
+  res.locals.flashSuccess = req.flash("success");
+  res.locals.flashError = req.flash("error");
+  res.locals.flashInfo = req.flash("info");
+  res.locals.flashWarn = req.flash("warning");
   res.locals.cookieLogoutMsg = req.cookies?.flash_logout || null;
   next();
 });
+
 
 // ================================
 // NO-CACHE HEADERS (BACK BUTTON FIX)
