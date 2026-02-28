@@ -443,11 +443,11 @@ app.set("views", path.join(__dirname, "views"));
 // ===== MySQL Connection =====
 
 const db = mysql.createPool({
-    host: 'trolley.proxy.rlwy.net',   // Railway host
+    host: '@metro.proxy.rlwy.net',   // Railway host
     user: 'root',                     // Railway username
-    password: 'NTIbbHdQTrBfAIvtbxDRGAexhVWzjFCw',     // Railway password
+    password: 'JkJhecPuMJlJAlewWSknGUdQcthevayy',     // Railway password
     database: 'railway',              // Railway database name
-    port: 13580,                      // Railway port
+    port: 23019,                      // Railway port
     waitForConnections: true,
     connectionLimit: 10,
     queueLimit: 0
