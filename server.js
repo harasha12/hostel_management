@@ -223,6 +223,8 @@ const storage = multer.diskStorage({
   switch (file.fieldname) {
     case "receipt_pdf":
     case "sbi_pdf":
+    case "statement_file":  
+      
       dir = path.join(__dirname, "uploads", "receipts");
       break;
     case "sbi_excel":   // ✅ ADD THIS
