@@ -637,22 +637,38 @@ td {
       <div class="glass-form">
         <div class="form-title"><i class="fa fa-fingerprint" style="color: var(--accent);"></i> KYC Documents</div>
         
-        <form action="/student/upload-aadhaar/student" method="POST" enctype="multipart/form-data">
+        <form action="/student/upload-aadhaar" method="POST" enctype="multipart/form-data">
           <div class="file-input-group">
             <label style="display: block; margin-bottom: 8px; font-size: 12px; font-weight: 700;">Student's Aadhaar</label>
-            <input type="file" name="aadhaar" required>
+            <input type="file" name="student_aadhaar" required>
           </div>
           <button class="btn-gradient" style="margin-bottom: 20px;">Upload Student ID</button>
         </form>
 
-        <form action="/student/upload-aadhaar/father" method="POST" enctype="multipart/form-data">
+        <form action="/student/upload-aadhaar" method="POST" enctype="multipart/form-data">
           <div class="file-input-group">
             <label style="display: block; margin-bottom: 8px; font-size: 12px; font-weight: 700;">Father's Aadhaar</label>
-            <input type="file" name="aadhaar" required>
+            <input type="file" name="father_aadhaar" required>
           </div>
           <button class="btn-gradient">Upload Parent ID</button>
         </form>
       </div>
+      <% if (student.student_aadhaar) { %>
+  <div style="margin-top:20px;">
+    <h4>Student Aadhaar</h4>
+    <img src="/uploads/adhaar/<%= student.student_aadhaar %>"
+         style="max-width:250px; border-radius:12px; box-shadow:0 8px 20px rgba(0,0,0,.1);">
+  </div>
+<% } %>
+
+<% if (student.father_aadhaar) { %>
+  <div style="margin-top:20px;">
+    <h4>Father Aadhaar</h4>
+    <img src="/uploads/adhaar/<%= student.father_aadhaar %>"
+         style="max-width:250px; border-radius:12px; box-shadow:0 8px 20px rgba(0,0,0,.1);">
+  </div>
+<% } %>
+
 
       <div class="glass-form">
         <div class="form-title"><i class="fa fa-user-circle" style="color: var(--accent);"></i> Profile Visuals</div>
@@ -665,6 +681,7 @@ td {
           </div>
           <button class="btn-gradient">Update Profile Picture</button>
         </form>
+        
       </div>
     </div>
 
