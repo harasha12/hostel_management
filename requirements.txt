@@ -1,0 +1,3 @@
+pdfplumber
+pdfminer.six
+mysql-connector-python
