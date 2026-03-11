@@ -281,7 +281,7 @@ filename: (req, file, cb) => {
 
       case "student_aadhaar":
       case "father_aadhaar":
-        dir = path.join(__dirname, "uploads", "aadhaar");
+        dir = path.join(__dirname, "uploads", "adhaar");
         break;
 
       case "profile_image":
