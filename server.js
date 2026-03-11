@@ -1613,19 +1613,36 @@ app.post("/student/upload-aadhaar", upload.fields([
   { name: "student_aadhaar", maxCount: 1 },
   { name: "father_aadhaar", maxCount: 1 }
 ]), async (req, res) => {
+
   if (!req.session.user || req.session.role !== "student")
-    return res.status(403).send("Unauthorized");
+    return res.redirect("/login/student");
 
-  const studentId = req.session.user.student_id;
-  const studentFile = req.files["student_aadhaar"] ? req.files["student_aadhaar"][0].filename : null;
-  const fatherFile = req.files["father_aadhaar"] ? req.files["father_aadhaar"][0].filename : null;
+  const student_id = req.session.user.student_id;
 
-  await db.promise().query(
-    "UPDATE students SET student_aadhaar=COALESCE(?, student_aadhaar), father_aadhaar=COALESCE(?, father_aadhaar) WHERE student_id=?",
-    [studentFile, fatherFile, studentId]
-  );
+  try {
 
-  res.redirect("/student/profile");
+    const studentFile = req.files["student_aadhaar"]
+      ? req.files["student_aadhaar"][0].filename
+      : null;
+
+    const fatherFile = req.files["father_aadhaar"]
+      ? req.files["father_aadhaar"][0].filename
+      : null;
+
+    await db.promise().query(
+      `UPDATE students
+       SET student_aadhaar = COALESCE(?, student_aadhaar),
+           father_aadhaar = COALESCE(?, father_aadhaar)
+       WHERE student_id=?`,
+      [studentFile, fatherFile, student_id]
+    );
+
+    res.redirect("/student/profile");
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Upload error");
+  }
 });
 app.get("/student/aadhaar/:type/:studentId", async (req, res) => {
   const { type, studentId } = req.params;
