@@ -1130,7 +1130,7 @@ oldReceipts.forEach(r => {
 });
 
 /* BANK PAYMENTS */
-bankPayments.forEach(r => {
+newPayments.forEach(r => {
   const yr = Number(r.academic_year);
 
   if (!paymentMap[yr]) {
