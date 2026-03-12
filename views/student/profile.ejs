@@ -623,9 +623,9 @@ td {
               <td>₹<%= f.mess_bill1_paid %></td>
               <td>₹<%= f.mess_bill2_paid %></td>
               <td>
-                <span class="status-pill <%= f.total_paid >= f.total_fee ? 'paid-pill' : 'due-pill' %>">
-                  <%= f.total_paid >= f.total_fee ? 'COMPLETED' : 'PENDING' %>
-                </span>
+                <span class="status-pill <%= f.status === 'Paid' ? 'paid-pill' : 'due-pill' %>">
+  <%= f.status.toUpperCase() %>
+</span>
               </td>
             </tr>
           <% }) %>
