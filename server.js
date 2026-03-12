@@ -1107,9 +1107,9 @@ const [newPayments] = await db.promise().query(
 );;
 
     // 4️⃣ Map receipts by year & component
-   const paymentMap = {};
+ const paymentMap = {};
 
-/* ---- OLD RECEIPTS ---- */
+/* OLD RECEIPTS */
 oldReceipts.forEach(r => {
   const yr = Number(r.year);
 
@@ -1119,13 +1119,18 @@ oldReceipts.forEach(r => {
 
   const key = (r.remarks || "").toLowerCase();
 
-  if (key.includes("room")) paymentMap[yr].room += Number(r.amount_paid);
-  else if (key.includes("mess bill1")) paymentMap[yr].mess1 += Number(r.amount_paid);
-  else if (key.includes("mess bill2")) paymentMap[yr].mess2 += Number(r.amount_paid);
+  if (key.includes("room"))
+    paymentMap[yr].room += Number(r.amount_paid);
+
+  else if (key.includes("mess bill1"))
+    paymentMap[yr].mess1 += Number(r.amount_paid);
+
+  else if (key.includes("mess bill2"))
+    paymentMap[yr].mess2 += Number(r.amount_paid);
 });
 
-/* ---- NEW BANK PAYMENTS ---- */
-newPayments.forEach(r => {
+/* BANK PAYMENTS */
+bankPayments.forEach(r => {
   const yr = Number(r.academic_year);
 
   if (!paymentMap[yr]) {
@@ -1148,10 +1153,11 @@ newPayments.forEach(r => {
       const mess_bill1 = Number(y.mess_bill1 || 0);
       const mess_bill2 = Number(y.mess_bill2 || 0);
 
-      const paid = paymentMap[y.year] || {};
-      const room_rent_paid = Number(paid['Room Rent'] || 0);
-      const mess_bill1_paid = Number(paid['Mess Bill1'] || 0);
-      const mess_bill2_paid = Number(paid['Mess Bill2'] || 0);
+     const paid = paymentMap[y.year] || {};
+
+const room_rent_paid = paid.room || 0;
+const mess_bill1_paid = paid.mess1 || 0;
+const mess_bill2_paid = paid.mess2 || 0;
 
       const room_rent_due = Math.max(room_rent - room_rent_paid, 0);
       const mess_bill1_due = Math.max(mess_bill1 - mess_bill1_paid, 0);
