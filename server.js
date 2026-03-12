@@ -1319,138 +1319,138 @@ app.get('/student/viewfees', async (req, res) => {
 
 
 
-app.post("/student/upload-aadhaar", upload.fields([
-  { name: "student_aadhaar", maxCount: 1 },
-  { name: "father_aadhaar", maxCount: 1 }
-]), async (req, res) => {
+// app.post("/student/upload-aadhaar", upload.fields([
+//   { name: "student_aadhaar", maxCount: 1 },
+//   { name: "father_aadhaar", maxCount: 1 }
+// ]), async (req, res) => {
 
-  if (!req.session.user || req.session.role !== "student")
-    return res.redirect("/login/student");
+//   if (!req.session.user || req.session.role !== "student")
+//     return res.redirect("/login/student");
 
-  const student_id = req.session.user.student_id;
+//   const student_id = req.session.user.student_id;
 
-  try {
-    /* ============================
-       1️⃣ STUDENT DETAILS
-       ============================ */
-    const [[student]] = await db.promise().query(
-      "SELECT * FROM students WHERE student_id=?",
-      [student_id]
-    );
-    if (!student) return res.send("Student not found");
+//   try {
+//     /* ============================
+//        1️⃣ STUDENT DETAILS
+//        ============================ */
+//     const [[student]] = await db.promise().query(
+//       "SELECT * FROM students WHERE student_id=?",
+//       [student_id]
+//     );
+//     if (!student) return res.send("Student not found");
 
-    const maxYear = parseInt(student.year);
-
-
-    /* ============================
-       2️⃣ YEARLY FEE STRUCTURE
-       (OLD TABLE – KEEP)
-       ============================ */
-    const [feeRows] = await db.promise().query(
-      "SELECT * FROM yearly_fee WHERE year <= ? ORDER BY year ASC",
-      [maxYear]
-    );
-
-    /* ============================
-       3️⃣ OLD VERIFIED RECEIPTS
-       ============================ */
-    const [oldReceipts] = await db.promise().query(
-      `SELECT year, amount_paid, remarks
-       FROM fee_receipts
-       WHERE student_id=? AND status='Verified'`,
-      [student_id]
-    );
-
-    const oldMap = {};
-    oldReceipts.forEach(r => {
-      if (!oldMap[r.year]) {
-        oldMap[r.year] = { room: 0, mess1: 0, mess2: 0 };
-      }
-
-      const key = r.remarks.toLowerCase();
-      if (key.includes("room")) oldMap[r.year].room += Number(r.amount_paid);
-      else if (key.includes("mess bill1")) oldMap[r.year].mess1 += Number(r.amount_paid);
-      else if (key.includes("mess bill2")) oldMap[r.year].mess2 += Number(r.amount_paid);
-    });
-
-    /* ============================
-       4️⃣ NEW BANK PAYMENTS
-       ============================ */
-    const [newRows] = await db.promise().query(
-      `SELECT academic_year, component, allocated_amount
-       FROM student_payment_allocations
-       WHERE student_id=?`,
-      [student_id]
-    );
-
-    const newMap = {};
-    newRows.forEach(r => {
-      if (!newMap[r.academic_year]) {
-        newMap[r.academic_year] = { room: 0, mess1: 0, mess2: 0 };
-      }
-
-      if (r.component === "ROOM_RENT") newMap[r.academic_year].room += Number(r.allocated_amount);
-      if (r.component === "MESS_BILL_1") newMap[r.academic_year].mess1 += Number(r.allocated_amount);
-      if (r.component === "MESS_BILL_2") newMap[r.academic_year].mess2 += Number(r.allocated_amount);
-    });
-
-    /* ============================
-       5️⃣ MERGED FEE SUMMARY
-       ============================ */
-    const feeSummary = feeRows.map(y => {
-  const year = y.year;
-
-  // 🔑 convert DB values to numbers
-  const roomTotal = Number(y.room_rent || 0);
-  const mess1Total = Number(y.mess_bill1 || 0);
-  const mess2Total = Number(y.mess_bill2 || 0);
-
-  const roomPaid =
-    (oldMap[year]?.room || 0) +
-    (newMap[year]?.room || 0);
-
-  const mess1Paid =
-    (oldMap[year]?.mess1 || 0) +
-    (newMap[year]?.mess1 || 0);
-
-  const mess2Paid =
-    (oldMap[year]?.mess2 || 0) +
-    (newMap[year]?.mess2 || 0);
-
-  const roomDue = Math.max(roomTotal - roomPaid, 0);
-  const mess1Due = Math.max(mess1Total - mess1Paid, 0);
-  const mess2Due = Math.max(mess2Total - mess2Paid, 0);
-
-  const totalFee = roomTotal + mess1Total + mess2Total;
-  const totalPaid = roomPaid + mess1Paid + mess2Paid;
-
-  let status = "Not Paid";
-  if (totalPaid >= totalFee) status = "Paid";
-  else if (totalPaid > 0) status = "Partial";
-
-  return {
-    year,
-    room_rent_paid: roomPaid.toFixed(2),
-    room_rent_due: roomDue.toFixed(2),
-    mess_bill1_paid: mess1Paid.toFixed(2),
-    mess_bill1_due: mess1Due.toFixed(2),
-    mess_bill2_paid: mess2Paid.toFixed(2),
-    mess_bill2_due: mess2Due.toFixed(2),
-    total_fee: totalFee.toFixed(2),
-    total_paid: totalPaid.toFixed(2),
-    total_due: (totalFee - totalPaid).toFixed(2),
-    status
-  };
-});
+//     const maxYear = parseInt(student.year);
 
 
-    res.render("student/profile", { student, feeSummary });
+//     /* ============================
+//        2️⃣ YEARLY FEE STRUCTURE
+//        (OLD TABLE – KEEP)
+//        ============================ */
+//     const [feeRows] = await db.promise().query(
+//       "SELECT * FROM yearly_fee WHERE year <= ? ORDER BY year ASC",
+//       [maxYear]
+//     );
 
-  } catch (err) {
-    console.error(err);
-    res.status(500).send("Error loading profile");
-  }
-});
+//     /* ============================
+//        3️⃣ OLD VERIFIED RECEIPTS
+//        ============================ */
+//     const [oldReceipts] = await db.promise().query(
+//       `SELECT year, amount_paid, remarks
+//        FROM fee_receipts
+//        WHERE student_id=? AND status='Verified'`,
+//       [student_id]
+//     );
+
+//     const oldMap = {};
+//     oldReceipts.forEach(r => {
+//       if (!oldMap[r.year]) {
+//         oldMap[r.year] = { room: 0, mess1: 0, mess2: 0 };
+//       }
+
+//       const key = r.remarks.toLowerCase();
+//       if (key.includes("room")) oldMap[r.year].room += Number(r.amount_paid);
+//       else if (key.includes("mess bill1")) oldMap[r.year].mess1 += Number(r.amount_paid);
+//       else if (key.includes("mess bill2")) oldMap[r.year].mess2 += Number(r.amount_paid);
+//     });
+
+//     /* ============================
+//        4️⃣ NEW BANK PAYMENTS
+//        ============================ */
+//     const [newRows] = await db.promise().query(
+//       `SELECT academic_year, component, allocated_amount
+//        FROM student_payment_allocations
+//        WHERE student_id=?`,
+//       [student_id]
+//     );
+
+//     const newMap = {};
+//     newRows.forEach(r => {
+//       if (!newMap[r.academic_year]) {
+//         newMap[r.academic_year] = { room: 0, mess1: 0, mess2: 0 };
+//       }
+
+//       if (r.component === "ROOM_RENT") newMap[r.academic_year].room += Number(r.allocated_amount);
+//       if (r.component === "MESS_BILL_1") newMap[r.academic_year].mess1 += Number(r.allocated_amount);
+//       if (r.component === "MESS_BILL_2") newMap[r.academic_year].mess2 += Number(r.allocated_amount);
+//     });
+
+//     /* ============================
+//        5️⃣ MERGED FEE SUMMARY
+//        ============================ */
+//     const feeSummary = feeRows.map(y => {
+//   const year = y.year;
+
+//   // 🔑 convert DB values to numbers
+//   const roomTotal = Number(y.room_rent || 0);
+//   const mess1Total = Number(y.mess_bill1 || 0);
+//   const mess2Total = Number(y.mess_bill2 || 0);
+
+//   const roomPaid =
+//     (oldMap[year]?.room || 0) +
+//     (newMap[year]?.room || 0);
+
+//   const mess1Paid =
+//     (oldMap[year]?.mess1 || 0) +
+//     (newMap[year]?.mess1 || 0);
+
+//   const mess2Paid =
+//     (oldMap[year]?.mess2 || 0) +
+//     (newMap[year]?.mess2 || 0);
+
+//   const roomDue = Math.max(roomTotal - roomPaid, 0);
+//   const mess1Due = Math.max(mess1Total - mess1Paid, 0);
+//   const mess2Due = Math.max(mess2Total - mess2Paid, 0);
+
+//   const totalFee = roomTotal + mess1Total + mess2Total;
+//   const totalPaid = roomPaid + mess1Paid + mess2Paid;
+
+//   let status = "Not Paid";
+//   if (totalPaid >= totalFee) status = "Paid";
+//   else if (totalPaid > 0) status = "Partial";
+
+//   return {
+//     year,
+//     room_rent_paid: roomPaid.toFixed(2),
+//     room_rent_due: roomDue.toFixed(2),
+//     mess_bill1_paid: mess1Paid.toFixed(2),
+//     mess_bill1_due: mess1Due.toFixed(2),
+//     mess_bill2_paid: mess2Paid.toFixed(2),
+//     mess_bill2_due: mess2Due.toFixed(2),
+//     total_fee: totalFee.toFixed(2),
+//     total_paid: totalPaid.toFixed(2),
+//     total_due: (totalFee - totalPaid).toFixed(2),
+//     status
+//   };
+// });
+
+
+//     res.render("student/profile", { student, feeSummary });
+
+//   } catch (err) {
+//     console.error(err);
+//     res.status(500).send("Error loading profile");
+//   }
+// });
 
 
 
@@ -1609,40 +1609,40 @@ app.get('/student/viewfees', async (req, res) => {
 });
 
 
-app.post("/student/upload-aadhaar", upload.fields([
-  { name: "student_aadhaar", maxCount: 1 },
-  { name: "father_aadhaar", maxCount: 1 }
-]), async (req, res) => {
 
-  if (!req.session.user || req.session.role !== "student")
-    return res.redirect("/login/student");
+app.post("/student/upload-aadhaar",
+  upload.fields([
+    { name: "student_aadhaar", maxCount: 1 },
+    { name: "father_aadhaar", maxCount: 1 }
+  ]),
+  async (req, res) => {
 
-  const student_id = req.session.user.student_id;
+    if (!req.session.user || req.session.role !== "student")
+      return res.redirect("/login/student");
 
-  try {
+    try {
+      const studentId = req.session.user.student_id;
 
-    const studentFile = req.files["student_aadhaar"]
-      ? req.files["student_aadhaar"][0].filename
-      : null;
+      const studentFile =
+        req.files?.student_aadhaar?.[0]?.filename || null;
 
-    const fatherFile = req.files["father_aadhaar"]
-      ? req.files["father_aadhaar"][0].filename
-      : null;
+      const fatherFile =
+        req.files?.father_aadhaar?.[0]?.filename || null;
 
-    await db.promise().query(
-      `UPDATE students
-       SET student_aadhaar = COALESCE(?, student_aadhaar),
-           father_aadhaar = COALESCE(?, father_aadhaar)
-       WHERE student_id=?`,
-      [studentFile, fatherFile, student_id]
-    );
+      await db.promise().query(
+        `UPDATE students
+         SET student_aadhaar = COALESCE(?, student_aadhaar),
+             father_aadhaar = COALESCE(?, father_aadhaar)
+         WHERE student_id = ?`,
+        [studentFile, fatherFile, studentId]
+      );
 
-    res.redirect("/student/profile");
+      res.redirect("/student/profile");
 
-  } catch (err) {
-    console.error(err);
-    res.status(500).send("Upload error");
-  }
+    } catch (err) {
+      console.error(err);
+      res.status(500).send("Upload failed");
+    }
 });
 app.get("/student/aadhaar/:type/:studentId", async (req, res) => {
   const { type, studentId } = req.params;
