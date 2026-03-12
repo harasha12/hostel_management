@@ -1,102 +1,342 @@
-<%- include('../partials/header') %>
 
-<style>
-/* ================= BASE ================= */
-body{
-  background:#f3f4f6;
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>View Student Profiles</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;900&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+
+  <style>
+    
+
+    .students-container {
+  max-width: 1500px;   /* ⬅ increased width */
+  width: 95%;          /* ⬅ allows expansion on large screens */
+  margin: 56px auto 36px auto;
+  background: #f8f9fa;
+  border-radius: 16px;
+  box-shadow: 0 12px 48px #22304c22, 0 1.5px 3px #0001;
+  padding: 45px 38px 36px 38px;
 }
 
-h2{
-  text-align:center;
-  margin:20px;
+
+    .students-heading {
+      font-family: 'Montserrat', 'Georgia', serif;
+      color: #1b243b;
+      text-align: center;
+      font-weight: 900;
+      margin-bottom: 30px;
+      font-size: 2em;
+      border-bottom: 3px solid #ffc107;
+      padding-bottom: 6px;
+      background: linear-gradient(90deg, #f3f5fd 75%, #fffbe8 100%);
+      border-radius: 8px 8px 0 0;
+      letter-spacing: 1px;
+    }
+
+    /* Search Bar */
+    .search-bar {
+      margin: 25px 0;
+      text-align: center;
+    }
+
+    .search-bar input {
+      padding: 10px 15px;
+      width: 300px;
+      border-radius: 8px;
+      border: 2px solid #ffc107;
+      font-size: 1em;
+      color: #22304c;
+    }
+    .search-bar form {
+  display: inline-flex;   /* 👈 this is the key */
+  align-items: center;
+  gap: 8px;
 }
 
-/* ================= MOBILE UI ================= */
-@media (max-width: 768px){
 
-  table{
-    border:none;
-    background:transparent;
+    .search-bar button {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      background-color: #22304c;
+      color: #ffe082;
+      cursor: pointer;
+      font-weight: 700;
+      font-family: 'Montserrat', sans-serif;
+      transition: background-color 0.2s, transform 0.1s;
+    }
+
+    .search-bar button:hover {
+      background-color: #1b243b;
+      transform: translateY(-1px);
+    }
+
+    /* === Grid layout for cards === */
+    .students-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(330px, 1fr));
+      gap: 25px;
+    }
+
+    /* === Student Card === */
+    .student-card {
+      background: #ffffff;
+      border-radius: 14px;
+      box-shadow: 0 4px 16px rgba(34, 48, 76, 0.15);
+      overflow: hidden;
+      transition: transform 0.25s ease, box-shadow 0.25s ease, border 0.25s ease;
+      padding: 18px 20px 20px 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+      border: 2px solid transparent;
+    }
+
+    /* 🌟 Gold Glow Hover Effect */
+    .student-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 0 18px rgba(255, 215, 0, 0.4), 0 6px 20px rgba(34, 48, 76, 0.25);
+      border: 2px solid #ffd700;
+    }
+
+    .student-top {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .student-top img {
+      width: 100px;
+      height: 100px;
+      border-radius: 10px;
+      object-fit: cover;
+      margin-right: 20px;
+      border: 3px solid #ffc107;
+      background: #f5f5f5;
+    }
+
+    .student-details {
+      flex: 1;
+      color: #1b243b;
+    }
+
+    .student-details h3 {
+      margin: 0;
+      font-size: 1.25em;
+      font-weight: 800;
+      color: #182235;
+    }
+
+    .student-details p {
+      margin: 4px 0;
+      font-size: 0.93em;
+      color: #333;
+      line-height: 1.4;
+    }
+
+    .btn {
+      background-color: #ffc107;
+      color: #1b243b;
+      padding: 8px 14px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-size: 0.9em;
+      font-weight: 700;
+      transition: background-color 0.2s, box-shadow 0.2s;
+      display: inline-block;
+      width: fit-content;
+      align-self: center;
+      margin-top: 10px;
+    }
+
+    .btn:hover {
+      background-color: #ff9800;
+      
+  color: #ffffff; /* 👈 text becomes white on hover */
+
+      box-shadow: 0 4px 10px rgba(34, 48, 76, 0.15);
+    }
+
+    /* Responsive tweaks */
+    @media (max-width: 500px) {
+      .student-top {
+        flex-direction: column;
+        text-align: center;
+      }
+      .student-top img {
+        margin: 0 0 10px 0;
+      }
+    }
+    /* ===================================================== */
+/* 📱 MOBILE UI ADD-ON (NO DESKTOP CHANGES) */
+/* ===================================================== */
+
+@media (max-width: 768px) {
+
+  /* ---------- Container ---------- */
+  .students-container {
+    width: 100%;
+    margin: 16px auto;
+    padding: 18px 14px 22px 14px;
+    border-radius: 12px;
   }
 
-  table tr:first-child{
-    display:none; /* table header hide */
+  .students-heading {
+    font-size: 1.4rem;
+    margin-bottom: 18px;
+    letter-spacing: 0.5px;
   }
 
-  table, tbody, tr, td{
-    display:block;
-    width:100%;
+  /* ---------- Search Bar ---------- */
+  .search-bar {
+    margin: 16px 0 20px 0;
   }
 
-  tr{
-    background:#fff;
-    margin-bottom:14px;
-    border-radius:14px;
-    padding:14px;
-    box-shadow:0 8px 25px rgba(0,0,0,0.12);
+  .search-bar form {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
   }
 
-  td{
-    border:none;
-    padding:6px 0;
-    text-align:left;
-    font-size:14px;
+  .search-bar input {
+    width: 100%;
+    font-size: 0.95rem;
   }
 
-  td::before{
-    content: attr(data-label);
-    font-weight:700;
-    color:#1f2937;
-    display:block;
-    font-size:12px;
-    margin-bottom:2px;
+  .search-bar button {
+    width: 100%;
+    font-size: 0.95rem;
   }
 
-  a{
-    display:inline-block;
-    margin-top:6px;
-    font-weight:600;
-    color:#2563eb;
+  /* ---------- Grid → Single Column Cards ---------- */
+  .students-grid {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+
+  /* ---------- Student Card ---------- */
+  .student-card {
+    padding: 16px;
+    border-radius: 12px;
+  }
+
+  /* ---------- Top Section ---------- */
+  .student-top {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 14px;
+  }
+
+  .student-top img {
+    width: 80px;
+    height: 80px;
+    margin: 0;
+  }
+
+  /* ---------- Text Safety (VERY IMPORTANT) ---------- */
+  .student-details {
+    width: 100%;
+  }
+
+  .student-details h3 {
+    font-size: 1.05rem;
+    line-height: 1.3;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+  }
+
+  .student-details p {
+    font-size: 0.85rem;
+    line-height: 1.4;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+  }
+
+  /* ---------- CTA Button ---------- */
+  .btn {
+    width: 100%;
+    text-align: center;
+    padding: 10px;
+    font-size: 0.9rem;
+    margin-top: 12px;
   }
 }
-</style>
 
-<h2>All Paid Receipts</h2>
+/* ===================================================== */
+/* 📱 VERY SMALL PHONES (≤ 420px) */
+/* ===================================================== */
 
-<table border="1" cellspacing="0" cellpadding="10" style="width:100%;background:white;">
-  <tr style="background:#007bff;color:white;">
-    <th>Student ID</th>
-    <th>Name</th>
-    <th>Course</th>
-    <th>Year</th>
-    <th>Room</th>
-    <th>Ref ID</th>
-    <th>Amount</th>
-    <th>Status</th>
-    <th>PDF</th>
-    <th>Uploaded At</th>
-  </tr>
+@media (max-width: 420px) {
 
-  <% receipts.forEach(r => { %>
-    <tr>
-      <td data-label="Student ID"><%= r.student_id %></td>
-      <td data-label="Name"><%= r.name %></td>
-      <td data-label="Course"><%= r.course %></td>
-      <td data-label="Year"><%= r.year %></td>
-      <td data-label="Room"><%= r.room_no %></td>
-      <td data-label="Ref ID"><%= r.ref_id %></td>
-      <td data-label="Amount">₹<%= r.amount_paid %></td>
-      <td data-label="Status"><%= r.status %></td>
+  .student-top {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
 
-      <td data-label="Receipt PDF">
-        <a href="/<%= r.pdf_path %>" download>Download</a>
-      </td>
+  .student-top img {
+    width: 90px;
+    height: 90px;
+  }
 
-      <td data-label="Uploaded At">
-        <%= r.created_at.toLocaleString() %>
-      </td>
-    </tr>
-  <% }) %>
-</table>
+  .student-details h3 {
+    font-size: 1rem;
+  }
 
-<%- include('../partials/footer') %>
+  .student-details p {
+    font-size: 0.83rem;
+  }
+}
+
+  </style>
+</head>
+
+<body>
+  <div class="students-container">
+    <h2 class="students-heading">View Student Profiles</h2>
+
+   <div class="search-bar">
+  <form method="get" action="/admin/viewStudents">
+    <input
+      type="text"
+      name="search"
+      value="<%= search %>"
+      placeholder="Search by name, ID, or room number"
+    >
+    <button type="submit">Search</button>
+  </form>
+</div>
+
+
+    <% if (students.length > 0) { %>
+      <div class="students-grid">
+        <% students.forEach(s => { %>
+          <div class="student-card">
+            <div class="student-top">
+<img src="<%= s.profile_image ? '/uploads/profile_images/' + s.profile_image : '/images/default-avatar.png' %>" alt="Student Photo">
+
+              <div class="student-details">
+                <h3><%= s.name %></h3>
+                <p><<strong>ID:</strong> <%= s.student_id %></p>
+                <p><strong>Room:</strong> <%= s.room_no %></p>
+                <p><strong>Course:</strong> <%= s.course %></p>
+                <p><strong>Year:</strong> <%= s.year %></p>
+              </div>
+            </div>
+            <a href="/admin/student/<%= s.student_id %>" class="btn">View Profile</a>
+          </div>
+        <% }) %>
+      </div>
+    <% } else { %>
+      <p style="text-align:center; color: #22304c; font-weight: 500;">No students found.</p>
+    <% } %>
+  </div>
+
+ 
+</body>
+
+</html>
