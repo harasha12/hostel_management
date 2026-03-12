@@ -1090,25 +1090,57 @@ app.get("/student/profile", async (req, res) => {
     );
 
     // 3️⃣ Fetch verified receipts for this student
-    const [receipts] = await db.promise().query(
-      "SELECT year, amount_paid, remarks FROM fee_receipts WHERE student_id=? AND status='Verified'",
-      [student_id]
-    );
+   /* ---------- OLD RECEIPTS ---------- */
+const [oldReceipts] = await db.promise().query(
+  `SELECT year, amount_paid, remarks
+   FROM fee_receipts
+   WHERE student_id=? AND status='Verified'`,
+  [student_id]
+);
+
+/* ---------- NEW BANK PAYMENTS ---------- */
+const [newPayments] = await db.promise().query(
+  `SELECT academic_year, component, allocated_amount
+   FROM student_payment_allocations
+   WHERE student_id=?`,
+  [student_id]
+);;
 
     // 4️⃣ Map receipts by year & component
-    const paymentMap = {};
-    receipts.forEach(r => {
-      const yr = r.year;
-      if (!paymentMap[yr]) paymentMap[yr] = { 'Room Rent':0, 'Mess Bill1':0, 'Mess Bill2':0, 'Others':0 };
-      
-      let key = r.remarks.trim().toLowerCase();
-      if(key === 'room rent') key = 'Room Rent';
-      else if(key === 'mess bill1') key = 'Mess Bill1';
-      else if(key === 'mess bill2') key = 'Mess Bill2';
-      else key = 'Others';
+   const paymentMap = {};
 
-      paymentMap[yr][key] += parseFloat(r.amount_paid || 0);
-    });
+/* ---- OLD RECEIPTS ---- */
+oldReceipts.forEach(r => {
+  const yr = Number(r.year);
+
+  if (!paymentMap[yr]) {
+    paymentMap[yr] = { room:0, mess1:0, mess2:0 };
+  }
+
+  const key = (r.remarks || "").toLowerCase();
+
+  if (key.includes("room")) paymentMap[yr].room += Number(r.amount_paid);
+  else if (key.includes("mess bill1")) paymentMap[yr].mess1 += Number(r.amount_paid);
+  else if (key.includes("mess bill2")) paymentMap[yr].mess2 += Number(r.amount_paid);
+});
+
+/* ---- NEW BANK PAYMENTS ---- */
+newPayments.forEach(r => {
+  const yr = Number(r.academic_year);
+
+  if (!paymentMap[yr]) {
+    paymentMap[yr] = { room:0, mess1:0, mess2:0 };
+  }
+
+  if (r.component === "ROOM_RENT")
+    paymentMap[yr].room += Number(r.allocated_amount);
+
+  if (r.component === "MESS_BILL_1")
+    paymentMap[yr].mess1 += Number(r.allocated_amount);
+
+  if (r.component === "MESS_BILL_2")
+    paymentMap[yr].mess2 += Number(r.allocated_amount);
+});
 
     // 5️⃣ Build fee summary per year
     const feeSummary = yearRows.map(y => {
