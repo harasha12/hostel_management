@@ -1153,12 +1153,11 @@ bankPayments.forEach(r => {
       const mess_bill1 = Number(y.mess_bill1 || 0);
       const mess_bill2 = Number(y.mess_bill2 || 0);
 
-     const paid = paymentMap[y.year] || {};
+    const paid = paymentMap[y.year] || {};
 
 const room_rent_paid = paid.room || 0;
 const mess_bill1_paid = paid.mess1 || 0;
 const mess_bill2_paid = paid.mess2 || 0;
-
       const room_rent_due = Math.max(room_rent - room_rent_paid, 0);
       const mess_bill1_due = Math.max(mess_bill1 - mess_bill1_paid, 0);
       const mess_bill2_due = Math.max(mess_bill2 - mess_bill2_paid, 0);
