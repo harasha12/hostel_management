@@ -1098,7 +1098,7 @@ app.get("/student/profile", async (req, res) => {
     // 4️⃣ Map receipts by year & component
     const paymentMap = {};
     receipts.forEach(r => {
-      const yr = Number(r.year);
+      const yr = r.year;
       if (!paymentMap[yr]) paymentMap[yr] = { 'Room Rent':0, 'Mess Bill1':0, 'Mess Bill2':0, 'Others':0 };
       
       let key = r.remarks.trim().toLowerCase();
@@ -1160,7 +1160,6 @@ app.get("/student/profile", async (req, res) => {
     res.status(500).send("Error loading student profile");
   }
 });
-
 
 
 // ============================================
