@@ -1117,7 +1117,7 @@ oldReceipts.forEach(r => {
     paymentMap[yr] = { room:0, mess1:0, mess2:0 };
   }
 
-  const key = (r.remarks || "").toLowerCase();
+ const key = String(r.remarks || "").toLowerCase();
 
   if (key.includes("room"))
     paymentMap[yr].room += Number(r.amount_paid);
@@ -1153,7 +1153,7 @@ newPayments.forEach(r => {
       const mess_bill1 = Number(y.mess_bill1 || 0);
       const mess_bill2 = Number(y.mess_bill2 || 0);
 
-    const paid = paymentMap[y.year] || {};
+   const paid = paymentMap[Number(y.year)] || {};
 
 const room_rent_paid = paid.room || 0;
 const mess_bill1_paid = paid.mess1 || 0;
