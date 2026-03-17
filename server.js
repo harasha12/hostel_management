@@ -5727,7 +5727,7 @@ app.post("/notice/create", (req, res) => {
   db.query("DELETE FROM notices", err => {
     if (err) {
       req.flash("error", "Failed to update notice.");
-      return res.redirect("back");
+      return res.redirect("/notice/create");
     }
 
     const q = `
