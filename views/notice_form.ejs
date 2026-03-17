@@ -5,28 +5,25 @@
   <title>Create Notice</title>
 
   <style>
-    body {
-      margin: 0;
-      padding: 0;
-      font-family: 'Segoe UI', sans-serif;
-      background: url('/images/hostel-bg.jpg') center/cover no-repeat fixed;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      backdrop-filter: blur(3px);
-    }
-
-    .form-container {
-      width: 420px;
-      background: rgba(0, 0, 0, 0.6);
-      padding: 25px;
-      border-radius: 12px;
-      box-shadow: 0 8px 25px rgba(0,0,0,0.5);
-      color: #fff;
-      text-align: center;
-      backdrop-filter: blur(4px);
-    }
+   body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background: url('/images/hostel-bg.jpg') center/cover no-repeat fixed;
+  min-height: 100vh;
+  backdrop-filter: blur(3px);
+}
+.form-container {
+  width: 420px;
+  margin: 100px auto;
+  background: rgba(0, 0, 0, 0.6);
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.5);
+  color: #fff;
+  text-align: center;
+  backdrop-filter: blur(4px);
+}
 
     h2 {
       margin-bottom: 15px;
@@ -86,6 +83,18 @@
     a.back:hover {
       text-decoration: underline;
     }
+@media(max-width:768px){
+
+.form-container{
+  width:90%;
+  margin:80px auto;
+}
+
+textarea{
+  height:100px;
+}
+
+}
   </style>
 
 </head>
