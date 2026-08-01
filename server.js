@@ -13,7 +13,6 @@ const { v4: uuidv4 } = require("uuid");
 const multer = require("multer");
 const xlsx = require("xlsx");
 const fs = require("fs");
-const sendSMS = require("./twilio");
 const { execFile } = require("child_process");
 const pdfParse = require("pdf-parse");
 
