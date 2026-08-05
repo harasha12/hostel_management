@@ -436,7 +436,7 @@ const db = mysql.createPool({
     host: 'altaria.proxy.rlwy.net',   // Railway host
     user: 'root',                     // Railway username
     password: 'TtEyIJakTnqudcllzTMJNoBoEiopNkck',     // Railway password
-    database: 'Railway',              // Railway database name
+    database: 'railway',              // Railway database name
     port: 32878,                      // Railway port
     waitForConnections: true,
     connectionLimit: 10,
