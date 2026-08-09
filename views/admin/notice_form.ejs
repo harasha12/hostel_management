@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Create Notice</title>
+<style>
+body {
+    background: #f4f4f4;
+    font-family: Arial;
+}
+.container {
+    width: 500px;
+    margin: 60px auto;
+    background: white;
+    padding: 25px;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+input, textarea {
+    width: 100%;
+    padding: 12px;
+    margin-top: 10px;
+    border: 1px solid #aaa;
+    border-radius: 6px;
+}
+button {
+    margin-top: 15px;
+    width: 100%;
+    padding: 12px;
+    background: #007bff;
+    color: white;
+    border-radius: 6px;
+    border: none;
+    font-size: 18px;
+}
+</style>
+</head>
+
+<body>
+    <%- include('../partials/header') %>
+<div class="container">
+    <h2>Create Notice</h2>
+
+    <form action="/notice/create" method="POST">
+        <input type="text" name="title" placeholder="Notice Title" required>
+
+        <textarea name="description" placeholder="Enter full notice details..." required></textarea>
+
+        <button type="submit">Post Notice</button>
+    </form>
+</div>
+<%- include('../partials/footer') %>
+</body>
+</html>
