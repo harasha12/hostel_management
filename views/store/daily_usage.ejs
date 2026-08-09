@@ -6,7 +6,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Current Stock | Store Manager</title>
+<title>Daily Usage | Store Manager</title>
 
 <style>
 
@@ -28,12 +28,14 @@ body{
     position:fixed;
     left:0;
     top:0;
+
     width:260px;
     height:100vh;
 
     background:linear-gradient(180deg,#0f172a,#1e293b);
 
     color:white;
+
     z-index:1000;
 
     display:flex;
@@ -46,6 +48,7 @@ body{
 
 .brand{
     padding:25px 20px;
+
     text-align:center;
 
     border-bottom:1px solid rgba(255,255,255,.1);
@@ -62,26 +65,33 @@ body{
 
 .brand span{
     display:block;
+
     margin-top:5px;
 
     font-size:12px;
+
     color:#94a3b8;
 }
 
 .nav{
     padding:20px 12px;
+
     flex:1;
 }
 
 .nav a{
     display:flex;
+
     align-items:center;
+
     gap:13px;
 
     padding:13px 16px;
+
     margin-bottom:6px;
 
     color:#cbd5e1;
+
     text-decoration:none;
 
     border-radius:9px;
@@ -91,7 +101,9 @@ body{
 
 .nav a:hover{
     background:rgba(255,255,255,.09);
+
     color:white;
+
     transform:translateX(4px);
 }
 
@@ -107,7 +119,9 @@ body{
 
 .nav-icon{
     width:25px;
+
     text-align:center;
+
     font-size:18px;
 }
 
@@ -119,12 +133,15 @@ body{
 
 .logout a{
     display:flex;
+
     align-items:center;
+
     gap:13px;
 
     padding:13px 16px;
 
     color:#fecaca;
+
     text-decoration:none;
 
     border-radius:9px;
@@ -138,7 +155,9 @@ body{
 
 .main{
     margin-left:260px;
+
     min-height:100vh;
+
     padding:30px;
 }
 
@@ -148,6 +167,7 @@ body{
     display:none;
 
     align-items:center;
+
     justify-content:space-between;
 
     background:white;
@@ -165,9 +185,11 @@ body{
     border:none;
 
     background:#2563eb;
+
     color:white;
 
     width:42px;
+
     height:42px;
 
     border-radius:8px;
@@ -179,6 +201,7 @@ body{
 
 .mobile-title{
     font-size:17px;
+
     font-weight:700;
 }
 
@@ -198,6 +221,7 @@ body{
     display:flex;
 
     justify-content:space-between;
+
     align-items:center;
 
     gap:20px;
@@ -205,6 +229,7 @@ body{
 
 .page-header h1{
     font-size:26px;
+
     color:#0f172a;
 
     margin-bottom:5px;
@@ -212,18 +237,23 @@ body{
 
 .page-header p{
     color:#64748b;
+
     font-size:14px;
 }
 
 .header-right{
     display:flex;
+
     align-items:center;
+
     gap:15px;
 }
 
 .manager{
     color:#64748b;
+
     font-size:14px;
+
     white-space:nowrap;
 }
 
@@ -235,6 +265,7 @@ body{
     display:inline-flex;
 
     align-items:center;
+
     justify-content:center;
 
     gap:6px;
@@ -242,6 +273,7 @@ body{
     padding:10px 15px;
 
     background:#e2e8f0;
+
     color:#334155;
 
     border-radius:8px;
@@ -249,6 +281,7 @@ body{
     text-decoration:none;
 
     font-size:13px;
+
     font-weight:600;
 
     transition:.25s;
@@ -262,75 +295,246 @@ body{
     transform:translateY(-2px);
 }
 
-/* ================= SUMMARY CARDS ================= */
+/* ================= ENTRY CARD ================= */
 
-.summary-grid{
-    display:grid;
-
-    grid-template-columns:
-        repeat(3,1fr);
-
-    gap:20px;
-
-    margin-bottom:25px;
-}
-
-.summary-card{
+.form-card{
     background:white;
 
-    padding:22px;
+    max-width:1000px;
 
-    border-radius:14px;
+    margin:0 auto 30px;
+
+    padding:30px;
+
+    border-radius:15px;
 
     box-shadow:0 5px 20px rgba(0,0,0,.06);
-
-    display:flex;
-
-    align-items:center;
-
-    gap:16px;
 }
 
-.summary-icon{
-    width:52px;
-    height:52px;
+.form-title{
+    display:flex;
+
+    align-items:center;
+
+    gap:12px;
+
+    padding-bottom:20px;
+
+    margin-bottom:25px;
+
+    border-bottom:1px solid #e2e8f0;
+}
+
+.form-icon{
+    width:50px;
+
+    height:50px;
+
+    border-radius:12px;
+
+    background:#fef3c7;
 
     display:flex;
 
     align-items:center;
-    justify-content:center;
 
-    border-radius:12px;
+    justify-content:center;
 
     font-size:25px;
 }
 
-.summary-icon.blue{
-    background:#dbeafe;
+.form-title h2{
+    font-size:20px;
 }
 
-.summary-icon.green{
-    background:#dcfce7;
-}
-
-.summary-icon.red{
-    background:#fee2e2;
-}
-
-.summary-info h3{
-    font-size:24px;
-    color:#0f172a;
-}
-
-.summary-info p{
+.form-title p{
     color:#64748b;
+
     font-size:13px;
-    margin-top:2px;
+
+    margin-top:3px;
 }
 
-/* ================= TABLE CARD ================= */
+/* ================= FORM ================= */
 
-.table-card{
+.form-grid{
+    display:grid;
+
+    grid-template-columns:1fr 1fr;
+
+    gap:22px;
+}
+
+.form-group{
+    display:flex;
+
+    flex-direction:column;
+}
+
+.form-group.full{
+    grid-column:1 / -1;
+}
+
+label{
+    font-size:14px;
+
+    font-weight:600;
+
+    color:#334155;
+
+    margin-bottom:8px;
+}
+
+.required{
+    color:#ef4444;
+}
+
+input,
+select,
+textarea{
+    width:100%;
+
+    padding:13px 14px;
+
+    border:1px solid #cbd5e1;
+
+    border-radius:9px;
+
+    background:#f8fafc;
+
+    color:#1e293b;
+
+    font-size:14px;
+
+    transition:.25s;
+}
+
+input:focus,
+select:focus,
+textarea:focus{
+    outline:none;
+
+    border-color:#2563eb;
+
+    background:white;
+
+    box-shadow:
+        0 0 0 3px rgba(37,99,235,.1);
+}
+
+input[readonly]{
+    background:#f1f5f9;
+
+    color:#2563eb;
+
+    font-weight:700;
+
+    cursor:not-allowed;
+}
+
+textarea{
+    min-height:100px;
+
+    resize:vertical;
+}
+
+.hint{
+    margin-top:6px;
+
+    font-size:12px;
+
+    color:#94a3b8;
+}
+
+/* ================= STOCK BOX ================= */
+
+.stock-display{
+    margin-top:8px;
+
+    padding:11px 13px;
+
+    border-radius:8px;
+
+    background:#eff6ff;
+
+    border:1px solid #bfdbfe;
+
+    color:#1d4ed8;
+
+    font-size:13px;
+
+    font-weight:600;
+
+    display:none;
+}
+
+/* ================= BUTTON ================= */
+
+.form-actions{
+    display:flex;
+
+    justify-content:flex-end;
+
+    gap:12px;
+
+    margin-top:30px;
+
+    padding-top:22px;
+
+    border-top:1px solid #e2e8f0;
+}
+
+.btn{
+    padding:12px 22px;
+
+    border:none;
+
+    border-radius:9px;
+
+    font-size:14px;
+
+    font-weight:600;
+
+    cursor:pointer;
+
+    text-decoration:none;
+
+    transition:.25s;
+}
+
+.btn-cancel{
+    background:#e2e8f0;
+
+    color:#334155;
+}
+
+.btn-cancel:hover{
+    background:#cbd5e1;
+}
+
+.btn-save{
+    background:linear-gradient(
+        135deg,
+        #f59e0b,
+        #d97706
+    );
+
+    color:white;
+
+    box-shadow:
+        0 5px 12px rgba(245,158,11,.2);
+}
+
+.btn-save:hover{
+    transform:translateY(-2px);
+
+    box-shadow:
+        0 8px 18px rgba(245,158,11,.3);
+}
+
+/* ================= HISTORY ================= */
+
+.history-card{
     background:white;
 
     padding:25px;
@@ -340,7 +544,7 @@ body{
     box-shadow:0 5px 20px rgba(0,0,0,.06);
 }
 
-.table-header{
+.history-header{
     display:flex;
 
     justify-content:space-between;
@@ -352,35 +556,29 @@ body{
     gap:15px;
 }
 
-.table-header h2{
+.history-header h2{
     font-size:19px;
+
     color:#0f172a;
 }
 
-.table-header p{
-    color:#64748b;
-    font-size:13px;
-    margin-top:4px;
-}
+.today-badge{
+    background:#dcfce7;
 
-.stock-badge{
+    color:#15803d;
+
     padding:7px 12px;
 
     border-radius:20px;
-
-    background:#eff6ff;
-
-    color:#2563eb;
 
     font-size:12px;
 
     font-weight:700;
 }
 
-/* ================= TABLE ================= */
-
 .table-wrapper{
     width:100%;
+
     overflow-x:auto;
 }
 
@@ -397,115 +595,65 @@ thead th{
 
     color:white;
 
-    padding:14px 12px;
+    padding:13px 12px;
 
     text-align:center;
 
     font-size:13px;
-
-    font-weight:600;
 }
 
 tbody td{
-    padding:14px 12px;
+    padding:13px 12px;
 
     border-bottom:1px solid #e2e8f0;
 
     text-align:center;
 
-    font-size:14px;
-}
-
-tbody tr{
-    transition:.2s;
+    font-size:13px;
 }
 
 tbody tr:hover{
     background:#f8fafc;
 }
 
-/* ================= ITEM ================= */
-
 .item-name{
-    font-weight:700;
+    font-weight:600;
+
     color:#1e293b;
 }
 
-.category{
-    color:#64748b;
-}
-
 .quantity{
-    font-size:16px;
+    color:#dc2626;
+
     font-weight:700;
 }
 
 .unit{
     color:#64748b;
-    font-size:12px;
-}
-
-/* ================= STATUS ================= */
-
-.status{
-    display:inline-flex;
-
-    align-items:center;
-
-    gap:5px;
-
-    padding:6px 12px;
-
-    border-radius:20px;
 
     font-size:12px;
-
-    font-weight:700;
 }
 
-.status.ok{
-    background:#dcfce7;
-    color:#15803d;
+.remarks{
+    color:#64748b;
+
+    max-width:250px;
 }
-
-.status.low{
-    background:#fee2e2;
-    color:#dc2626;
-}
-
-.status.zero{
-    background:#fef3c7;
-    color:#b45309;
-}
-
-/* ================= LOW ROW ================= */
-
-.low-row{
-    background:#fff7f7;
-}
-
-.low-row:hover{
-    background:#fff1f2 !important;
-}
-
-/* ================= EMPTY ================= */
 
 .empty{
-    padding:45px 20px !important;
-
-    text-align:center !important;
+    padding:40px !important;
 
     color:#64748b;
 
-    font-size:14px;
+    text-align:center !important;
 }
 
 .empty-icon{
     display:block;
 
-    font-size:40px;
+    font-size:38px;
 
-    margin-bottom:10px;
+    margin-bottom:8px;
 }
 
 /* ================= OVERLAY ================= */
@@ -528,6 +676,7 @@ tbody tr:hover{
 
     .sidebar{
         transform:translateX(-100%);
+
         width:270px;
     }
 
@@ -541,6 +690,7 @@ tbody tr:hover{
 
     .main{
         margin-left:0;
+
         padding:15px;
     }
 
@@ -580,24 +730,38 @@ tbody tr:hover{
         width:100%;
     }
 
-    .summary-grid{
+    .form-card{
+        padding:20px;
+    }
+
+    .form-grid{
         grid-template-columns:1fr;
 
-        gap:12px;
+        gap:18px;
     }
 
-    .summary-card{
-        padding:18px;
+    .form-group.full{
+        grid-column:auto;
     }
 
-    .table-card{
+    .form-actions{
+        flex-direction:column-reverse;
+    }
+
+    .btn{
+        width:100%;
+
+        text-align:center;
+    }
+
+    .history-card{
         padding:15px;
     }
 
-    .table-header{
-        flex-direction:column;
-
+    .history-header{
         align-items:flex-start;
+
+        flex-direction:column;
     }
 
 }
@@ -661,7 +825,7 @@ tbody tr:hover{
         </a>
 
 
-        <a href="/store/current-stock" class="active">
+        <a href="/store/current-stock">
 
             <span class="nav-icon">
                 📦
@@ -672,7 +836,7 @@ tbody tr:hover{
         </a>
 
 
-        <a href="/store/daily-usage">
+        <a href="/store/daily-usage" class="active">
 
             <span class="nav-icon">
                 🍽️
@@ -748,18 +912,18 @@ tbody tr:hover{
     </div>
 
 
-    <!-- ================= PAGE HEADER ================= -->
+    <!-- PAGE HEADER -->
 
     <div class="page-header">
 
         <div>
 
             <h1>
-                📦 Current Stock
+                🍽️ Daily Usage
             </h1>
 
             <p>
-                View the current quantity available for every grocery item.
+                Record groceries used by the hostel on a daily basis.
             </p>
 
         </div>
@@ -791,120 +955,219 @@ tbody tr:hover{
     </div>
 
 
-    <!-- ================= SUMMARY ================= -->
+    <!-- ================= USAGE FORM ================= -->
 
-    <%
-        let totalItems = stock.length;
-        let lowItems = 0;
-        let outItems = 0;
-
-        stock.forEach(item => {
-
-            const current = parseFloat(item.current_stock || 0);
-            const minimum = parseFloat(item.minimum_stock || 0);
-
-            if(current <= 0){
-                outItems++;
-            }
-            else if(current <= minimum){
-                lowItems++;
-            }
-
-        });
-    %>
+    <div class="form-card">
 
 
-    <div class="summary-grid">
+        <div class="form-title">
 
-
-        <div class="summary-card">
-
-            <div class="summary-icon blue">
-                📦
+            <div class="form-icon">
+                🍽️
             </div>
-
-            <div class="summary-info">
-
-                <h3>
-                    <%= totalItems %>
-                </h3>
-
-                <p>
-                    Total Items
-                </p>
-
-            </div>
-
-        </div>
-
-
-        <div class="summary-card">
-
-            <div class="summary-icon red">
-                ⚠️
-            </div>
-
-            <div class="summary-info">
-
-                <h3>
-                    <%= lowItems %>
-                </h3>
-
-                <p>
-                    Low Stock Items
-                </p>
-
-            </div>
-
-        </div>
-
-
-        <div class="summary-card">
-
-            <div class="summary-icon red">
-                🚫
-            </div>
-
-            <div class="summary-info">
-
-                <h3>
-                    <%= outItems %>
-                </h3>
-
-                <p>
-                    Out of Stock
-                </p>
-
-            </div>
-
-        </div>
-
-    </div>
-
-
-    <!-- ================= STOCK TABLE ================= -->
-
-    <div class="table-card">
-
-
-        <div class="table-header">
 
             <div>
 
                 <h2>
-                    Inventory Overview
+                    Record Daily Usage
                 </h2>
 
                 <p>
-                    Current available stock and minimum stock levels.
+                    Enter the quantity of grocery items consumed today.
                 </p>
 
             </div>
 
+        </div>
 
-            <div class="stock-badge">
 
-                <%= totalItems %> Items
+        <form
+            action="/store/daily-usage"
+            method="POST">
+
+
+            <div class="form-grid">
+
+
+                <!-- ITEM -->
+
+                <div class="form-group">
+
+                    <label>
+
+                        Select Item
+
+                        <span class="required">*</span>
+
+                    </label>
+
+
+                    <select
+                        name="item_id"
+                        id="itemSelect"
+                        required>
+
+                        <option value="">
+                            Select Grocery Item
+                        </option>
+
+
+                        <% items.forEach(item => { %>
+
+                            <option
+                                value="<%= item.id %>"
+                                data-stock="<%= item.current_stock %>"
+                                data-unit="<%= item.unit %>">
+
+                                <%= item.item_name %>
+
+                            </option>
+
+                        <% }) %>
+
+                    </select>
+
+
+                    <div
+                        id="stockDisplay"
+                        class="stock-display">
+
+                    </div>
+
+
+                    <span class="hint">
+                        Select the item that was consumed.
+                    </span>
+
+                </div>
+
+
+                <!-- DATE -->
+
+                <div class="form-group">
+
+                    <label>
+
+                        Usage Date
+
+                        <span class="required">*</span>
+
+                    </label>
+
+
+                    <input
+                        type="date"
+                        name="usage_date"
+                        id="usageDate"
+                        required>
+
+
+                    <span class="hint">
+                        Date on which the item was used.
+                    </span>
+
+                </div>
+
+
+                <!-- QUANTITY -->
+
+                <div class="form-group">
+
+                    <label>
+
+                        Quantity Used
+
+                        <span class="required">*</span>
+
+                    </label>
+
+
+                    <input
+                        type="number"
+                        step="0.01"
+                        min="0.01"
+                        name="quantity_used"
+                        id="quantityUsed"
+                        placeholder="Enter quantity used"
+                        required>
+
+
+                    <span class="hint">
+                        Do not enter more than the current stock.
+                    </span>
+
+                </div>
+
+
+                <!-- REMARKS -->
+
+                <div class="form-group">
+
+                    <label>
+                        Remarks
+                    </label>
+
+
+                    <textarea
+                        name="remarks"
+                        placeholder="Example: Breakfast / Lunch / Dinner / Special Event"></textarea>
+
+                </div>
+
+
+            </div>
+
+
+            <!-- ACTIONS -->
+
+            <div class="form-actions">
+
+
+                <a
+                    href="/store/dashboard"
+                    class="btn btn-cancel">
+
+                    Cancel
+
+                </a>
+
+
+                <button
+                    type="submit"
+                    class="btn btn-save">
+
+                    💾 Save Usage
+
+                </button>
+
+
+            </div>
+
+
+        </form>
+
+    </div>
+
+
+    <!-- ================= HISTORY ================= -->
+
+    <div class="history-card">
+
+
+        <div class="history-header">
+
+            <div>
+
+                <h2>
+                    📋 Today's Usage
+                </h2>
+
+            </div>
+
+
+            <div class="today-badge">
+
+                TODAY
 
             </div>
 
@@ -923,13 +1186,11 @@ tbody tr:hover{
 
                         <th>Item</th>
 
-                        <th>Category</th>
+                        <th>Quantity Used</th>
 
-                        <th>Current Stock</th>
+                        <th>Unit</th>
 
-                        <th>Minimum Stock</th>
-
-                        <th>Status</th>
+                        <th>Remarks</th>
 
                     </tr>
 
@@ -939,19 +1200,19 @@ tbody tr:hover{
                 <tbody>
 
 
-                <% if(stock.length === 0){ %>
+                <% if(!history || history.length === 0){ %>
 
                     <tr>
 
                         <td
-                            colspan="6"
+                            colspan="5"
                             class="empty">
 
                             <span class="empty-icon">
-                                📦
+                                🍽️
                             </span>
 
-                            No stock records found.
+                            No usage recorded for today.
 
                         </td>
 
@@ -960,37 +1221,9 @@ tbody tr:hover{
                 <% }else{ %>
 
 
-                    <% stock.forEach((item,index) => { %>
+                    <% history.forEach((row,index) => { %>
 
-
-                        <%
-                            const current =
-                                parseFloat(item.current_stock || 0);
-
-                            const minimum =
-                                parseFloat(item.minimum_stock || 0);
-
-                            let statusClass = "ok";
-                            let statusText = "✓ Available";
-                            let rowClass = "";
-
-                            if(current <= 0){
-
-                                statusClass = "zero";
-                                statusText = "⚠ Out of Stock";
-                                rowClass = "low-row";
-
-                            }else if(current <= minimum){
-
-                                statusClass = "low";
-                                statusText = "⚠ Low Stock";
-                                rowClass = "low-row";
-
-                            }
-                        %>
-
-
-                        <tr class="<%= rowClass %>">
+                        <tr>
 
 
                             <td>
@@ -1000,66 +1233,33 @@ tbody tr:hover{
 
                             <td class="item-name">
 
-                                <%= item.item_name %>
+                                <%= row.item_name %>
 
                             </td>
 
 
-                            <td class="category">
+                            <td class="quantity">
 
-                                <%= item.category %>
-
-                            </td>
-
-
-                            <td>
-
-                                <span class="quantity">
-
-                                    <%= item.current_stock %>
-
-                                </span>
-
-                                <span class="unit">
-
-                                    <%= item.unit %>
-
-                                </span>
+                                <%= row.quantity_used %>
 
                             </td>
 
 
-                            <td>
+                            <td class="unit">
 
-                                <span class="quantity">
-
-                                    <%= item.minimum_stock %>
-
-                                </span>
-
-                                <span class="unit">
-
-                                    <%= item.unit %>
-
-                                </span>
+                                <%= row.unit %>
 
                             </td>
 
 
-                            <td>
+                            <td class="remarks">
 
-                                <span
-                                    class="status <%= statusClass %>">
-
-                                    <%= statusText %>
-
-                                </span>
+                                <%= row.remarks || "-" %>
 
                             </td>
 
 
                         </tr>
-
 
                     <% }) %>
 
@@ -1080,6 +1280,8 @@ tbody tr:hover{
 
 
 <script>
+
+/* ================= SIDEBAR ================= */
 
 function openSidebar(){
 
@@ -1105,6 +1307,99 @@ function closeSidebar(){
         .classList.remove("show");
 
 }
+
+
+/* ================= TODAY'S DATE ================= */
+
+document.getElementById("usageDate").value =
+    new Date().toISOString().split("T")[0];
+
+
+/* ================= CURRENT STOCK ================= */
+
+const itemSelect =
+    document.getElementById("itemSelect");
+
+const stockDisplay =
+    document.getElementById("stockDisplay");
+
+const quantityUsed =
+    document.getElementById("quantityUsed");
+
+
+itemSelect.addEventListener("change", function(){
+
+    const option =
+        this.options[this.selectedIndex];
+
+    if(!option.value){
+
+        stockDisplay.style.display = "none";
+
+        quantityUsed.removeAttribute("max");
+
+        return;
+    }
+
+
+    const stock =
+        parseFloat(option.dataset.stock || 0);
+
+    const unit =
+        option.dataset.unit || "";
+
+
+    stockDisplay.innerHTML =
+        "📦 Current Stock: <strong>" +
+        stock +
+        " " +
+        unit +
+        "</strong>";
+
+
+    stockDisplay.style.display = "block";
+
+
+    quantityUsed.setAttribute(
+        "max",
+        stock
+    );
+
+});
+
+
+/* ================= VALIDATION ================= */
+
+document
+    .querySelector("form")
+    .addEventListener("submit", function(e){
+
+        const selected =
+            itemSelect.options[itemSelect.selectedIndex];
+
+        const stock =
+            parseFloat(selected.dataset.stock || 0);
+
+        const used =
+            parseFloat(quantityUsed.value || 0);
+
+
+        if(used > stock){
+
+            e.preventDefault();
+
+            alert(
+                "Insufficient stock! Current stock is " +
+                stock +
+                " " +
+                (selected.dataset.unit || "")
+            );
+
+            quantityUsed.focus();
+
+        }
+
+    });
 
 </script>
 
