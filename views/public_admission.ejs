@@ -1,0 +1,363 @@
+
+
+<div class="admission-container">
+
+<h2>🎓 New Student Admission</h2>
+
+<form
+action="/public_admission"
+method="POST"
+enctype="multipart/form-data"
+class="admission-form">
+
+<div class="section">
+ 
+<h3>👤 Student Details</h3> 
+
+<div class="grid">
+
+<div>
+<label>Student Name</label>
+<input
+type="text"
+name="name"
+required>
+</div>
+
+<div>
+<label>Father Name</label>
+<input
+type="text"
+name="father_name"
+required>
+</div>
+
+<div>
+<label>Student ID</label>
+<input
+type="text"
+name="student_id"
+required>
+</div>
+
+<div>
+<label>College Unique ID</label>
+<input
+type="text"
+name="student_unique_id">
+</div>
+
+<div>
+<label>Branch</label>
+
+<select name="course" required>
+
+<option>CSE</option>
+
+<option>IT</option>
+
+<option>ECE</option>
+
+<option>EEE</option>
+
+<option>MECH</option>
+
+<option>CIVIL</option>
+
+<option>CSM</option>
+
+<option>CSD</option>
+
+<option>CSC</option>
+
+<option>CYBER SECURITY</option>
+
+</select>
+
+</div>
+
+<div>
+
+<label>Year</label>
+
+<select name="year">
+
+<option>1</option>
+
+<option>2</option>
+
+<option>3</option>
+
+<option>4</option>
+
+</select>
+
+</div>
+
+<div>
+
+<label>Village</label>
+
+<input
+type="text"
+name="village">
+
+</div>
+
+<div>
+
+<label>Email</label>
+
+<input
+type="email"
+name="email">
+
+</div>
+
+<div>
+
+<label>Student Mobile</label>
+
+<input
+type="text"
+name="student_mobile">
+
+</div>
+
+<div>
+
+<label>Parent Mobile</label>
+
+<input
+type="text"
+name="parent_mobile">
+
+</div>
+
+</div>
+
+</div>
+
+<hr>
+
+<div class="section">
+
+<h3>🪪 Aadhaar Details</h3>
+
+<div class="grid">
+
+<div>
+
+<label>Student Aadhaar</label>
+
+<input
+type="text"
+name="student_aadhaar">
+
+</div>
+
+<div>
+
+<label>Father Aadhaar</label>
+
+<input
+type="text"
+name="father_aadhaar">
+
+</div>
+
+<div>
+
+<label>Student Aadhaar File</label>
+
+<input
+type="file"
+name="student_aadhaar_file">
+
+</div>
+
+<div>
+
+<label>Father Aadhaar File</label>
+
+<input
+type="file"
+name="father_aadhaar_file">
+
+</div>
+
+</div>
+
+</div>
+
+<hr>
+
+<div class="section">
+
+<h3>💳 Payment</h3>
+
+<div class="grid">
+
+<div>
+
+<label>Payment Ref ID</label>
+
+<input
+type="text"
+name="payment_ref_id"
+required>
+
+</div>
+
+<div>
+
+<label>SBI Receipt PDF</label>
+
+<input
+type="file"
+name="payment_receipt"
+accept=".pdf"
+required>
+
+</div>
+
+</div>
+
+</div>
+
+<hr>
+
+<div class="section">
+
+<h3>📷 Student Photo</h3>
+
+<input
+type="file"
+name="student_photo">
+
+</div>
+
+<br>
+
+<button
+class="submit-btn">
+
+Save Admission
+
+</button>
+
+</form>
+
+</div>
+<style>
+    .admission-container{
+    max-width:1100px;
+    margin:30px auto;
+    padding:30px;
+    border-radius:15px;
+
+    background:rgba(15,23,42,.88);
+
+    border:1px solid rgba(255,214,0,.35);
+
+    backdrop-filter:blur(12px);
+
+    color:#fff;
+
+    box-shadow:0 15px 40px rgba(0,0,0,.45);
+}
+
+.admission-container h2{
+
+text-align:center;
+
+margin-bottom:30px;
+
+}
+
+.grid{
+
+display:grid;
+
+grid-template-columns:repeat(2,1fr);
+
+gap:20px;
+
+}
+
+.grid input,
+.grid select{
+
+    width:100%;
+
+    padding:12px;
+
+    background:rgba(255,255,255,.08);
+
+    color:#fff;
+
+    border:1px solid rgba(255,214,0,.4);
+
+    border-radius:8px;
+
+    outline:none;
+
+}
+input::placeholder{
+    color:#ccc;
+}
+.section h3{
+
+    color:#ffd600;
+
+    border-left:4px solid #ffd600;
+
+    padding-left:10px;
+
+    margin-bottom:18px;
+
+}
+
+.submit-btn{
+
+width:100%;
+
+padding:15px;
+
+background:#2563eb;
+
+color:#fff;
+
+font-size:17px;
+
+border:none;
+
+border-radius:10px;
+
+cursor:pointer;
+
+}
+
+.submit-btn:hover{
+
+background:#1d4ed8;
+
+}
+
+@media(max-width:768px){
+
+.grid{
+
+grid-template-columns:1fr;
+
+}
+
+}
+label{
+    display:block;
+    margin-bottom:6px;
+    color:#ffd600;
+    font-weight:600;
+    font-size:15px;
+}
+</style>
