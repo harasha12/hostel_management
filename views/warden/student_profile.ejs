@@ -118,6 +118,23 @@ th{
   font-size:22px;
   cursor:pointer;
 }
+.btn.danger{
+    background:#dc2626;
+    color:#fff;
+}
+.btn.danger{
+
+    background:#dc2626;
+
+    color:white;
+
+}
+
+.btn.danger:hover{
+
+    background:#b91c1c;
+
+}
 </style>
 
 <div class="profile-wrapper">
@@ -217,11 +234,64 @@ th{
 </tbody>
 
   </table>
+  <hr>
+
+<h3>Student Actions</h3>
+
+<% if(student.status === "ACTIVE"){ %>
+
+
+
+<% } else if(student.status === "VACATED"){ %>
+
+<span class="badge warn">
+
+Student Already Vacated
+
+</span>
+
+<% } else { %>
+
+<span class="badge danger">
+
+Passed Out Student
+
+</span>
+
+<% } %>
 
   <div class="actions">
-    <a href="/warden/dashboard" class="btn secondary">⬅ Dashboard</a>
-    <a href="javascript:history.back()" class="btn primary">⬅ Back</a>
-  </div>
+
+    <div>
+        <% if(student.status === 'ACTIVE'){ %>
+
+            <button class="btn danger"
+                    onclick="vacateStudent('<%= student.student_id %>')">
+                🏠 Vacate Student
+            </button>
+
+        <% } else if(student.status === 'VACATED'){ %>
+
+            <span class="badge warn">Vacated</span>
+
+        <% } else if(student.status === 'PASSED_OUT'){ %>
+
+            <span class="badge danger">Passed Out</span>
+
+        <% } %>
+    </div>
+
+    <div>
+        <a href="/warden/dashboard" class="btn secondary">
+            ⬅ Dashboard
+        </a>
+
+        <a href="javascript:history.back()" class="btn primary">
+            ⬅ Back
+        </a>
+    </div>
+
+</div>
 
 </div>
 
@@ -242,4 +312,46 @@ function closeModal(){
   document.getElementById('aadhaarModal').style.display='none';
 }
 window.scrollTo({top:0,behavior:"smooth"});
+function vacateStudent(studentId){
+
+    if(!confirm("Are you sure you want to vacate this student?")){
+        return;
+    }
+
+    fetch("/warden/student/vacate/" + studentId,{
+        method:"POST"
+    })
+    .then(r=>r.json())
+    .then(data=>{
+
+        alert(data.message);
+
+        location.reload();
+
+    });
+
+}
+function vacateStudent(studentId){
+
+    if(!confirm("Are you sure you want to vacate this student?")){
+        return;
+    }
+
+    fetch("/warden/student/vacate/" + studentId,{
+        method:"POST"
+    })
+    .then(res=>res.json())
+    .then(data=>{
+
+        alert(data.message);
+
+        if(data.success){
+
+            location.reload();
+
+        }
+
+    });
+
+}
 </script>
