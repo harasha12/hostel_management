@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -12,57 +14,294 @@
     margin:0;
     padding:0;
     box-sizing:border-box;
-    font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;
+    font-family:"Segoe UI",Tahoma,sans-serif;
 }
 
 body{
-    height:100vh;
+    min-height:100vh;
+
     display:flex;
-    justify-content:center;
     align-items:center;
-    background:linear-gradient(135deg,#0f172a,#1e3a8a,#2563eb);
+    justify-content:center;
+
+    padding:20px;
+
+    background:
+        radial-gradient(
+            circle at top left,
+            rgba(37,99,235,.35),
+            transparent 35%
+        ),
+        radial-gradient(
+            circle at bottom right,
+            rgba(14,165,233,.25),
+            transparent 35%
+        ),
+        linear-gradient(
+            135deg,
+            #020617,
+            #0f172a,
+            #1e293b
+        );
 }
+
+
+/* ================= CONTAINER ================= */
 
 .login-container{
     width:100%;
+    max-width:1050px;
+
+    min-height:620px;
+
+    display:grid;
+
+    grid-template-columns:1fr 1fr;
+
+    background:rgba(255,255,255,.08);
+
+    border:1px solid rgba(255,255,255,.15);
+
+    border-radius:24px;
+
+    overflow:hidden;
+
+    box-shadow:
+        0 25px 70px rgba(0,0,0,.45);
+
+    backdrop-filter:blur(15px);
+}
+
+
+/* ================= LEFT SIDE ================= */
+
+.login-info{
+    position:relative;
+
+    padding:55px;
+
     display:flex;
+    flex-direction:column;
+
     justify-content:center;
+
+    color:white;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(37,99,235,.9),
+            rgba(15,23,42,.92)
+        );
+}
+
+.login-info::after{
+    content:"";
+
+    position:absolute;
+
+    width:250px;
+    height:250px;
+
+    border-radius:50%;
+
+    background:rgba(255,255,255,.06);
+
+    right:-100px;
+    top:-80px;
+}
+
+.info-icon{
+    width:75px;
+    height:75px;
+
+    display:flex;
+
     align-items:center;
+    justify-content:center;
+
+    border-radius:20px;
+
+    background:rgba(255,255,255,.15);
+
+    font-size:38px;
+
+    margin-bottom:25px;
+
+    border:1px solid rgba(255,255,255,.2);
+}
+
+.login-info h1{
+    font-size:34px;
+
+    line-height:1.2;
+
+    margin-bottom:15px;
+}
+
+.login-info h1 span{
+    color:#93c5fd;
+}
+
+.login-info p{
+    color:#dbeafe;
+
+    line-height:1.7;
+
+    font-size:15px;
+
+    max-width:430px;
+}
+
+.features{
+    margin-top:35px;
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:15px;
+}
+
+.feature{
+    display:flex;
+
+    align-items:center;
+
+    gap:12px;
+
+    color:#e2e8f0;
+
+    font-size:14px;
+}
+
+.feature-icon{
+    width:34px;
+    height:34px;
+
+    display:flex;
+
+    align-items:center;
+    justify-content:center;
+
+    border-radius:9px;
+
+    background:rgba(255,255,255,.12);
+}
+
+
+/* ================= LOGIN SIDE ================= */
+
+.login-side{
+    background:#ffffff;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    padding:45px;
 }
 
 .login-box{
-    width:400px;
-    background:#fff;
-    padding:35px;
-    border-radius:18px;
-    box-shadow:0 15px 40px rgba(0,0,0,.3);
+    width:100%;
+    max-width:400px;
 }
+
+
+/* ================= LOGO ================= */
 
 .logo{
-    width:90px;
-    height:90px;
-    margin:auto;
-    background:#2563eb;
-    border-radius:50%;
+    width:75px;
+    height:75px;
+
+    margin:0 auto 20px;
+
     display:flex;
-    justify-content:center;
+
     align-items:center;
-    font-size:45px;
-    color:#fff;
-    margin-bottom:20px;
+    justify-content:center;
+
+    border-radius:20px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #2563eb,
+            #1d4ed8
+        );
+
+    font-size:36px;
+
+    box-shadow:
+        0 10px 25px rgba(37,99,235,.3);
 }
 
-h2{
+
+/* ================= TITLE ================= */
+
+.login-box h2{
     text-align:center;
-    color:#1e293b;
-    margin-bottom:5px;
+
+    color:#0f172a;
+
+    font-size:26px;
+
+    margin-bottom:6px;
 }
 
-p{
+.subtitle{
     text-align:center;
+
     color:#64748b;
-    margin-bottom:25px;
+
+    font-size:14px;
+
+    margin-bottom:28px;
 }
+
+
+/* ================= MESSAGE ================= */
+
+.error{
+    background:#fee2e2;
+
+    color:#b91c1c;
+
+    border:1px solid #fecaca;
+
+    padding:11px 13px;
+
+    border-radius:8px;
+
+    text-align:center;
+
+    font-size:13px;
+
+    margin-bottom:18px;
+}
+
+.success{
+    background:#dcfce7;
+
+    color:#166534;
+
+    border:1px solid #bbf7d0;
+
+    padding:11px 13px;
+
+    border-radius:8px;
+
+    text-align:center;
+
+    font-size:13px;
+
+    margin-bottom:18px;
+}
+
+
+/* ================= FORM ================= */
 
 .input-group{
     margin-bottom:18px;
@@ -70,135 +309,447 @@ p{
 
 .input-group label{
     display:block;
-    margin-bottom:8px;
+
     color:#334155;
+
+    font-size:14px;
+
     font-weight:600;
+
+    margin-bottom:7px;
+}
+
+.input-wrapper{
+    position:relative;
+}
+
+.input-icon{
+    position:absolute;
+
+    left:13px;
+    top:50%;
+
+    transform:translateY(-50%);
+
+    font-size:17px;
+
+    color:#64748b;
 }
 
 .input-group input{
     width:100%;
-    padding:12px 15px;
+
+    padding:13px 14px 13px 42px;
+
     border:1px solid #cbd5e1;
-    border-radius:8px;
-    font-size:15px;
-    transition:.3s;
+
+    border-radius:9px;
+
+    background:#f8fafc;
+
+    color:#1e293b;
+
+    font-size:14px;
+
+    transition:.25s;
 }
 
 .input-group input:focus{
     outline:none;
+
+    background:white;
+
     border-color:#2563eb;
-    box-shadow:0 0 8px rgba(37,99,235,.3);
+
+    box-shadow:
+        0 0 0 3px rgba(37,99,235,.1);
 }
 
-button{
+
+/* ================= LOGIN BUTTON ================= */
+
+.login-button{
     width:100%;
+
     padding:13px;
-    background:#2563eb;
-    color:white;
+
     border:none;
-    border-radius:8px;
-    font-size:16px;
-    font-weight:bold;
+
+    border-radius:9px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #2563eb,
+            #1d4ed8
+        );
+
+    color:white;
+
+    font-size:15px;
+
+    font-weight:700;
+
     cursor:pointer;
-    transition:.3s;
+
+    margin-top:5px;
+
+    box-shadow:
+        0 7px 16px rgba(37,99,235,.25);
+
+    transition:.25s;
 }
 
-button:hover{
-    background:#1d4ed8;
+.login-button:hover{
+    transform:translateY(-2px);
+
+    box-shadow:
+        0 10px 22px rgba(37,99,235,.35);
 }
 
-.error{
-    background:#fee2e2;
-    color:#b91c1c;
-    padding:12px;
-    margin-bottom:18px;
-    border-radius:8px;
+
+/* ================= BACK ================= */
+
+.back-link{
+    display:block;
+
     text-align:center;
-    border:1px solid #fca5a5;
+
+    margin-top:20px;
+
+    color:#2563eb;
+
+    text-decoration:none;
+
+    font-size:13px;
+
+    font-weight:600;
 }
 
-.success{
-    background:#dcfce7;
-    color:#166534;
-    padding:12px;
-    margin-bottom:18px;
-    border-radius:8px;
-    text-align:center;
-    border:1px solid #86efac;
+.back-link:hover{
+    text-decoration:underline;
 }
+
+
+/* ================= FOOTER ================= */
 
 .footer{
     text-align:center;
-    margin-top:20px;
+
+    margin-top:25px;
+
+    padding-top:18px;
+
+    border-top:1px solid #e2e8f0;
+
     color:#94a3b8;
-    font-size:13px;
+
+    font-size:12px;
+}
+
+
+/* ================= MOBILE ================= */
+
+@media(max-width:800px){
+
+    body{
+        padding:15px;
+
+        align-items:flex-start;
+    }
+
+    .login-container{
+        display:block;
+
+        min-height:auto;
+
+        max-width:500px;
+
+        margin:20px auto;
+    }
+
+    .login-info{
+        padding:30px 25px;
+
+        text-align:center;
+
+        align-items:center;
+    }
+
+    .login-info h1{
+        font-size:27px;
+    }
+
+    .login-info p{
+        font-size:13px;
+    }
+
+    .features{
+        width:100%;
+
+        text-align:left;
+
+        margin-top:25px;
+    }
+
+    .feature{
+        font-size:13px;
+    }
+
+    .login-side{
+        padding:35px 25px;
+    }
+
+}
+
+@media(max-width:450px){
+
+    .login-info{
+        padding:25px 18px;
+    }
+
+    .login-info h1{
+        font-size:23px;
+    }
+
+    .login-info p{
+        font-size:12px;
+    }
+
+    .login-side{
+        padding:30px 18px;
+    }
+
+    .login-box h2{
+        font-size:23px;
+    }
+
 }
 
 </style>
 
 </head>
 
+
 <body>
+
 
 <div class="login-container">
 
-    <div class="login-box">
 
-        <div class="logo">
+    <!-- ================= LEFT INFORMATION ================= -->
+
+    <div class="login-info">
+
+
+        <div class="info-icon">
             📦
         </div>
 
-        <h2>Store Manager Login</h2>
 
-        <p>Hostel Inventory Management System</p>
+        <h1>
 
-        <% if(message){ %>
+            Hostel
 
-            <div class="<%= messageType %>">
-                <%= message %>
+            <span>
+                Inventory
+            </span>
+
+            Management
+
+        </h1>
+
+
+        <p>
+
+            Manage hostel grocery inventory efficiently.
+            Track stock received, daily consumption,
+            current stock levels and low-stock items
+            from one centralized system.
+
+        </p>
+
+
+        <div class="features">
+
+
+            <div class="feature">
+
+                <div class="feature-icon">
+                    📋
+                </div>
+
+                Master Grocery Items
+
             </div>
 
-        <% } %>
 
-        <form action="/login/store" method="POST">
+            <div class="feature">
 
-            <div class="input-group">
+                <div class="feature-icon">
+                    📥
+                </div>
 
-                <label>Username</label>
-
-                <input
-                    type="text"
-                    name="username"
-                    placeholder="Enter Username"
-                    required>
+                Stock Entry Management
 
             </div>
 
-            <div class="input-group">
 
-                <label>Password</label>
+            <div class="feature">
 
-                <input
-                    type="password"
-                    name="password"
-                    placeholder="Enter Password"
-                    required>
+                <div class="feature-icon">
+                    🍽️
+                </div>
+
+                Daily Usage Tracking
 
             </div>
 
-            <button type="submit">
-                Login
-            </button>
 
-        </form>
+            <div class="feature">
 
-        <div class="footer">
-            © 2026 Hostel Inventory Management
+                <div class="feature-icon">
+                    📊
+                </div>
+
+                Inventory Reports
+
+            </div>
+
+
+        </div>
+
+
+    </div>
+
+
+    <!-- ================= LOGIN ================= -->
+
+    <div class="login-side">
+
+
+        <div class="login-box">
+
+
+            <div class="logo">
+                📦
+            </div>
+
+
+            <h2>
+                Store Manager Login
+            </h2>
+
+
+            <p class="subtitle">
+                Hostel Inventory Management System
+            </p>
+
+
+            <% if(message){ %>
+
+                <div class="<%= messageType %>">
+
+                    <%= message %>
+
+                </div>
+
+            <% } %>
+
+
+            <form
+                action="/login/store"
+                method="POST">
+
+
+                <div class="input-group">
+
+                    <label>
+                        Username
+                    </label>
+
+
+                    <div class="input-wrapper">
+
+                        <span class="input-icon">
+                            👤
+                        </span>
+
+
+                        <input
+                            type="text"
+                            name="username"
+                            placeholder="Enter Username"
+                            autocomplete="username"
+                            required>
+
+                    </div>
+
+                </div>
+
+
+                <div class="input-group">
+
+                    <label>
+                        Password
+                    </label>
+
+
+                    <div class="input-wrapper">
+
+                        <span class="input-icon">
+                            🔒
+                        </span>
+
+
+                        <input
+                            type="password"
+                            name="password"
+                            placeholder="Enter Password"
+                            autocomplete="current-password"
+                            required>
+
+                    </div>
+
+                </div>
+
+
+                <button
+                    type="submit"
+                    class="login-button">
+
+                    Login to Store
+
+                </button>
+
+
+            </form>
+
+
+            <a
+                href="/"
+                class="back-link">
+
+                ← Back to Management Portal
+
+            </a>
+
+
+            <div class="footer">
+
+                © 2026 Hostel Inventory Management
+
+            </div>
+
+
         </div>
 
     </div>
 
+
 </div>
 
+
 </body>
+
 </html>
