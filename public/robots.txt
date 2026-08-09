@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://hostel-management-wb7z.onrender.com/sitemap.xml
