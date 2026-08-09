@@ -1,0 +1,151 @@
+<style>
+
+.lifecycle-container{
+
+    max-width:1200px;
+
+    margin:auto;
+
+}
+
+.lifecycle-title{
+
+    text-align:center;
+
+    margin-bottom:35px;
+
+    color:#ffd600;
+
+}
+
+.lifecycle-grid{
+
+    display:grid;
+
+    grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+
+    gap:25px;
+
+}
+
+.lifecycle-card{
+
+    background:rgba(255,255,255,.08);
+
+    border-radius:15px;
+
+    padding:30px;
+
+    backdrop-filter:blur(12px);
+
+    text-decoration:none;
+
+    color:white;
+
+    transition:.30s;
+
+    box-shadow:0 0 18px rgba(0,0,0,.25);
+
+}
+
+.lifecycle-card:hover{
+
+    transform:translateY(-8px);
+
+    background:rgba(255,214,0,.15);
+
+}
+
+.lifecycle-card i{
+
+    font-size:50px;
+
+    color:#ffd600;
+
+    margin-bottom:18px;
+
+}
+
+.lifecycle-card h3{
+
+    margin-bottom:12px;
+
+}
+
+.lifecycle-card p{
+
+    color:#ddd;
+
+    line-height:1.6;
+
+}
+
+</style>
+
+<div class="lifecycle-container">
+
+    <h1 class="lifecycle-title">
+        🎓 Student Lifecycle Management
+    </h1>
+
+    <div class="lifecycle-grid">
+
+        <a href="/warden/upload-students" class="lifecycle-card">
+
+            <i class="fas fa-file-upload"></i>
+
+            <h3>Upload Students</h3>
+
+            <p>
+
+                Upload new admissions using the existing Excel / PDF upload system.
+
+            </p>
+
+        </a>
+
+        <a href="/warden/promote-students" class="lifecycle-card">
+
+            <i class="fas fa-arrow-up"></i>
+
+            <h3>Promote Students</h3>
+
+            <p>
+
+                Promote active students to the next academic year after verification.
+
+            </p>
+
+        </a>
+
+        <a href="/warden/vacated-students" class="lifecycle-card">
+
+            <i class="fas fa-door-open"></i>
+
+            <h3>Vacated Students</h3>
+
+            <p>
+
+                View students who vacated the hostel.
+
+            </p>
+
+        </a>
+
+        <a href="/warden/passedout-students" class="lifecycle-card">
+
+            <i class="fas fa-user-graduate"></i>
+
+            <h3>Passed Out Students</h3>
+
+            <p>
+
+                View students who completed their course.
+
+            </p>
+
+        </a>
+
+    </div>
+
+</div>
