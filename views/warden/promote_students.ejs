@@ -1,0 +1,336 @@
+<h2>🎓 Academic Promotion</h2>
+
+<div class="promotion-info">
+
+    <h3>
+        Current Academic Year :
+        <%= academicYear.academic_year_start %> -
+        <%= academicYear.academic_year_end %>
+    </h3>
+
+    <h3>
+        New Academic Year :
+        <%= academicYear.academic_year_start + 1 %> -
+        <%= academicYear.academic_year_end + 1 %>
+    </h3>
+
+</div>
+<style>
+
+.promote-container{
+
+    max-width:1400px;
+
+    margin:auto;
+
+}
+
+.promote-title{
+
+    text-align:center;
+
+    color:#ffd600;
+
+    margin-bottom:20px;
+
+}
+
+table{
+
+    width:100%;
+
+    border-collapse:collapse;
+
+}
+
+th{
+
+    background:#1e293b;
+
+    color:#fff;
+
+}
+
+th,td{
+
+    padding:12px;
+
+    text-align:center;
+
+}
+
+tr:nth-child(even){
+
+    background:rgba(255,255,255,.05);
+
+}
+
+.badge{
+
+    padding:5px 12px;
+
+    border-radius:30px;
+
+    background:#16a34a;
+
+    color:#fff;
+
+}
+
+.btn{
+
+    padding:12px 25px;
+
+    border:none;
+
+    background:#2563eb;
+
+    color:#fff;
+
+    border-radius:8px;
+
+    cursor:pointer;
+
+    margin-top:20px;
+
+}
+.modal{
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.6);
+    display:none;
+    justify-content:center;
+    align-items:center;
+    z-index:9999;
+}
+
+.modal-content{
+    width:500px;
+    background:#fff;
+    color:#111;
+    padding:25px;
+    border-radius:12px;
+    text-align:center;
+}
+
+.modal-content h2{
+    margin-top:0;
+}
+
+.modal-content button{
+    margin-top:15px;
+}
+
+.btn.secondary{
+    background:#6b7280;
+}
+.top-bar{
+    display:flex;
+    justify-content:flex-start;
+    margin-bottom:20px;
+}
+
+.back-btn{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    padding:10px 18px;
+    background:#2563eb;
+    color:#fff;
+    text-decoration:none;
+    border-radius:10px;
+    font-weight:600;
+    transition:0.3s;
+    box-shadow:0 4px 10px rgba(0,0,0,.2);
+}
+
+.back-btn:hover{
+    background:#1d4ed8;
+    transform:translateY(-2px);
+}
+</style>
+
+<div class="promote-container">
+<div class="top-bar">
+    <a href="/warden/dashboard" class="back-btn">
+        <i class="fas fa-arrow-left"></i> Back to Dashboard
+    </a>
+</div>
+<h2 class="promote-title">
+
+🎓 Promote Students Preview
+
+</h2>
+<div class="promotion-summary">
+
+    <div class="summary-card">
+
+        Active Students
+
+        <h2><%= students.length %></h2>
+
+    </div>
+
+</div>
+<table>
+
+<thead>
+
+<tr>
+
+<th>Student ID</th>
+
+<th>Name</th>
+
+<th>Room</th>
+
+<th>Current Year</th>
+
+<th>Promoted To</th>
+<th>Status</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+<%
+
+students.forEach(student=>{
+
+let newYear="";
+
+if(student.year==1) newYear="2nd Year";
+else if(student.year==2) newYear="3rd Year";
+else if(student.year==3) newYear="4th Year";
+else if(student.year==4) newYear="Passed Out";
+
+%>
+
+<tr>
+
+<td><%=student.student_id%></td>
+
+<td><%=student.name%></td>
+
+<td><%=student.room_no || '-'%></td>
+
+<td>
+
+<span class="badge">
+
+<%=student.year%> Year
+
+</span>
+
+</td>
+
+<td>
+
+<b><%=newYear%></b>
+
+</td>
+<td>
+
+<% if(student.status==="ACTIVE"){ %>
+
+🟢 ACTIVE
+
+<% }else{ %>
+
+🟡 VACATED
+
+<% } %>
+
+</td>
+</tr>
+
+<%})%>
+
+</tbody>
+
+</table>
+
+<div id="promotionModal" class="modal">
+
+    <div class="modal-content">
+
+        <h2>Academic Promotion</h2>
+
+        <p>
+            Current Academic Year :
+            <b><%= academicYear.academic_year_start %> - <%= academicYear.academic_year_end %></b>
+        </p>
+
+        <p>
+            New Academic Year :
+            <b><%= academicYear.academic_year_start + 1 %> - <%= academicYear.academic_year_end + 1 %></b>
+        </p>
+
+        <hr>
+
+        <p style="color:red;font-weight:bold;">
+
+            ⚠️ This action cannot be undone.
+
+        </p>
+
+        <form action="/warden/promote-students/confirm"
+method="POST">
+
+<button class="btn" onclick="openPromotionModal()">
+    🚀 Promote Students
+</button>
+
+</form>
+
+        <button class="btn secondary"
+                onclick="closePromotionModal()">
+
+            Cancel
+
+        </button>
+
+    </div>
+
+</div>
+
+</div>
+Harsha, aa JavaScript promote_students.ejs file lo add cheyyali.
+
+Structure ila undali:
+<div class="promote-container">
+
+    <!-- Page Content -->
+
+</div>
+
+<!-- Promotion Modal -->
+<div id="promotionModal" class="modal">
+
+    <!-- Modal Content -->
+
+</div>
+
+<script>
+
+function openPromotionModal(){
+
+    document.getElementById("promotionModal").style.display="flex";
+
+}
+
+function closePromotionModal(){
+
+    document.getElementById("promotionModal").style.display="none";
+
+}
+
+async function confirmPromotion(){
+
+    alert("Backend will be connected in next step.");
+
+}
+
+</script>

@@ -1,0 +1,177 @@
+<%- include('../partials/header') %>
+
+<div class="container">
+
+<h2>🆕 Pending Admissions</h2>
+
+<table>
+
+<thead>
+
+<tr>
+
+<th>Photo</th>
+
+<th>Admission No</th>
+
+<th>Name</th>
+
+<th>Branch</th>
+
+<th>Year</th>
+
+<th>Payment Ref</th>
+
+<th>Source</th>
+
+<th>Status</th>
+
+<th>Action</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+<% students.forEach(student=>{ %>
+
+<tr>
+
+<td>
+
+<% if(student.student_photo){ %>
+
+<img
+src="/uploads/admission/photos/<%=student.student_photo%>"
+class="photo">
+
+<% }else{ %>
+
+<img
+src="/images/default-avatar.png"
+class="photo">
+
+<% } %>
+
+</td>
+
+<td><%=student.admission_no%></td>
+
+<td><%=student.name%></td>
+
+<td><%=student.course%></td>
+
+<td><%=student.year%></td>
+
+<td><%=student.payment_ref_id%></td>
+
+<td>
+
+<%=student.registration_source%>
+
+</td>
+
+<td>
+
+<span class="status">
+
+<%=student.status%>
+
+</span>
+
+</td>
+
+<td>
+
+<a
+href="/warden/admission/<%=student.id%>"
+class="btn">
+
+View
+
+</a>
+
+</td>
+
+</tr>
+
+<% }) %>
+
+</tbody>
+
+</table>
+
+</div>
+<style>
+    .container{
+
+max-width:1300px;
+
+margin:30px auto;
+
+background:#fff;
+
+padding:25px;
+
+border-radius:15px;
+
+box-shadow:0 10px 25px rgba(0,0,0,.15);
+
+}
+
+table{
+
+width:100%;
+
+border-collapse:collapse;
+
+}
+
+th{
+
+background:#2563eb;
+
+color:#fff;
+
+padding:12px;
+
+}
+
+td{
+
+padding:12px;
+
+text-align:center;
+
+border-bottom:1px solid #eee;
+
+}
+
+.photo{
+
+width:55px;
+
+height:55px;
+
+border-radius:50%;
+
+object-fit:cover;
+
+}
+
+.btn{
+
+padding:8px 14px;
+
+background:#16a34a;
+
+color:#fff;
+
+border-radius:8px;
+
+text-decoration:none;
+
+}
+</style>
+<%- include('../partials/footer') %>
