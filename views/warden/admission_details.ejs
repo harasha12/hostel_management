@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admission Details</title>
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial,Helvetica,sans-serif;
+}
+
+body{
+    background:#0f172a;
+    color:#fff;
+    padding:30px;
+}
+
+.container{
+    max-width:1100px;
+    margin:auto;
+}
+
+.card{
+
+    background:rgba(255,255,255,.08);
+
+    border:1px solid rgba(255,214,0,.25);
+
+    border-radius:15px;
+
+    padding:30px;
+
+    backdrop-filter:blur(8px);
+
+}
+
+h2{
+
+    color:#ffd600;
+
+    margin-bottom:25px;
+
+}
+
+.grid{
+
+    display:grid;
+
+    grid-template-columns:220px 1fr;
+
+    gap:15px;
+
+    margin-bottom:12px;
+
+}
+
+.label{
+
+    color:#ffd600;
+
+    font-weight:bold;
+
+}
+
+.value{
+
+    color:#fff;
+
+    word-break:break-word;
+
+}
+
+.photo{
+
+    width:170px;
+
+    height:200px;
+
+    object-fit:cover;
+
+    border-radius:10px;
+
+    border:2px solid #ffd600;
+
+    margin-bottom:20px;
+
+}
+
+.buttons{
+
+    margin-top:35px;
+
+    display:flex;
+
+    gap:15px;
+
+}
+
+.btn{
+
+    padding:12px 22px;
+
+    border:none;
+
+    border-radius:8px;
+
+    cursor:pointer;
+
+    text-decoration:none;
+
+    font-weight:bold;
+
+}
+
+.approve{
+
+    background:#28a745;
+
+    color:#fff;
+
+}
+
+.reject{
+
+    background:#dc3545;
+
+    color:#fff;
+
+}
+
+.back{
+
+    background:#ffd600;
+
+    color:#000;
+
+}
+
+a{
+
+    color:#4fc3f7;
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<div class="card">
+
+<h2>Admission Details</h2>
+
+<% if (admission.student_photo) { %>
+<img
+    class="photo"
+    src="/uploads/profile_images/<%= admission.student_photo %>"
+    alt="Student Photo">
+<% } %>
+
+<div class="grid">
+<div class="label">Admission No</div>
+<div class="value"><%= admission.admission_no %></div>
+</div>
+
+<div class="grid">
+<div class="label">Student ID</div>
+<div class="value"><%= admission.student_id %></div>
+</div>
+
+<div class="grid">
+<div class="label">College ID</div>
+<div class="value"><%= admission.student_unique_id %></div>
+</div>
+
+<div class="grid">
+<div class="label">Student Name</div>
+<div class="value"><%= admission.name %></div>
+</div>
+
+<div class="grid">
+<div class="label">Father Name</div>
+<div class="value"><%= admission.father_name %></div>
+</div>
+
+<div class="grid">
+<div class="label">Branch</div>
+<div class="value"><%= admission.course %></div>
+</div>
+
+<div class="grid">
+<div class="label">Year</div>
+<div class="value"><%= admission.year %></div>
+</div>
+
+<div class="grid">
+<div class="label">Village</div>
+<div class="value"><%= admission.village %></div>
+</div>
+
+<div class="grid">
+<div class="label">Student Mobile</div>
+<div class="value"><%= admission.student_mobile %></div>
+</div>
+
+<div class="grid">
+<div class="label">Parent Mobile</div>
+<div class="value"><%= admission.parent_mobile %></div>
+</div>
+
+<div class="grid">
+<div class="label">Email</div>
+<div class="value"><%= admission.email %></div>
+</div>
+
+<div class="grid">
+<div class="label">Student Aadhaar</div>
+<div class="value"><%= admission.student_aadhaar %></div>
+</div>
+
+<div class="grid">
+<div class="label">Father Aadhaar</div>
+<div class="value"><%= admission.father_aadhaar %></div>
+</div>
+
+<div class="grid">
+<div class="label">Payment Reference</div>
+<div class="value"><%= admission.payment_ref_id %></div>
+</div>
+
+<div class="grid">
+<div class="label">Status</div>
+<div class="value"><%= admission.status %></div>
+</div>
+
+<div class="grid">
+<div class="label">Student Aadhaar File</div>
+<div class="value">
+<% if(admission.student_aadhaar_file){ %>
+<a target="_blank"
+href="/uploads/adhaar/<%= admission.student_aadhaar_file %>">
+View File
+</a>
+<% } else { %>
+-
+<% } %>
+</div>
+</div>
+
+<div class="grid">
+<div class="label">Father Aadhaar File</div>
+<div class="value">
+<% if(admission.father_aadhaar_file){ %>
+<a target="_blank"
+href="/uploads/adhaar/<%= admission.father_aadhaar_file %>">
+View File
+</a>
+<% } else { %>
+-
+<% } %>
+</div>
+</div>
+
+<div class="grid">
+<div class="label">Payment Receipt</div>
+<div class="value">
+<% if(admission.payment_receipt){ %>
+<a target="_blank"
+href="/uploads/receipts/<%= admission.payment_receipt %>">
+View Receipt
+</a>
+<% } else { %>
+-
+<% } %>
+</div>
+</div>
+
+<div class="buttons">
+
+<form action="/warden/admission/approve/<%= admission.id %>" method="POST">
+
+<div class="grid">
+    <div class="label">Room Number</div>
+
+    <div class="value">
+        <input
+            type="text"
+            name="room_no"
+            placeholder="Enter Room Number"
+            required
+            style="
+                width:250px;
+                padding:10px;
+                border-radius:8px;
+                border:1px solid #ccc;
+            ">
+    </div>
+</div>
+
+<br>
+
+<button type="submit" class="btn approve">
+    ✅ Approve Admission
+</button>
+
+</form>
+
+<a class="btn back" href="/warden/pending-admissions">
+Back
+</a>
+
+</div>
+
+</div>
+
+</div>
+
+</body>
+</html>
