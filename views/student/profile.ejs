@@ -588,55 +588,6 @@ td {
         </div>
       </div>
     </div>
-<!-- CURRENT MONTH MESS BILL -->
-<div style="
-  background: rgba(255,255,255,0.8);
-  backdrop-filter: blur(10px);
-  border-radius: 20px;
-  padding: 20px;
-  margin-bottom: 25px;
-  box-shadow: 0 10px 25px rgba(0,0,0,.08);
-">
-
-  <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
-    
-    <h3 style="margin:0; color:#16a34a; font-weight:700;">
-      💰 Current Month Mess Bill
-    </h3>
-
-    <span style="
-      padding:6px 12px;
-      border-radius:10px;
-      background:#f1f5f9;
-      font-size:12px;
-      font-weight:600;
-      color:#64748b;
-    ">
-      <%= new Date().toLocaleString('default', { month: 'long', year: 'numeric' }) %>
-    </span>
-
-  </div>
-
-  <% if (student.current_mess_bill && student.current_mess_bill > 0) { %>
-
-    <h2 style="margin:10px 0 5px; color:#15803d;">
-      ₹ <%= student.current_mess_bill %>
-    </h2>
-
-    <p style="color:#64748b; font-size:13px;">
-      This is the current mess bill amount recorded for this month.
-    </p>
-
-  <% } else { %>
-
-    <p style="margin-top:10px; color:#64748b;">
-      No mess bill has been uploaded for the current month.
-    </p>
-
-  <% } %>
-
-</div>
-
 
     <div class="stats-row">
       <div class="stat-card">
