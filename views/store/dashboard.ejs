@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Store Dashboard</title>
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:'Segoe UI',sans-serif;
+}
+
+body{
+background:#f5f7fb;
+}
+
+.container{
+display:flex;
+height:100vh;
+}
+
+.sidebar{
+width:260px;
+background:#1e293b;
+color:white;
+padding:25px 0;
+}
+
+.sidebar h2{
+text-align:center;
+margin-bottom:30px;
+}
+
+.sidebar a{
+display:block;
+padding:15px 25px;
+color:white;
+text-decoration:none;
+transition:.3s;
+}
+
+.sidebar a:hover{
+background:#334155;
+padding-left:35px;
+}
+
+.main{
+flex:1;
+padding:30px;
+}
+
+.header{
+display:flex;
+justify-content:space-between;
+align-items:center;
+margin-bottom:30px;
+}
+
+.cards{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+gap:20px;
+}
+
+.card{
+background:white;
+padding:25px;
+border-radius:12px;
+box-shadow:0 5px 15px rgba(0,0,0,.08);
+text-align:center;
+transition:.3s;
+cursor:pointer;
+}
+
+.card:hover{
+transform:translateY(-5px);
+}
+
+.card h3{
+margin-top:10px;
+color:#1e293b;
+}
+
+.icon{
+font-size:40px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<div class="sidebar">
+
+<h2>📦 Store Manager</h2>
+
+<a href="/store/dashboard">🏠 Dashboard</a>
+
+<a href="/store/items">📋 Master Items</a>
+
+<a href="/store/stock-entry">📥 Stock Entry</a>
+
+<a href="/store/daily-usage">🍽 Daily Usage</a>
+
+<a href="/store/current-stock">📦 Current Stock</a>
+
+<a href="/store/reports">📊 Reports</a>
+
+<a href="/store/logout">🚪 Logout</a>
+
+</div>
+
+<div class="main">
+
+<div class="header">
+
+<h2>Welcome <%= store.name %></h2>
+
+<p>Hostel Inventory Management</p>
+
+</div>
+
+<div class="cards">
+
+<div class="card" onclick="location.href='/store/items'">
+<div class="icon">📋</div>
+<h3>Master Items</h3>
+</div>
+
+<div class="card" onclick="location.href='/store/stock-entry'">
+<div class="icon">📥</div>
+<h3>Stock Entry</h3>
+</div>
+
+<div class="card" onclick="location.href='/store/daily-usage'">
+<div class="icon">🍽</div>
+<h3>Daily Usage</h3>
+</div>
+
+<div class="card" onclick="location.href='/store/current-stock'">
+<div class="icon">📦</div>
+<h3>Current Stock</h3>
+</div>
+
+<div class="card" onclick="location.href='/store/reports'">
+<div class="icon">📊</div>
+<h3>Reports</h3>
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</body>
+</html>

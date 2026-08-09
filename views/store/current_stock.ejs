@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<title>Current Stock</title>
+
+<style>
+
+body{
+font-family:Arial;
+background:#f5f5f5;
+padding:30px;
+}
+
+table{
+width:100%;
+border-collapse:collapse;
+background:white;
+}
+
+th{
+background:#2563eb;
+color:white;
+padding:12px;
+}
+
+td{
+padding:10px;
+border:1px solid #ddd;
+text-align:center;
+}
+
+.low{
+background:#ffebee;
+color:red;
+font-weight:bold;
+}
+
+.ok{
+background:#e8f5e9;
+color:green;
+font-weight:bold;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<h2>Current Stock</h2>
+
+<table>
+
+<tr>
+
+<th>Item</th>
+
+<th>Category</th>
+
+<th>Current Stock</th>
+
+<th>Minimum Stock</th>
+
+<th>Status</th>
+
+</tr>
+
+<% stock.forEach(item=>{ %>
+
+<tr>
+
+<td><%= item.item_name %></td>
+
+<td><%= item.category %></td>
+
+<td>
+
+<%= item.current_stock %>
+
+<%= item.unit %>
+
+</td>
+
+<td>
+
+<%= item.minimum_stock %>
+
+<%= item.unit %>
+
+</td>
+
+<td>
+
+<% if(item.current_stock<=item.minimum_stock){ %>
+
+<span class="low">
+
+Low Stock
+
+</span>
+
+<% }else{ %>
+
+<span class="ok">
+
+Available
+
+</span>
+
+<% } %>
+
+</td>
+
+</tr>
+
+<% }) %>
+
+</table>
+
+</body>
+
+</html>

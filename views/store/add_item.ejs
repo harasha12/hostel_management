@@ -1,0 +1,57 @@
+<h2>Add Grocery Item</h2>
+
+<form action="/store/items/add" method="POST">
+
+    <input
+        type="text"
+        name="item_name"
+        placeholder="Item Name"
+        required>
+
+    <br><br>
+
+    <input
+        type="text"
+        name="category"
+        placeholder="Category"
+        required>
+
+    <br><br>
+
+    <select name="unit">
+
+        <option value="KG">KG</option>
+
+        <option value="Litre">Litre</option>
+
+        <option value="Nos">Nos</option>
+
+        <option value="Packet">Packet</option>
+
+        <option value="Box">Box</option>
+
+    </select>
+
+    <br><br>
+
+    <input
+        type="number"
+        step="0.01"
+        name="minimum_stock"
+        placeholder="Minimum Stock">
+
+    <br><br>
+
+    <textarea
+        name="description"
+        placeholder="Description"></textarea>
+
+    <br><br>
+
+    <button type="submit">
+
+        Save Item
+
+    </button>
+
+</form>

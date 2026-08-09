@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Master Items</title>
+
+    <style>
+
+        body{
+            font-family:Arial,sans-serif;
+            margin:30px;
+            background:#f5f6fa;
+        }
+
+        h2{
+            color:#333;
+        }
+
+        .top{
+            display:flex;
+            justify-content:space-between;
+            margin-bottom:20px;
+        }
+
+        .btn{
+            background:#007bff;
+            color:white;
+            padding:10px 18px;
+            text-decoration:none;
+            border-radius:5px;
+        }
+
+        table{
+            width:100%;
+            border-collapse:collapse;
+            background:white;
+        }
+
+        th{
+            background:#007bff;
+            color:white;
+            padding:12px;
+        }
+
+        td{
+            padding:10px;
+            border-bottom:1px solid #ddd;
+            text-align:center;
+        }
+
+        tr:hover{
+            background:#f1f1f1;
+        }
+
+        .edit{
+            color:green;
+            text-decoration:none;
+        }
+
+        .delete{
+            color:red;
+            text-decoration:none;
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+<div class="top">
+
+    <h2>Master Grocery Items</h2>
+
+    <a href="/store/items/add" class="btn">
+        + Add Item
+    </a>
+
+</div>
+
+<table>
+
+<thead>
+
+<tr>
+
+    <th>ID</th>
+    <th>Item Name</th>
+    <th>Category</th>
+    <th>Unit</th>
+    <th>Minimum Stock</th>
+    <th>Status</th>
+    <th>Action</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+<% if(items.length===0){ %>
+
+<tr>
+
+<td colspan="7">
+
+No Items Found
+
+</td>
+
+</tr>
+
+<% } %>
+
+<% items.forEach(item=>{ %>
+
+<tr>
+
+<td><%= item.id %></td>
+
+<td><%= item.item_name %></td>
+
+<td><%= item.category %></td>
+
+<td><%= item.unit %></td>
+
+<td><%= item.minimum_stock %></td>
+
+<td><%= item.status %></td>
+
+<td>
+
+<a class="edit"
+href="/store/items/edit/<%= item.id %>">
+
+Edit
+
+</a>
+
+|
+
+<a class="delete"
+onclick="return confirm('Delete this Item?')"
+href="/store/items/delete/<%= item.id %>">
+
+Delete
+
+</a>
+
+</td>
+
+</tr>
+
+<% }) %>
+
+</tbody>
+
+</table>
+
+</body>
+
+</html>
