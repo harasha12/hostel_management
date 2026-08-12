@@ -13,11 +13,36 @@ const { v4: uuidv4 } = require("uuid");
 const multer = require("multer");
 const xlsx = require("xlsx");
 const fs = require("fs");
+
 const { execFile } = require("child_process");
 const pdfParse = require("pdf-parse");
 
+const { Resend } = require("resend");
 
+const resend = new Resend(process.env.RESEND_API_KEY);
+async function sendEmail({ to, subject, text, html }) {
+    try {
+        const { data, error } = await resend.emails.send({
+            from: "Hostel Management <onboarding@resend.dev>",
+            to: [to],
+            subject,
+            text,
+            html
+        });
 
+        if (error) {
+            console.error("Email Send Error:", error);
+            return { success: false, error };
+        }
+
+        console.log("Email sent successfully:", data);
+        return { success: true, data };
+
+    } catch (err) {
+        console.error("Email Send Error:", err);
+        return { success: false, error: err };
+    }
+}
 
 
 const receiptsDir = path.join(__dirname, "uploads", "receipts");
@@ -188,13 +213,7 @@ app.use("/uploads", express.static(uploadsPath));
 
 
 
-const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: "harshavardhanvangara@gmail.com",      // your gmail
-    pass: "bfllbazxsxinlheb",      // app password
-  },
-});
+
 
 
 
@@ -374,7 +393,15 @@ function parseSbiPdf(pdfPath) {
   });
 }
 
-
+app.get("/uploads/*", (req, res) => {
+  const filePath = path.join(__dirname, req.path);
+  res.download(filePath, (err) => {
+    if (err) {
+      console.error("DOWNLOAD ERROR:", err);
+      res.status(404).send("File not found");
+    }
+  });
+});
 
 
 // Serve downloads from the uploads directory (secure)
@@ -575,25 +602,23 @@ app.post("/forgot-password", (req, res) => {
           if (err2) return res.send("Error saving OTP");
 
           // Send OTP via email
-          const transporter = nodemailer.createTransport({
-            service: "gmail",
-            auth: {
-              user: "harshavardhanvangara@gmail.com",
-              pass: "bfllbazxsxinlheb", // Use App Password
-            },
-          });
+         sendEmail({
+    to: email,
+    subject: "Password Reset OTP - Hostel Management System",
+    text: `Your OTP for password reset is: ${otp}
 
-          const mailOptions = {
-            from: "harshavardhanvangara@gmail.com",
-            to: email,
-            subject: "Password Reset OTP - Hostel Management System",
-            text: `Your OTP for password reset is: ${otp}\n\nIt will expire in 10 minutes.`,
-          };
+It will expire in 10 minutes.`
+}).then((result) => {
 
-          transporter.sendMail(mailOptions, (error) => {
-            if (error) return res.send("Error sending email: " + error);
-            res.render("reset-password", { table, email }); // show reset form
-          });
+    if (!result.success) {
+        return res.send("Error sending email");
+    }
+
+    res.render("reset-password", {
+        table,
+        email
+    });
+});
         });
       } else {
         checkNextTable(index + 1);
@@ -3473,25 +3498,23 @@ If you need clarification, kindly meet the warden.
 Regards,
 Hostel Warden`;
 
-    // 4️⃣ Send Email
-    transporter.sendMail(
-      {
-        from: "harshavardhanvangara@gmail.com",
-        to: student.email,
-        subject: subject,
-        text: message
-      },
-      (mailErr, info) => {
-        if (mailErr) {
-          console.log("Email Send Error:", mailErr);
-        } else {
-          console.log("Email sent:", info.response);
-        }
+    sendEmail({
+    to: student.email,
+    subject: subject,
+    text: message
+}).then((result) => {
 
-        return res.redirect("/warden/approveOutpass");
+    if (!result.success) {
+        console.error(
+            "Outpass email failed:",
+            result.error
+        );
+    }
 
-      }
+    return res.redirect(
+        "/warden/approveOutpass"
     );
+});
   });
 });
 });
@@ -3979,52 +4002,23 @@ Reason: ${student.reason}
 Regards,
 Hostel Warden`;
 
-    transporter.sendMail(
-  {
-    from: "harshavardhanvangara@gmail.com",
+sendEmail({
     to: student.email,
-    subject,
+    subject: subject,
     text: message
-  },
-  async () => {
+}).then((result) => {
 
-    // 📱 Telugu SMS
-    function formatDate(date) {
-      return new Date(date).toLocaleDateString("en-GB");
+    if (!result.success) {
+        console.error(
+            "Outpass email failed:",
+            result.error
+        );
     }
 
-    const fromDate = formatDate(student.out_date);
-    const toDate = formatDate(student.return_date);
-
-    const smsMessage =
-      status === "Approved"
-        ? `ప్రియమైన తల్లిదండ్రులకు,
-మీ విద్యార్థి ${student.name} కు అవుట్‌పాస్ ఆమోదించబడింది.
-
-తేదీ: ${fromDate}
-వరకు: ${toDate}
-
-ధన్యవాదాలు.`
-        : `ప్రియమైన తల్లిదండ్రులకు,
-మీ విద్యార్థి ${student.name} కు అవుట్‌పాస్ తిరస్కరించబడింది.
-
-కారణం: ${student.reason}
-
-ధన్యవాదాలు.`;
-
-    // ✅ Send SMS
-    if (student.parent_phone) {
-      await sendSMS(student.parent_phone, smsMessage);
-    }
-
-    // 🔥 SPA response
-    if (req.headers["x-requested-with"] === "XMLHttpRequest") {
-      return res.json({ success: true, status });
-    }
-
-    res.redirect("/warden/approveOutpass");
-  }
-);
+    return res.redirect(
+        "/warden/approveOutpass"
+    );
+});
     });
   });
 });
