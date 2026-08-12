@@ -393,15 +393,7 @@ function parseSbiPdf(pdfPath) {
   });
 }
 
-app.get("/uploads/*", (req, res) => {
-  const filePath = path.join(__dirname, req.path);
-  res.download(filePath, (err) => {
-    if (err) {
-      console.error("DOWNLOAD ERROR:", err);
-      res.status(404).send("File not found");
-    }
-  });
-});
+
 
 
 // Serve downloads from the uploads directory (secure)
@@ -414,12 +406,10 @@ app.get(/^\/uploads\/(.*)$/, (req, res) => {
 
         const requested = req.params[0] || "";
 
-        // Normalize and remove any leading ../ attempts
         const safeRel = path
             .normalize(requested)
             .replace(/^(\.\.(\/|\\|$))+/, "");
 
-        // Resolve absolute paths
         const absolute = path.join(uploadsDir, safeRel);
 
         const normalizedUploadsDir =
@@ -428,7 +418,6 @@ app.get(/^\/uploads\/(.*)$/, (req, res) => {
         const normalizedAbsolute =
             path.resolve(absolute);
 
-        // Prevent path traversal
         if (
             !normalizedAbsolute.startsWith(normalizedUploadsDir) &&
             normalizedAbsolute !== path.resolve(uploadsDir)
@@ -442,7 +431,6 @@ app.get(/^\/uploads\/(.*)$/, (req, res) => {
             return res.status(400).send("Invalid file path");
         }
 
-        // Check file exists and is readable
         fs.access(
             absolute,
             fs.constants.R_OK,
@@ -456,9 +444,7 @@ app.get(/^\/uploads\/(.*)$/, (req, res) => {
                         err
                     );
 
-                    return res.status(404).send(
-                        "File not found"
-                    );
+                    return res.status(404).send("File not found");
                 }
 
                 res.download(
