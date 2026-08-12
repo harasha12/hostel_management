@@ -446,7 +446,6 @@ app.get(/^\/uploads\/(.*)$/, (req, res) => {
   }
 });
 
-
 // ===== Middleware =====
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, "public")));
